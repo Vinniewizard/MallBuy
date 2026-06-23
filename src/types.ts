@@ -63,7 +63,7 @@ export interface WalletBalance {
   referral_bonus: number;
   total_commissions: number;
   total_withdrawals: number;
-  total_buyed: number;
+  total_purchased: number;
   available_balance: number;
 }
 

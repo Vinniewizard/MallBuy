@@ -35,7 +35,7 @@ interface ServerPlan {
   description: string;
 }
 
-interface ServerInvestment {
+interface ServerPurchase {
   id: string;
   user_id: string;
   plan_id: string;
@@ -52,7 +52,7 @@ interface ServerTransaction {
   id: string;
   user_id: string;
   amount: number;
-  transaction_type: "deposit" | "withdrawal" | "investment" | "commission" | "payout";
+  transaction_type: "deposit" | "withdrawal" | "purchase" | "commission" | "payout";
   status: "pending" | "approved" | "declined";
   phone?: string;
   note?: string;
@@ -86,7 +86,7 @@ interface ServerPaymentSettings {
 interface DatabaseSchema {
   users: ServerUser[];
   plans: ServerPlan[];
-  investments: ServerInvestment[];
+  purchases: ServerPurchase[];
   transactions: ServerTransaction[];
   referrals: ServerReferral[];
   systemOffsetDays: number; // For fast forwarding simulations
@@ -98,10 +98,10 @@ interface DatabaseSchema {
 // -------------------------------------------------------------
 const DEFAULT_PLANS: ServerPlan[] = [
   { id: "p1", name: "Copper (Starter)", amount: 800, return_amount: 1200, duration_days: 3, active: true, description: "Unlocks rapid 50% returns. Perfect entry plan." },
-  { id: "p2", name: "Bronze (Growth)", amount: 2500, return_amount: 4000, duration_days: 5, active: true, description: "Highly popular for active local small-capital growth." },
-  { id: "p3", name: "Silver (Alpha)", amount: 8000, return_amount: 14000, duration_days: 7, active: true, description: "Secure medium-scale vault yielding KSh 850 daily profit." },
-  { id: "p4", name: "Gold (Prime)", amount: 20000, return_amount: 38000, duration_days: 10, active: true, description: "High-tier interest matching premium capital managers." },
-  { id: "p5", name: "Platinum (Apex)", amount: 60000, return_amount: 120000, duration_days: 14, active: true, description: "Compounding apex tier designed for top HelaVest builders." }
+  { id: "p2", name: "Bronze (Growth)", amount: 2500, return_amount: 4000, duration_days: 5, active: true, description: "Highly popular for active local small-inventory growth." },
+  { id: "p3", name: "Silver (Alpha)", amount: 8000, return_amount: 14000, duration_days: 7, active: true, description: "Secure medium-scale vault returning KSh 850 daily profit." },
+  { id: "p4", name: "Gold (Prime)", amount: 20000, return_amount: 38000, duration_days: 10, active: true, description: "High-tier interest matching premium funds managers." },
+  { id: "p5", name: "Platinum (Apex)", amount: 60000, return_amount: 120000, duration_days: 14, active: true, description: "Compounding apex tier designed for top MallBuy builders." }
 ];
 
 const DEFAULT_USERS: ServerUser[] = [
@@ -127,7 +127,7 @@ const DEFAULT_USERS: ServerUser[] = [
 
 const DEFAULT_TRANSACTIONS: ServerTransaction[] = [];
 
-const DEFAULT_INVESTMENTS: ServerInvestment[] = [];
+const DEFAULT_INVESTMENTS: ServerPurchase[] = [];
 
 // NEON DATABASE BACKEND MODULE
 let neonPool: any = null;
@@ -180,7 +180,7 @@ async function initNeonDatabase() {
           initialData = {
             users: DEFAULT_USERS,
             plans: DEFAULT_PLANS,
-            investments: DEFAULT_INVESTMENTS,
+            purchases: DEFAULT_INVESTMENTS,
             transactions: DEFAULT_TRANSACTIONS,
             referrals: [],
             systemOffsetDays: 0,
@@ -260,7 +260,7 @@ function getDatabase(): DatabaseSchema {
     const freshDb: DatabaseSchema = {
       users: DEFAULT_USERS,
       plans: DEFAULT_PLANS,
-      investments: DEFAULT_INVESTMENTS,
+      purchases: DEFAULT_INVESTMENTS,
       transactions: DEFAULT_TRANSACTIONS,
       referrals: [],
       systemOffsetDays: 0,
@@ -298,7 +298,7 @@ function getDatabase(): DatabaseSchema {
     return {
       users: DEFAULT_USERS,
       plans: DEFAULT_PLANS,
-      investments: DEFAULT_INVESTMENTS,
+      purchases: DEFAULT_INVESTMENTS,
       transactions: DEFAULT_TRANSACTIONS,
       referrals: [],
       systemOffsetDays: 0,
@@ -339,9 +339,9 @@ function genCode() {
 function calculateBalance(userId: string, txs: ServerTransaction[]): {
   total_deposits: number;
   referral_bonus: number;
-  total_payouts: number;
+  total_commissions: number;
   total_withdrawals: number;
-  total_invested: number;
+  total_purchased: number;
   available_balance: number;
 } {
   const approved = txs.filter((t) => t.user_id === userId && t.status === "approved");
@@ -349,22 +349,22 @@ function calculateBalance(userId: string, txs: ServerTransaction[]): {
   const commissions = approved.filter((t) => t.transaction_type === "commission").reduce((sum, t) => sum + t.amount, 0);
   const payouts = approved.filter((t) => t.transaction_type === "payout").reduce((sum, t) => sum + t.amount, 0);
   const withdrawals = approved.filter((t) => t.transaction_type === "withdrawal").reduce((sum, t) => sum + t.amount, 0);
-  const investments = approved.filter((t) => t.transaction_type === "investment").reduce((sum, t) => sum + t.amount, 0);
+  const purchases = approved.filter((t) => t.transaction_type === "purchase").reduce((sum, t) => sum + t.amount, 0);
 
   return {
     total_deposits: deposits,
     referral_bonus: commissions,
-    total_payouts: payouts,
+    total_commissions: commissions,
     total_withdrawals: withdrawals,
-    total_invested: investments,
-    available_balance: deposits + commissions + payouts - withdrawals - investments
+    total_purchased: purchases,
+    available_balance: deposits + commissions + payouts - withdrawals - purchases
   };
 }
 
 // -------------------------------------------------------------
 // TIMER MATURITY & PAYOUT SCHEDULER (FAST FORWARD ENABLED)
 // -------------------------------------------------------------
-function completeMaturedTradeJobs(db: DatabaseSchema, userId?: string): { completedCount: number; dbChanged: boolean } {
+function completeMaturedOrderJobs(db: DatabaseSchema, userId?: string): { completedCount: number; dbChanged: boolean } {
   const now = new Date();
   const offsetMs = db.systemOffsetDays * 24 * 60 * 60 * 1000;
   const virtualNowTime = now.getTime() + offsetMs;
@@ -372,11 +372,11 @@ function completeMaturedTradeJobs(db: DatabaseSchema, userId?: string): { comple
   let completedCount = 0;
   let dbChanged = false;
 
-  const activeInvestments = db.investments.filter(
+  const activePurchases = db.purchases.filter(
     (inv) => inv.status === "active" && (userId ? inv.user_id === userId : true)
   );
 
-  for (const inv of activeInvestments) {
+  for (const inv of activePurchases) {
     const maturesTime = new Date(inv.matures_at).getTime();
     if (maturesTime <= virtualNowTime) {
       inv.status = "completed";
@@ -499,8 +499,8 @@ app.post("/api/auth/login", (req, res) => {
     return res.status(401).json({ error: "Incorrect log in credentials." });
   }
 
-  // Trigger trade completion check instantly on login
-  const { dbChanged } = completeMaturedTradeJobs(db, user.id);
+  // Trigger order completion check instantly on login
+  const { dbChanged } = completeMaturedOrderJobs(db, user.id);
   if (dbChanged) saveDatabase(db);
 
   return res.json({
@@ -525,8 +525,8 @@ app.get("/api/auth/me", (req, res) => {
     return res.status(401).json({ error: "Unauthorized access" });
   }
 
-  // Check active trades instantly
-  const { dbChanged } = completeMaturedTradeJobs(db, user.id);
+  // Check active orders instantly
+  const { dbChanged } = completeMaturedOrderJobs(db, user.id);
   if (dbChanged) saveDatabase(db);
 
   return res.json({
@@ -554,7 +554,7 @@ app.get("/api/user/balance", (req, res) => {
   const user = getAuthenticatedUser(req, db);
   if (!user) return res.status(401).json({ error: "Unauthorized" });
 
-  completeMaturedTradeJobs(db, user.id);
+  completeMaturedOrderJobs(db, user.id);
   const bal = calculateBalance(user.id, db.transactions);
   res.json({ balance: bal });
 });
@@ -565,47 +565,47 @@ app.get("/api/user/stats", (req, res) => {
   const user = getAuthenticatedUser(req, db);
   if (!user) return res.status(401).json({ error: "Unauthorized" });
 
-  // Refresh matured trades
-  const { dbChanged } = completeMaturedTradeJobs(db, user.id);
+  // Refresh matured orders
+  const { dbChanged } = completeMaturedOrderJobs(db, user.id);
   if (dbChanged) saveDatabase(db);
 
   const bal = calculateBalance(user.id, db.transactions);
 
-  const myInvestments = db.investments.filter((inv) => inv.user_id === user.id);
-  const activeTrades = myInvestments.filter((inv) => inv.status === "active");
-  const completedTrades = myInvestments.filter((inv) => inv.status === "completed");
+  const myPurchases = db.purchases.filter((inv) => inv.user_id === user.id);
+  const activeOrders = myPurchases.filter((inv) => inv.status === "active");
+  const completedOrders = myPurchases.filter((inv) => inv.status === "completed");
 
-  const totalCapitalInActive = activeTrades.reduce((sum, inv) => sum + inv.amount, 0);
-  const expectedPayouts = activeTrades.reduce((sum, inv) => sum + inv.return_amount, 0);
-  const totalProfitEarned = completedTrades.reduce((sum, inv) => sum + inv.profit, 0);
+  const totalFundsInActive = activeOrders.reduce((sum, inv) => sum + inv.amount, 0);
+  const expectedCommissions = activeOrders.reduce((sum, inv) => sum + inv.return_amount, 0);
+  const totalProfitEarned = completedOrders.reduce((sum, inv) => sum + inv.profit, 0);
 
   res.json({
     stats: {
       balance: bal,
-      active_trades_count: activeTrades.length,
-      active_trades_capital: totalCapitalInActive,
-      expected_payouts: expectedPayouts,
-      completed_trades_count: completedTrades.length,
+      active_orders_count: activeOrders.length,
+      active_orders_funds: totalFundsInActive,
+      expected_commissions: expectedCommissions,
+      completed_orders_count: completedOrders.length,
       total_profit_earned: totalProfitEarned
     }
   });
 });
 
-// Investments History
-app.get("/api/investments", (req, res) => {
+// Purchases History
+app.get("/api/purchases", (req, res) => {
   const db = getDatabase();
   const user = getAuthenticatedUser(req, db);
   if (!user) return res.status(401).json({ error: "Unauthorized" });
 
-  const { dbChanged } = completeMaturedTradeJobs(db, user.id);
+  const { dbChanged } = completeMaturedOrderJobs(db, user.id);
   if (dbChanged) saveDatabase(db);
 
-  const myInvestments = db.investments.filter((inv) => inv.user_id === user.id);
-  res.json({ investments: myInvestments });
+  const myPurchases = db.purchases.filter((inv) => inv.user_id === user.id);
+  res.json({ purchases: myPurchases });
 });
 
-// Start an Investment Plan
-app.post("/api/investments/create", (req, res) => {
+// Start an Purchase Plan
+app.post("/api/purchases/create", (req, res) => {
   const { planId } = req.body;
   if (!planId) return res.status(400).json({ error: "Plan ID is required." });
 
@@ -621,11 +621,11 @@ app.post("/api/investments/create", (req, res) => {
     return res.status(400).json({ error: "Your available balance is not enough. Please deposit KSh first!" });
   }
 
-  // Create Investment Record
+  // Create Purchase Record
   const now = new Date();
   const matures = new Date(now.getTime() + plan.duration_days * 24 * 60 * 60 * 1000);
 
-  const newInvestment: ServerInvestment = {
+  const newPurchase: ServerPurchase = {
     id: "inv-" + Math.random().toString(36).substr(2, 9),
     user_id: user.id,
     plan_id: plan.id,
@@ -638,14 +638,14 @@ app.post("/api/investments/create", (req, res) => {
     planName: plan.name
   };
 
-  db.investments.push(newInvestment);
+  db.purchases.push(newPurchase);
 
-  // Deduct deposit by pushing an Approved investment Transaction (it acts as a negative subtraction in available_balance)
+  // Deduct deposit by pushing an Approved purchase Transaction (it acts as a negative subtraction in available_balance)
   db.transactions.push({
     id: "tx-" + Math.random().toString(36).substr(2, 9),
     user_id: user.id,
     amount: plan.amount,
-    transaction_type: "investment",
+    transaction_type: "purchase",
     status: "approved",
     note: `Started Plan: ${plan.name}`,
     created_at: now.toISOString()
@@ -655,7 +655,7 @@ app.post("/api/investments/create", (req, res) => {
   if (user.referredBy) {
     const referrer = db.users.find((u) => u.id === user.referredBy);
     if (referrer) {
-      // Bonus: 8% of plan investment or Ksh 50, whichever is higher
+      // Bonus: 8% of plan purchase or Ksh 50, whichever is higher
       const bonus = Math.max(50, Math.round(plan.amount * 0.08));
 
       // Log Referral connection & award COMMISSION transaction
@@ -682,7 +682,7 @@ app.post("/api/investments/create", (req, res) => {
   }
 
   saveDatabase(db);
-  res.json({ success: true, investment: newInvestment });
+  res.json({ success: true, purchase: newPurchase });
 });
 
 // Transactions Log
@@ -777,8 +777,8 @@ async function triggerImBankDeposit(
       currency: "KES",
       customer_payment_channel: "MPESA",
       customer_phone: phone,
-      callback_url: `https://ela-invest.vercel.app/api/callbacks/imbank`,
-      narrative: `HelaVest deposit for ${username}`,
+      callback_url: `https://ela-buy.vercel.app/api/callbacks/imbank`,
+      narrative: `MallBuy deposit for ${username}`,
       metadata: {
         user_id: username,
         reference: txId
@@ -1076,7 +1076,7 @@ async function triggerNowPaymentsDeposit(
         pay_currency: normalizedCrypto,
         ipn_callback_url: ipnCallbackUrl,
         order_id: txId,
-        order_description: `HelaVest Crypto Deposit for ${username}`
+        order_description: `MallBuy Crypto Deposit for ${username}`
       })
     });
 
@@ -1140,7 +1140,7 @@ async function triggerNowPaymentsPayout(
 
   if (!apiKey) {
     if (isSandbox) {
-      console.log("[NOWPayments Payout] Sandbox active and API Key is missing. Simulating instant approved payouts.");
+      console.log("[NOWPayments Payout] Sandbox active and API Key is missing. Simulating instant approved commissions.");
       return {
         success: true,
         payoutId: `payout-sim-${Math.random().toString(36).substr(2, 9)}`
@@ -1696,12 +1696,12 @@ app.post("/api/simulate/fast-forward", (req, res) => {
   const db = getDatabase();
   db.systemOffsetDays += days;
 
-  // Let's modify all ACTIVE investments' matures_at and created_at to be earlier
-  // by days, OR we can let completeMaturedTradeJobs work with the virtual system offset.
-  // Actually, let's offset all ACTIVE investments' timestamps by days to fast forward!
+  // Let's modify all ACTIVE purchases' matures_at and created_at to be earlier
+  // by days, OR we can let completeMaturedOrderJobs work with the virtual system offset.
+  // Actually, let's offset all ACTIVE purchases' timestamps by days to fast forward!
   // This physically alters dates, making it crystal clear in UI!
   const offsetMs = days * 24 * 60 * 60 * 1000;
-  for (const inv of db.investments) {
+  for (const inv of db.purchases) {
     if (inv.status === "active") {
       const originalMatures = new Date(inv.matures_at).getTime();
       const originalCreated = new Date(inv.created_at).getTime();
@@ -1716,10 +1716,10 @@ app.post("/api/simulate/fast-forward", (req, res) => {
     t.created_at = new Date(originalTime - offsetMs).toISOString();
   }
 
-  const { completedCount } = completeMaturedTradeJobs(db);
+  const { completedCount } = completeMaturedOrderJobs(db);
   saveDatabase(db);
 
-  res.json({ success: true, message: `Simulated ${days} days into the future! ${completedCount} investments matured and payouts dispersed!`, offset: db.systemOffsetDays });
+  res.json({ success: true, message: `Simulated ${days} days into the future! ${completedCount} purchases matured and commissions dispersed!`, offset: db.systemOffsetDays });
 });
 
 // Reset Sandbox Database to defaults
@@ -1732,7 +1732,7 @@ app.post("/api/admin/reset", (req, res) => {
   const resetDb: DatabaseSchema = {
     users: DEFAULT_USERS,
     plans: DEFAULT_PLANS,
-    investments: DEFAULT_INVESTMENTS,
+    purchases: DEFAULT_INVESTMENTS,
     transactions: DEFAULT_TRANSACTIONS,
     referrals: [],
     systemOffsetDays: 0,
@@ -1817,25 +1817,25 @@ app.post("/api/admin/transactions/:id/decline", (req, res) => {
   res.json({ success: true, message: "Transaction declined." });
 });
 
-// List All Investments (Admin View)
-app.get("/api/admin/investments", (req, res) => {
+// List All Purchases (Admin View)
+app.get("/api/admin/purchases", (req, res) => {
   const db = getDatabase();
   const user = getAuthenticatedUser(req, db);
   if (!user || !user.isAdmin) {
     return res.status(403).json({ error: "Forbidden: Admin access only." });
   }
-  const enriched = db.investments.map((inv) => {
+  const enriched = db.purchases.map((inv) => {
     const matchedUser = db.users.find((u) => u.id === inv.user_id);
     return {
       ...inv,
       username: matchedUser ? matchedUser.username : "Unknown"
     };
   });
-  res.json({ investments: enriched });
+  res.json({ purchases: enriched });
 });
 
-// Force Complete Investment Early
-app.post("/api/admin/investments/:id/complete", (req, res) => {
+// Force Complete Purchase Early
+app.post("/api/admin/purchases/:id/complete", (req, res) => {
   const { id } = req.params;
   const db = getDatabase();
   const user = getAuthenticatedUser(req, db);
@@ -1843,11 +1843,11 @@ app.post("/api/admin/investments/:id/complete", (req, res) => {
     return res.status(403).json({ error: "Forbidden: Admin access only." });
   }
 
-  const inv = db.investments.find((i) => i.id === id);
-  if (!inv) return res.status(404).json({ error: "Investment not found." });
+  const inv = db.purchases.find((i) => i.id === id);
+  if (!inv) return res.status(404).json({ error: "Purchase not found." });
 
   if (inv.status !== "active") {
-    return res.status(400).json({ error: "Investment is not active." });
+    return res.status(400).json({ error: "Purchase is not active." });
   }
 
   inv.status = "completed";
@@ -1867,11 +1867,11 @@ app.post("/api/admin/investments/:id/complete", (req, res) => {
   }
 
   saveDatabase(db);
-  res.json({ success: true, message: "Investment forced to complete and payout dispersed." });
+  res.json({ success: true, message: "Purchase forced to complete and payout dispersed." });
 });
 
-// Cancel Investment
-app.post("/api/admin/investments/:id/cancel", (req, res) => {
+// Cancel Purchase
+app.post("/api/admin/purchases/:id/cancel", (req, res) => {
   const { id } = req.params;
   const db = getDatabase();
   const user = getAuthenticatedUser(req, db);
@@ -1879,28 +1879,28 @@ app.post("/api/admin/investments/:id/cancel", (req, res) => {
     return res.status(403).json({ error: "Forbidden: Admin access only." });
   }
 
-  const inv = db.investments.find((i) => i.id === id);
-  if (!inv) return res.status(404).json({ error: "Investment not found." });
+  const inv = db.purchases.find((i) => i.id === id);
+  if (!inv) return res.status(404).json({ error: "Purchase not found." });
 
   if (inv.status !== "active") {
-    return res.status(400).json({ error: "Investment is not active." });
+    return res.status(400).json({ error: "Purchase is not active." });
   }
 
   inv.status = "cancelled";
 
-  // Refund the deposit capital!
+  // Refund the deposit funds!
   db.transactions.push({
     id: "tx-" + Math.random().toString(36).substr(2, 9),
     user_id: inv.user_id,
     amount: inv.amount,
     transaction_type: "deposit",
     status: "approved",
-    note: `Refund: Cancelled Investment ${inv.planName}`,
+    note: `Refund: Cancelled Purchase ${inv.planName}`,
     created_at: new Date().toISOString()
   });
 
   saveDatabase(db);
-  res.json({ success: true, message: "Investment cancelled and principal amount refunded to user." });
+  res.json({ success: true, message: "Purchase cancelled and principal amount refunded to user." });
 });
 
 // Toggle Plan Active State
@@ -1924,7 +1924,7 @@ app.post("/api/admin/plans/:id/toggle", (req, res) => {
 app.post("/api/admin/plans/create", (req, res) => {
   const { name, amount, return_amount, duration_days, description } = req.body;
   if (!name || !amount || !return_amount || !duration_days) {
-    return res.status(400).json({ error: "Please enter all details for the investment package." });
+    return res.status(400).json({ error: "Please enter all details for the purchase package." });
   }
 
   const db = getDatabase();
@@ -2208,7 +2208,7 @@ app.post("/api/admin/transactions/create", (req, res) => {
     return res.status(400).json({ error: "Please enter a valid amount greater than 0." });
   }
 
-  const validTypes = ["deposit", "withdrawal", "investment", "commission", "payout"];
+  const validTypes = ["deposit", "withdrawal", "purchase", "commission", "payout"];
   if (!validTypes.includes(transaction_type)) {
     return res.status(400).json({ error: "Invalid transaction type." });
   }
@@ -2258,7 +2258,7 @@ async function startServer() {
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`[HelaVest] Running full-stack on http://localhost:${PORT}`);
+    console.log(`[MallBuy] Running full-stack on http://localhost:${PORT}`);
   });
 }
 
