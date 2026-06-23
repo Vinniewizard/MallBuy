@@ -241,17 +241,17 @@ export default function WalletComponent({
   return (
     <div className="space-y-8">
       {/* Top Header Card */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+      <div className="bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="space-y-2">
           <div className="flex items-center gap-2.5">
-            <div className="bg-[#eafaf1] p-2.5 rounded-xl border border-emerald-100">
-              <Wallet className="h-6 w-6 text-[#006B4A]" />
+            <div className="bg-emerald-500/10 p-2.5 rounded-xl border border-emerald-500/20">
+              <Wallet className="h-6 w-6 text-emerald-400" />
             </div>
             <div>
-              <h2 className="text-xl font-extrabold text-[#006B4A] tracking-tight">
+              <h2 className="text-xl font-extrabold text-emerald-400 tracking-tight">
                 Account & Ledger Management
               </h2>
-              <p className="text-xs text-slate-500 font-medium mt-0.5">
+              <p className="text-xs text-slate-400 font-medium mt-0.5">
                 Fund your live trading simulator or request secure payouts.
               </p>
             </div>
@@ -259,13 +259,13 @@ export default function WalletComponent({
         </div>
 
         {/* Available balance summary in account header */}
-        <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 flex flex-col items-start min-w-[200px] w-full md:w-auto relative overflow-hidden shrink-0">
+        <div className="bg-white/5 border border-white/10/80 rounded-xl p-4 flex flex-col items-start min-w-[200px] w-full md:w-auto relative overflow-hidden shrink-0">
           <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">AVAILABLE BALANCE</span>
-          <span className="text-2xl font-black text-[#006B4A] tracking-tight mt-1">
+          <span className="text-2xl font-black text-emerald-400 tracking-tight mt-1">
             {balance ? format(balance.available_balance) : "..."}
           </span>
           <div className="absolute right-0 bottom-0 translate-x-3 translate-y-3 opacity-5 pointer-events-none">
-            <Coins className="h-20 w-20 text-[#006B4A]" />
+            <Coins className="h-20 w-20 text-emerald-400" />
           </div>
         </div>
       </div>
@@ -278,13 +278,13 @@ export default function WalletComponent({
               : "bg-red-50 border-red-200 text-red-800"
           }`}
         >
-          <ShieldAlert className="h-5 w-5 shrink-0 text-amber-600 mt-0.5" />
+          <ShieldAlert className="h-5 w-5 shrink-0 text-amber-400 mt-0.5" />
           <div>{formMsg.text}</div>
         </div>
       )}
 
       {/* Tabs Navigation */}
-      <div className="bg-white border border-slate-200 p-1 rounded-xl flex shadow-sm">
+      <div className="bg-white/5 border border-white/10 p-1 rounded-xl flex shadow-sm">
         <button
           onClick={() => {
             setActiveSubTab("deposit");
@@ -292,8 +292,8 @@ export default function WalletComponent({
           }}
           className={`flex-1 py-3 px-4 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
             activeSubTab === "deposit"
-              ? "bg-[#006B4A] text-white shadow-sm"
-              : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+              ? "bg-emerald-500 text-white shadow-sm"
+              : "text-slate-300 hover:text-white hover:bg-white/5"
           }`}
         >
           <ArrowDownCircle className="h-4 w-4" />
@@ -308,7 +308,7 @@ export default function WalletComponent({
           className={`flex-1 py-3 px-4 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
             activeSubTab === "withdraw"
               ? "bg-rose-600 text-white shadow-sm"
-              : "text-slate-600 hover:text-slate-950 hover:bg-slate-50"
+              : "text-slate-300 hover:text-white hover:bg-white/5"
           }`}
         >
           <ArrowUpCircle className="h-4 w-4" />
@@ -323,7 +323,7 @@ export default function WalletComponent({
           className={`flex-1 py-3 px-4 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
             activeSubTab === "history"
               ? "bg-slate-800 text-white shadow-sm"
-              : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+              : "text-slate-300 hover:text-white hover:bg-white/5"
           }`}
         >
           <History className="h-4 w-4" />
@@ -341,7 +341,7 @@ export default function WalletComponent({
             if (!activePendingDeposit) return null;
 
             return (
-              <div className="bg-amber-500/5 border border-amber-500/20 p-5 rounded-2xl space-y-3.5 shadow-sm animate-fade-in text-slate-800">
+              <div className="bg-amber-500/5 border border-amber-500/20 p-5 rounded-2xl space-y-3.5 shadow-sm animate-fade-in text-white">
                 <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
                   <div className="flex items-start gap-3">
                     <div className="bg-amber-500/10 p-2.5 rounded-xl text-amber-700 shrink-0">
@@ -387,7 +387,7 @@ export default function WalletComponent({
                     <button
                       type="button"
                       onClick={() => setDepositMethod("crypto")}
-                      className="text-[10px] text-[#006B4A] hover:underline font-extrabold uppercase tracking-wider flex items-center gap-0.5 transition-all shrink-0"
+                      className="text-[10px] text-emerald-400 hover:underline font-extrabold uppercase tracking-wider flex items-center gap-0.5 transition-all shrink-0"
                     >
                       View QR Address <ChevronRight className="h-3 w-3" />
                     </button>
@@ -398,13 +398,13 @@ export default function WalletComponent({
           })()}
 
           {/* Method chooser */}
-          <div className="bg-white border border-slate-200 p-4 rounded-xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="bg-white/5 border border-white/10 p-4 rounded-xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-left">
-              <h4 className="text-sm font-bold text-slate-800">Choose Deposit Route</h4>
-              <p className="text-xs text-slate-500 font-medium">Select your preferred payment channel gateway</p>
+              <h4 className="text-sm font-bold text-white">Choose Deposit Route</h4>
+              <p className="text-xs text-slate-400 font-medium">Select your preferred payment channel gateway</p>
             </div>
 
-            <div className="bg-slate-100 p-1 rounded-lg flex border border-slate-200/80 w-full sm:w-auto">
+            <div className="bg-white/10 p-1 rounded-lg flex border border-white/10/80 w-full sm:w-auto">
               <button
                 onClick={() => {
                   if (paymentSettings.mpesa_enabled) {
@@ -418,8 +418,8 @@ export default function WalletComponent({
                   !paymentSettings.mpesa_enabled
                     ? "opacity-40 cursor-not-allowed text-slate-400"
                     : depositMethod === "mpesa"
-                    ? "bg-white text-emerald-800 shadow-sm font-extrabold"
-                    : "text-slate-600 hover:text-slate-800"
+                    ? "bg-white/5 text-emerald-800 shadow-sm font-extrabold"
+                    : "text-slate-300 hover:text-white"
                 }`}
               >
                 M-Pesa Mobile
@@ -438,8 +438,8 @@ export default function WalletComponent({
                   !paymentSettings.crypto_enabled
                     ? "opacity-40 cursor-not-allowed text-slate-400"
                     : depositMethod === "crypto"
-                    ? "bg-white text-indigo-700 shadow-sm font-extrabold"
-                    : "text-slate-600 hover:text-slate-800"
+                    ? "bg-white/5 text-indigo-700 shadow-sm font-extrabold"
+                    : "text-slate-300 hover:text-white"
                 }`}
               >
                 NOWPayments Crypto
@@ -450,22 +450,22 @@ export default function WalletComponent({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Guide segment */}
             <div className="lg:col-span-5 space-y-4">
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
-                <h3 className="text-xs font-extrabold text-[#006B4A] uppercase tracking-wider flex items-center gap-1.5">
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 shadow-sm space-y-4">
+                <h3 className="text-xs font-extrabold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
                   <Sparkles className="h-4.5 w-4.5" />
                   {depositMethod === "mpesa" ? "M-Pesa Express Deposit" : "Global Cryptocurreny Portal"}
                 </h3>
 
-                <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                <p className="text-xs text-slate-400 font-medium leading-relaxed">
                   {depositMethod === "mpesa"
                     ? "Supply your active Safaricom mobile phone details. The payment gateway initiates an instant M-Pesa STK PIN entry box immediately on your handset."
                     : "A secure unique NOWPayments blockchain checkout layout will be initialized. Safely dispatch token transfers directly to the verified network coordinates."}
                 </p>
 
-                <div className="border-t border-slate-100 pt-4 space-y-2.5">
+                <div className="border-t border-white/10 pt-4 space-y-2.5">
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-slate-400 font-semibold">Minimum Capital:</span>
-                    <span className="text-[#006B4A] font-extrabold">
+                    <span className="text-emerald-400 font-extrabold">
                       {paymentSettings.min_deposit !== undefined && paymentSettings.min_deposit !== null && paymentSettings.min_deposit > 0 ? (
                         `${format(paymentSettings.min_deposit)} (~${paymentSettings.min_deposit.toLocaleString()} KSh)`
                       ) : (
@@ -487,12 +487,12 @@ export default function WalletComponent({
                   </div>
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-slate-400 font-semibold">Exchange Rate:</span>
-                    <span className="font-mono text-slate-700 font-semibold">1 USD = 130 KES</span>
+                    <span className="font-mono text-slate-300 font-semibold">1 USD = 130 KES</span>
                   </div>
                 </div>
 
-                <div className="bg-[#f0f9f6] border border-[#d2edd5] p-3.5 rounded-xl flex items-start gap-2.5">
-                  <ShieldAndAlertIcon className="h-4 w-4 text-[#006B4A] shrink-0 mt-0.5" />
+                <div className="bg-[#f0f9f6] border border-emerald-500/20 p-3.5 rounded-xl flex items-start gap-2.5">
+                  <ShieldAndAlertIcon className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
                   <span className="text-[10.5px] text-[#005a3e] font-semibold leading-relaxed">
                     Once payment reaches blockchain confirmation or mobile success, balance shifts automatically. Safely monitor status right below.
                   </span>
@@ -501,7 +501,7 @@ export default function WalletComponent({
             </div>
 
             {/* Form variant */}
-            <div className="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+            <div className="lg:col-span-7 bg-white/5 border border-white/10 rounded-2xl p-6 shadow-sm">
               {depositMethod === "mpesa" ? (
                 <form onSubmit={handleDepositSubmit} className="space-y-5">
                   <div className="space-y-4">
@@ -518,18 +518,18 @@ export default function WalletComponent({
                           min="1"
                           value={depAmount}
                           onChange={(e) => setDepAmount(e.target.value)}
-                          className="w-full bg-slate-50 border border-slate-200 focus:border-[#006B4A] focus:bg-white rounded-xl pl-9 pr-4 py-2.5 text-xs text-slate-800 font-bold outline-none transition-all"
+                          className="w-full bg-white/5 border border-white/10 focus:border-[#006B4A] focus:bg-white/5 rounded-xl pl-9 pr-4 py-2.5 text-xs text-white font-bold outline-none transition-all"
                         />
                       </div>
                       {depAmount && (
-                        <span className="text-[10.5px] text-[#006B4A] font-semibold mt-1.5 block">
+                        <span className="text-[10.5px] text-emerald-400 font-semibold mt-1.5 block">
                           Mapped to KSh {convertToKES(Number(depAmount)).toLocaleString()} transaction base value
                         </span>
                       )}
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-bold text-[#006B4A] uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                      <label className="block text-[10px] font-bold text-emerald-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                         <Smartphone className="h-3.5 w-3.5" /> M-Pesa Phone Number *
                       </label>
                       <input
@@ -541,7 +541,7 @@ export default function WalletComponent({
                         title="Phone number must be exactly 10 digits starting with 07/01"
                         value={depPhone}
                         onChange={(e) => setDepPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                        className="w-full bg-slate-50 border border-slate-200 focus:border-[#006B4A] focus:bg-white rounded-xl px-4 py-2.5 text-xs text-slate-800 font-mono font-bold outline-none transition-all"
+                        className="w-full bg-white/5 border border-white/10 focus:border-[#006B4A] focus:bg-white/5 rounded-xl px-4 py-2.5 text-xs text-white font-mono font-bold outline-none transition-all"
                       />
                       <span className="text-[9.5px] text-slate-400 block mt-1">Provide the phone linked to your M-Pesa client app</span>
                     </div>
@@ -555,7 +555,7 @@ export default function WalletComponent({
                         placeholder="e.g. Trading topup / Deposit"
                         value={depNote}
                         onChange={(e) => setDepNote(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 focus:border-[#006B4A] focus:bg-white rounded-xl px-4 py-2.5 text-xs font-medium text-slate-800 outline-none transition-all"
+                        className="w-full bg-white/5 border border-white/10 focus:border-[#006B4A] focus:bg-white/5 rounded-xl px-4 py-2.5 text-xs font-medium text-white outline-none transition-all"
                       />
                     </div>
                   </div>
@@ -565,8 +565,8 @@ export default function WalletComponent({
                     disabled={depLoading || !depPhone || !depAmount}
                     className={`w-full py-3 px-6 rounded-xl font-bold text-xs flex justify-center items-center gap-2 cursor-pointer shadow-md transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] ${
                       !depPhone || !depAmount
-                        ? "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200/50"
-                        : "bg-[#006B4A] text-white hover:bg-[#005238]"
+                        ? "bg-white/10 text-slate-400 cursor-not-allowed border border-white/10/50"
+                        : "bg-emerald-500 text-white hover:bg-emerald-600"
                     }`}
                   >
                     {depLoading ? (
@@ -598,20 +598,20 @@ export default function WalletComponent({
       {activeSubTab === "withdraw" && (
         <div className="space-y-6">
           {/* Channel selections */}
-          <div className="bg-white border border-slate-200 p-4 rounded-xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="bg-white/5 border border-white/10 p-4 rounded-xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-left">
-              <h4 className="text-sm font-bold text-slate-800">Select Payout Destination</h4>
-              <p className="text-xs text-slate-500 font-medium">Select where to disburse trading earnings</p>
+              <h4 className="text-sm font-bold text-white">Select Payout Destination</h4>
+              <p className="text-xs text-slate-400 font-medium">Select where to disburse trading earnings</p>
             </div>
 
-            <div className="bg-slate-100 p-1 rounded-lg flex border border-slate-200/80 w-full sm:w-auto">
+            <div className="bg-white/10 p-1 rounded-lg flex border border-white/10/80 w-full sm:w-auto">
               <button
                 type="button"
                 onClick={() => setWithdrawMethod("mpesa")}
                 className={`py-2 px-4 rounded-md text-xs font-bold transition-all whitespace-nowrap flex-1 sm:flex-initial cursor-pointer ${
                   withdrawMethod === "mpesa"
-                    ? "bg-white text-emerald-800 shadow-sm font-extrabold"
-                    : "text-slate-600 hover:text-slate-800"
+                    ? "bg-white/5 text-emerald-800 shadow-sm font-extrabold"
+                    : "text-slate-300 hover:text-white"
                 }`}
               >
                 M-Pesa Payout
@@ -622,8 +622,8 @@ export default function WalletComponent({
                 onClick={() => setWithdrawMethod("crypto")}
                 className={`py-2 px-4 rounded-md text-xs font-bold transition-all whitespace-nowrap flex-1 sm:flex-initial cursor-pointer ${
                   withdrawMethod === "crypto"
-                    ? "bg-white text-rose-700 shadow-sm font-extrabold"
-                    : "text-slate-600 hover:text-slate-800"
+                    ? "bg-white/5 text-rose-700 shadow-sm font-extrabold"
+                    : "text-slate-300 hover:text-white"
                 }`}
               >
                 Crypto Address
@@ -634,13 +634,13 @@ export default function WalletComponent({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Guide summary card */}
             <div className="lg:col-span-5 space-y-4">
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 shadow-sm space-y-4">
                 <h3 className="text-xs font-extrabold text-rose-700 uppercase tracking-wider flex items-center gap-1.5">
                   <ArrowUpCircle className="h-4.5 w-4.5" />
                   Payout Processing Audit
                 </h3>
 
-                <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                <p className="text-xs text-slate-400 font-medium leading-relaxed">
                   Withdrawal requests undergo real-time ledger auditing. Upon administrative validation, cash is discharged to the target mobile operator or crypto address.
                 </p>
 
@@ -651,25 +651,25 @@ export default function WalletComponent({
                   </span>
                 </div>
 
-                <div className="border-t border-slate-100 pt-4 space-y-2 text-xs">
+                <div className="border-t border-white/10 pt-4 space-y-2 text-xs">
                   <div className="flex justify-between items-center">
                     <span className="text-slate-400 font-semibold">Minimum request:</span>
-                    <span className="text-slate-700 font-bold">{format(50)} (~50 KSh)</span>
+                    <span className="text-slate-300 font-bold">{format(50)} (~50 KSh)</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-400 font-semibold">Auditing times:</span>
-                    <span className="text-slate-700 font-bold">Standard 10-15 Min</span>
+                    <span className="text-slate-300 font-bold">Standard 10-15 Min</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-400 font-semibold">Network Mining gas:</span>
-                    <span className="text-slate-700 font-mono font-semibold">0% FREE</span>
+                    <span className="text-slate-300 font-mono font-semibold">0% FREE</span>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Form segment */}
-            <div className="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+            <div className="lg:col-span-7 bg-white/5 border border-white/10 rounded-2xl p-6 shadow-sm">
               <form onSubmit={handleWithdrawalSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
@@ -685,7 +685,7 @@ export default function WalletComponent({
                         min="1"
                         value={withAmount}
                         onChange={(e) => setWithAmount(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 focus:border-rose-500 rounded-xl pl-9 pr-4 py-2.5 text-xs font-bold text-slate-800 outline-none transition-all"
+                        className="w-full bg-white/5 border border-white/10 focus:border-rose-500 rounded-xl pl-9 pr-4 py-2.5 text-xs font-bold text-white outline-none transition-all"
                       />
                     </div>
                     {withAmount && (
@@ -697,7 +697,7 @@ export default function WalletComponent({
 
                   {withdrawMethod === "mpesa" ? (
                     <div>
-                      <label className="block text-[10px] font-bold text-[#006B4A] uppercase tracking-wider mb-2">
+                      <label className="block text-[10px] font-bold text-emerald-400 uppercase tracking-wider mb-2">
                         Receiver Phone Number *
                       </label>
                       <input
@@ -706,7 +706,7 @@ export default function WalletComponent({
                         required={withdrawMethod === "mpesa"}
                         value={withPhone}
                         onChange={(e) => setWithPhone(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 focus:border-[#006B4A] rounded-xl px-4 py-2.5 text-xs text-slate-800 font-mono font-bold outline-none transition-all"
+                        className="w-full bg-white/5 border border-white/10 focus:border-[#006B4A] rounded-xl px-4 py-2.5 text-xs text-white font-mono font-bold outline-none transition-all"
                       />
                     </div>
                   ) : (
@@ -717,7 +717,7 @@ export default function WalletComponent({
                       <select
                         value={withCryptoCurrency}
                         onChange={(e) => setWithCryptoCurrency(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 focus:border-indigo-500 rounded-xl px-4 py-2.5 text-xs text-slate-800 font-bold outline-none cursor-pointer transition-all"
+                        className="w-full bg-white/5 border border-white/10 focus:border-indigo-500 rounded-xl px-4 py-2.5 text-xs text-white font-bold outline-none cursor-pointer transition-all"
                       >
                         <option value="USDTTRC20">USDT (TRC-20)</option>
                         <option value="BTC">BTC (Bitcoin Mainnet)</option>
@@ -730,7 +730,7 @@ export default function WalletComponent({
 
                 {withdrawMethod === "crypto" && (
                   <div>
-                    <label className="block text-[10px] font-bold text-[#006B4A] uppercase tracking-wider mb-2">
+                    <label className="block text-[10px] font-bold text-emerald-400 uppercase tracking-wider mb-2">
                       Recipient Crypto Wallet Address *
                     </label>
                     <input
@@ -739,7 +739,7 @@ export default function WalletComponent({
                       required={withdrawMethod === "crypto"}
                       value={withCryptoAddress}
                       onChange={(e) => setWithCryptoAddress(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 focus:border-[#006B4A] rounded-xl px-4 py-2.5 text-xs text-slate-800 font-mono outline-none transition-all"
+                      className="w-full bg-white/5 border border-white/10 focus:border-[#006B4A] rounded-xl px-4 py-2.5 text-xs text-white font-mono outline-none transition-all"
                     />
                   </div>
                 )}
@@ -753,7 +753,7 @@ export default function WalletComponent({
                     placeholder="e.g. Live withdrawal payload / profits"
                     value={withNote}
                     onChange={(e) => setWithNote(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 focus:border-[#006B4A] rounded-xl px-4 py-2.5 text-xs text-slate-800 font-medium outline-none transition-all"
+                    className="w-full bg-white/5 border border-white/10 focus:border-[#006B4A] rounded-xl px-4 py-2.5 text-xs text-white font-medium outline-none transition-all"
                   />
                 </div>
 
@@ -779,20 +779,20 @@ export default function WalletComponent({
 
       {/* History Layout (Security Ledger) */}
       {activeSubTab === "history" && (
-        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-          <div className="bg-slate-50 border-b border-slate-100 p-4 shrink-0">
-            <h3 className="text-xs font-extrabold text-[#006B4A] uppercase tracking-wider flex items-center gap-1.5">
+        <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden shadow-sm">
+          <div className="bg-white/5 border-b border-white/10 p-4 shrink-0">
+            <h3 className="text-xs font-extrabold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
               <History className="h-4 w-4" />
               Real-Time Security Audit Log
             </h3>
           </div>
 
           {transactions.length === 0 ? (
-            <div className="p-16 text-center text-slate-500 flex flex-col items-center justify-center">
-              <div className="bg-slate-50 border border-slate-100 p-3 rounded-full mb-3">
+            <div className="p-16 text-center text-slate-400 flex flex-col items-center justify-center">
+              <div className="bg-white/5 border border-white/10 p-3 rounded-full mb-3">
                 <History className="h-8 w-8 text-slate-400" />
               </div>
-              <h4 className="text-sm font-bold text-slate-700">Chronology index empty</h4>
+              <h4 className="text-sm font-bold text-slate-300">Chronology index empty</h4>
               <p className="text-xs text-slate-400 mt-1 max-w-sm">
                 No ledger balance movements reported on your account workspace yet.
               </p>
@@ -801,7 +801,7 @@ export default function WalletComponent({
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="bg-slate-50/50 text-slate-500 text-[9px] font-bold uppercase tracking-wider border-b border-slate-150">
+                  <tr className="bg-white/5/50 text-slate-400 text-[9px] font-bold uppercase tracking-wider border-b border-slate-150">
                     <th className="p-4 font-bold">Chronology timestamp</th>
                     <th className="p-4 font-bold">Ledger Type</th>
                     <th className="p-4 font-bold">Transfer reference</th>
@@ -824,7 +824,7 @@ export default function WalletComponent({
 
                     // Ledger signs
                     let sign = "";
-                    let amountClass = "text-slate-700";
+                    let amountClass = "text-slate-300";
                     let TypeIcon = Coins;
                     if (tx.transaction_type === "deposit") {
                       sign = "+";
@@ -836,7 +836,7 @@ export default function WalletComponent({
                       TypeIcon = Coins;
                     } else if (tx.transaction_type === "payout") {
                       sign = "+";
-                      amountClass = "text-[#006B4A] font-black";
+                      amountClass = "text-emerald-400 font-black";
                       TypeIcon = CheckCircle2;
                     } else if (tx.transaction_type === "withdrawal") {
                       sign = "-";
@@ -844,26 +844,26 @@ export default function WalletComponent({
                       TypeIcon = ArrowUpCircle;
                     } else if (tx.transaction_type === "investment") {
                       sign = "-";
-                      amountClass = "text-slate-500 font-semibold";
+                      amountClass = "text-slate-400 font-semibold";
                       TypeIcon = ListTodo;
                     }
 
                     return (
-                      <tr key={tx.id} className="hover:bg-slate-50/70 transition-colors">
-                        <td className="p-4 font-mono text-slate-500 whitespace-nowrap text-[11px]">
+                      <tr key={tx.id} className="hover:bg-white/5/70 transition-colors">
+                        <td className="p-4 font-mono text-slate-400 whitespace-nowrap text-[11px]">
                           {new Date(tx.created_at).toLocaleDateString()}{" "}
                           <span className="text-[10px] text-slate-400">
                             {new Date(tx.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                           </span>
                         </td>
                         <td className="p-4 whitespace-nowrap">
-                          <span className="text-xs font-bold text-slate-700 capitalize flex items-center gap-1.5">
+                          <span className="text-xs font-bold text-slate-300 capitalize flex items-center gap-1.5">
                             <TypeIcon className="h-4 w-4 text-slate-400 shrink-0" />
                             {tx.transaction_type === "commission" ? "Referral Bonus" : tx.transaction_type}
                           </span>
                         </td>
-                        <td className="p-4 text-slate-600 max-w-[200px] truncate font-medium">
-                          <span className="text-slate-700 font-bold block text-xs">{tx.note || "HelaVest Transfer"}</span>
+                        <td className="p-4 text-slate-300 max-w-[200px] truncate font-medium">
+                          <span className="text-slate-300 font-bold block text-xs">{tx.note || "HelaVest Transfer"}</span>
                           {tx.phone && (
                             <span className="text-[9.5px] text-slate-400 font-mono block mt-0.5">
                               {tx.phone.includes("Crypto") ? "Gateway" : "Phone"}: {tx.phone}

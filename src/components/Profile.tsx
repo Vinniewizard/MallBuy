@@ -44,11 +44,11 @@ export default function Profile({ user, onRefresh }: ProfileProps) {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-1.5">
-        <h2 className="text-xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-          <UserIcon className="h-5 w-5 text-[#006B4A]" />
+        <h2 className="text-xl font-extrabold text-white tracking-tight flex items-center gap-2">
+          <UserIcon className="h-5 w-5 text-emerald-400" />
           My Profile Settings
         </h2>
-        <p className="text-xs text-slate-500 font-medium">
+        <p className="text-xs text-slate-400 font-medium">
           Manage your personal details and account recovery options.
         </p>
       </div>

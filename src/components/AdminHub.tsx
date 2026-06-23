@@ -745,7 +745,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
             <button
               type="submit"
               disabled={txFormLoading}
-              className="w-full py-3 bg-red-500 hover:bg-red-400 text-slate-950 font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-transform duration-200 cursor-pointer active:scale-[0.99] shadow-md disabled:opacity-50 font-sans"
+              className="w-full py-3 bg-red-500 hover:bg-red-400 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-transform duration-200 cursor-pointer active:scale-[0.99] shadow-md disabled:opacity-50 font-sans"
             >
               <Plus className="h-4 w-4" />
               {txFormLoading ? "Recording Transaction..." : "Inject Ledger Record"}
@@ -761,12 +761,12 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
             </div>
 
             {txs.length === 0 ? (
-              <div className="p-12 text-center text-slate-500 text-xs">No transaction requests in ledger history.</div>
+              <div className="p-12 text-center text-slate-400 text-xs">No transaction requests in ledger history.</div>
             ) : (
               <div className="overflow-x-auto text-xs">
                 <table className="w-full text-left">
                   <thead>
-                    <tr className="bg-[#0c0f16] text-slate-500 uppercase text-[9px] font-bold tracking-wider border-b border-[#212a3d]">
+                    <tr className="bg-[#0c0f16] text-slate-400 uppercase text-[9px] font-bold tracking-wider border-b border-[#212a3d]">
                       <th className="p-4 font-semibold">User</th>
                       <th className="p-4 font-semibold">Transfer Type</th>
                       <th className="p-4 font-semibold">Phone (M-Pesa)</th>
@@ -782,11 +782,11 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
                         <tr key={tx.id} className="hover:bg-[#121824]/30 font-medium">
                           <td className="p-4 flex flex-col gap-0.5">
                             <span className="font-bold text-slate-200">{tx.username}</span>
-                            <span className="text-[10px] text-slate-500 font-mono">ID: {tx.user_id}</span>
+                            <span className="text-[10px] text-slate-400 font-mono">ID: {tx.user_id}</span>
                           </td>
                           <td className="p-4">
                             <span className="capitalize font-bold text-slate-200">{tx.transaction_type}</span>
-                            <span className="block text-[10px] text-slate-500 max-w-[150px] truncate">{tx.note}</span>
+                            <span className="block text-[10px] text-slate-400 max-w-[150px] truncate">{tx.note}</span>
                           </td>
                           <td className="p-4 font-mono text-slate-400">{tx.phone || "None"}</td>
                           <td className="p-4 font-mono font-bold text-slate-200">KSh {tx.amount.toLocaleString()}</td>
@@ -809,7 +809,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
                                 <button
                                   onClick={() => handleTxApprove(tx.id)}
                                   disabled={actionLoading !== null}
-                                  className="bg-[#0b251a] hover:bg-emerald-500 hover:text-slate-950 text-emerald-400 text-[10px] font-extrabold uppercase px-2.5 py-1.5 rounded-lg border border-emerald-500/20 cursor-pointer flex items-center gap-1 transition-all"
+                                  className="bg-[#0b251a] hover:bg-emerald-500 hover:text-white text-emerald-400 text-[10px] font-extrabold uppercase px-2.5 py-1.5 rounded-lg border border-emerald-500/20 cursor-pointer flex items-center gap-1 transition-all"
                                 >
                                   <Check className="h-3 w-3" /> Approve
                                 </button>
@@ -822,7 +822,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
                                 </button>
                               </div>
                             ) : (
-                              <span className="text-slate-500 text-[10px] italic">Processed</span>
+                              <span className="text-slate-400 text-[10px] italic">Processed</span>
                             )}
                           </td>
                         </tr>
@@ -846,12 +846,12 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
           </div>
 
           {investments.length === 0 ? (
-            <div className="p-12 text-center text-slate-500 text-xs">No investment logs in history.</div>
+            <div className="p-12 text-center text-slate-400 text-xs">No investment logs in history.</div>
           ) : (
             <div className="overflow-x-auto text-xs">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="bg-[#0c0f16] text-slate-500 uppercase text-[9px] font-bold tracking-wider border-b border-[#212a3d]">
+                  <tr className="bg-[#0c0f16] text-slate-400 uppercase text-[9px] font-bold tracking-wider border-b border-[#212a3d]">
                     <th className="p-4 font-semibold">User</th>
                     <th className="p-4 font-semibold">Tier Plan</th>
                     <th className="p-4 font-semibold">Capital Principal</th>
@@ -868,7 +868,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
                         <td className="p-4 font-bold text-slate-200">{inv.username}</td>
                         <td className="p-4 font-bold text-slate-200">
                           {inv.planName}
-                          <span className="block text-[10px] text-slate-500 font-mono font-medium">
+                          <span className="block text-[10px] text-slate-400 font-mono font-medium">
                             Matures: {new Date(inv.matures_at).toLocaleDateString()}
                           </span>
                         </td>
@@ -893,7 +893,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
                               <button
                                 onClick={() => handleInvComplete(inv.id)}
                                 disabled={actionLoading !== null}
-                                className="bg-[#0b251a] hover:bg-emerald-500 hover:text-slate-950 text-emerald-400 text-[9px] font-black uppercase px-2.5 py-1.5 rounded-lg border border-emerald-500/20 cursor-pointer flex items-center gap-1 transition-all"
+                                className="bg-[#0b251a] hover:bg-emerald-500 hover:text-white text-emerald-400 text-[9px] font-black uppercase px-2.5 py-1.5 rounded-lg border border-emerald-500/20 cursor-pointer flex items-center gap-1 transition-all"
                               >
                                 Complete Early
                               </button>
@@ -906,7 +906,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
                               </button>
                             </div>
                           ) : (
-                            <span className="text-slate-500 text-[10px] italic">No active actions</span>
+                            <span className="text-slate-400 text-[10px] italic">No active actions</span>
                           )}
                         </td>
                       </tr>
@@ -1013,7 +1013,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
                 <div className="flex items-center justify-between bg-[#0c0f16] border border-[#212a3d] p-3 rounded-xl">
                   <div className="space-y-0.5">
                     <span className="block text-[11px] font-bold text-slate-300">Grant Administrator permissions</span>
-                    <span className="block text-[9px] text-slate-500">Allow full systems panel access roles.</span>
+                    <span className="block text-[9px] text-slate-400">Allow full systems panel access roles.</span>
                   </div>
                   <button
                     type="button"
@@ -1023,7 +1023,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
                     {editIsAdmin ? (
                       <ToggleRight className="h-8 w-8 text-red-500" />
                     ) : (
-                      <ToggleLeft className="h-8 w-8 text-slate-600" />
+                      <ToggleLeft className="h-8 w-8 text-slate-300" />
                     )}
                   </button>
                 </div>
@@ -1031,7 +1031,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
                 <button
                   type="submit"
                   disabled={userFormLoading}
-                  className="w-full py-2.5 bg-red-500 hover:bg-red-400 text-slate-950 font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-transform duration-200 cursor-pointer active:scale-[0.99] shadow-md disabled:opacity-50"
+                  className="w-full py-2.5 bg-red-500 hover:bg-red-400 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-transform duration-200 cursor-pointer active:scale-[0.99] shadow-md disabled:opacity-50"
                 >
                   <Check className="h-4 w-4" />
                   {userFormLoading ? "Saving Changes..." : "Apply Member Details Update"}
@@ -1113,7 +1113,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
                 <button
                   type="submit"
                   disabled={isAdjLoading}
-                  className="w-full py-2.5 bg-[#006B4A] hover:bg-[#005a3e] text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-transform duration-200 cursor-pointer active:scale-[0.99] shadow-md disabled:opacity-50"
+                  className="w-full py-2.5 bg-emerald-500 hover:bg-[#005a3e] text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-transform duration-200 cursor-pointer active:scale-[0.99] shadow-md disabled:opacity-50"
                 >
                   <ArrowUpDown className="h-4 w-4" />
                   {isAdjLoading ? "Updating Balance Ledger..." : "Apply Financial Adjustment"}
@@ -1199,7 +1199,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
               <button
                 type="submit"
                 disabled={userFormLoading}
-                className="w-full py-3 bg-red-500 hover:bg-red-400 text-slate-950 font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-transform duration-200 cursor-pointer active:scale-[0.99] shadow-md disabled:opacity-50"
+                className="w-full py-3 bg-red-500 hover:bg-red-400 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-transform duration-200 cursor-pointer active:scale-[0.99] shadow-md disabled:opacity-50"
               >
                 <Plus className="h-4 w-4" />
                 {userFormLoading ? "Enrolling Member..." : "Enroll Active Member"}
@@ -1223,7 +1223,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
             <div className="overflow-x-auto text-xs">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="bg-[#0c0f16] text-slate-500 uppercase text-[9px] font-bold tracking-wider border-b border-[#212a3d]">
+                  <tr className="bg-[#0c0f16] text-slate-400 uppercase text-[9px] font-bold tracking-wider border-b border-[#212a3d]">
                     <th className="p-4 font-semibold">Username</th>
                     <th className="p-4 font-semibold">Email</th>
                     <th className="p-4 font-semibold">Phone</th>
@@ -1246,13 +1246,13 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
                               </span>
                             )}
                           </span>
-                          <span className="text-[9px] text-slate-500 font-mono select-all">PWD: {u.password || "••••••••"}</span>
+                          <span className="text-[9px] text-slate-400 font-mono select-all">PWD: {u.password || "••••••••"}</span>
                         </td>
                         <td className="p-4">{u.email}</td>
                         <td className="p-4 font-mono">{u.phone}</td>
                         <td className="p-4 font-mono font-bold text-slate-400">
                           {u.referralCode}
-                          {u.referredBy && <span className="block text-[9px] text-slate-500 normal">Referred by ID: {u.referredBy}</span>}
+                          {u.referredBy && <span className="block text-[9px] text-slate-400 normal">Referred by ID: {u.referredBy}</span>}
                         </td>
                         <td className="p-4 text-right font-mono font-bold text-emerald-450">KSh {u.balance.toLocaleString()}</td>
                         <td className="p-4 text-center">
@@ -1260,7 +1260,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
                             onClick={() => startManagingUser(u)}
                             className={`px-3 py-1 text-[10px] font-black rounded-lg uppercase tracking-wider transition-colors cursor-pointer ${
                               isBeingManaged 
-                                ? "bg-red-500 text-slate-950 font-black animate-pulse" 
+                                ? "bg-red-500 text-white font-black animate-pulse" 
                                 : "bg-[#212a3d] hover:bg-slate-700 hover:text-white text-slate-305"
                             }`}
                           >
@@ -1378,7 +1378,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
             <div className="overflow-x-auto">
               <table className="w-full text-left font-medium">
                 <thead>
-                  <tr className="bg-[#0c0f16] text-slate-500 uppercase text-[9px] font-bold tracking-wider border-b border-[#212a3d]">
+                  <tr className="bg-[#0c0f16] text-slate-400 uppercase text-[9px] font-bold tracking-wider border-b border-[#212a3d]">
                     <th className="p-4 font-semibold whitespace-nowrap">Tier Plan</th>
                     <th className="p-4 font-semibold whitespace-nowrap">Capital Required</th>
                     <th className="p-4 font-semibold whitespace-nowrap">Return Payout</th>
@@ -1452,7 +1452,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
                 className="bg-[#182030] hover:bg-[#202b3f] hover:text-white border border-[#212a3d] rounded-xl px-3 py-1.5 text-[9px] uppercase font-bold text-slate-300 flex items-center gap-1.5 transition-all cursor-pointer"
               >
                 {neonLoading ? (
-                  <span className="h-3 w-3 border-2 border-slate-300 border-t-transparent rounded-full animate-spin"></span>
+                  <span className="h-3 w-3 border-2 border-white/20 border-t-transparent rounded-full animate-spin"></span>
                 ) : "Refresh Health Connection"}
               </button>
             </div>
@@ -1487,7 +1487,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
 
               <div className="lg:col-span-4 bg-[#0c0f16] border border-[#212a3d] rounded-xl p-4.5 flex flex-col justify-between space-y-4">
                 <div>
-                  <span className="text-[9px] text-slate-500 uppercase font-extrabold tracking-widest block mb-2">DB Telemetry Indicators</span>
+                  <span className="text-[9px] text-slate-400 uppercase font-extrabold tracking-widest block mb-2">DB Telemetry Indicators</span>
                   <div className="space-y-3.5">
                     <div>
                       <span className="text-[9.5px] text-slate-400 uppercase font-bold tracking-wider block">Active Storage Engine:</span>
@@ -1559,7 +1559,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
                     </>
                   ) : (
                     <>
-                      <ToggleLeft className="h-5 w-5 text-slate-500" />
+                      <ToggleLeft className="h-5 w-5 text-slate-400" />
                       Status: Disabled
                     </>
                   )}
@@ -1568,7 +1568,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
               <p className="text-[11px] leading-relaxed text-slate-400">
                 When enabled, clients can trigger Lipia Online STK pushes on their mobile lines to prompt direct credential payments using dynamic display currencies.
               </p>
-              <div className="text-[10px] text-slate-500 border-t border-[#212a3d]/60 pt-2 leading-relaxed">
+              <div className="text-[10px] text-slate-400 border-t border-[#212a3d]/60 pt-2 leading-relaxed">
                 <span>Note: The target API route uses the verified Lipia Online documentation endpoint internally. All mobile deposits require final manager validation/approval inside the Financial Approvals tab.</span>
               </div>
             </div>
@@ -1591,7 +1591,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
                     </>
                   ) : (
                     <>
-                      <ToggleLeft className="h-5 w-5 text-slate-500" />
+                      <ToggleLeft className="h-5 w-5 text-slate-400" />
                       Status: Disabled
                     </>
                   )}
@@ -1623,7 +1623,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
               <div className="flex items-center justify-between pt-1 border-t border-[#212a3d]/50">
                 <div className="text-left font-sans pr-4">
                   <span className="text-[11px] text-slate-300 font-extrabold block">Sandbox Demo Mode</span>
-                  <span className="text-[9px] text-slate-500 leading-none">Uses simulator payload parameters avoiding real-world transactions</span>
+                  <span className="text-[9px] text-slate-400 leading-none">Uses simulator payload parameters avoiding real-world transactions</span>
                 </div>
                 <button
                   type="button"
@@ -1632,12 +1632,12 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
                 >
                   {paySettings.nowpayments_sandbox ? (
                     <>
-                      <ToggleRight className="h-4.5 w-4.5 text-[#006B4A]" />
+                      <ToggleRight className="h-4.5 w-4.5 text-emerald-400" />
                       Demo Sandbox Active
                     </>
                   ) : (
                     <>
-                      <ToggleLeft className="h-4.5 w-4.5 text-slate-600" />
+                      <ToggleLeft className="h-4.5 w-4.5 text-slate-300" />
                       Live Crypto Blockchain
                     </>
                   )}
@@ -1673,7 +1673,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
                     </span>
                   </div>
                 </div>
-                <div className="text-[9.5px] text-slate-500 leading-relaxed pt-1.5 border-t border-[#212a3d]/25">
+                <div className="text-[9.5px] text-slate-400 leading-relaxed pt-1.5 border-t border-[#212a3d]/25">
                   💡 <strong className="text-slate-400">Where to set on Render:</strong> Live variables can be set under <span className="text-indigo-400 font-semibold font-mono">Render Dashboard &gt; Web Service &gt; Environment &gt; Environment Variables</span>. Adding them there ensures security and auto-sync!
                 </div>
               </div>
@@ -1767,7 +1767,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
             <button
               type="submit"
               disabled={paySettingsLoading}
-              className="px-6 py-2.5 bg-red-500 hover:bg-red-400 text-slate-950 font-extrabold text-xs rounded-xl cursor-pointer transition-colors shadow-md flex items-center gap-1.5"
+              className="px-6 py-2.5 bg-red-500 hover:bg-red-400 text-white font-extrabold text-xs rounded-xl cursor-pointer transition-colors shadow-md flex items-center gap-1.5"
             >
               {paySettingsLoading ? (
                 <span className="h-3.5 w-3.5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></span>

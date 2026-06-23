@@ -37,11 +37,11 @@ function LiveCountdown({ maturesAt }: { maturesAt: string }) {
   return (
     <span className="font-mono text-orange-400 space-x-0.5">
       <span>{timeLeft.d}d</span>
-      <span className="text-slate-500">:</span>
+      <span className="text-slate-400">:</span>
       <span>{String(timeLeft.h).padStart(2, '0')}h</span>
-      <span className="text-slate-500">:</span>
+      <span className="text-slate-400">:</span>
       <span>{String(timeLeft.m).padStart(2, '0')}m</span>
-      <span className="text-slate-500">:</span>
+      <span className="text-slate-400">:</span>
       <span>{String(timeLeft.s).padStart(2, '0')}s</span>
     </span>
   );
@@ -132,7 +132,7 @@ export default function Trades({ investments, balance, onRefresh }: TradesProps)
                 key={days}
                 onClick={() => handleFastForward(days)}
                 disabled={fastForwarding !== null}
-                className="bg-[#1e293b] hover:bg-emerald-500 hover:text-slate-950 border border-slate-700 hover:border-emerald-400 text-slate-200 text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5 transition-all duration-200 cursor-pointer text-nowrap"
+                className="bg-[#1e293b] hover:bg-emerald-500 hover:text-white border border-slate-700 hover:border-emerald-400 text-slate-200 text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5 transition-all duration-200 cursor-pointer text-nowrap"
               >
                 {fastForwarding === days ? (
                   <span className="h-3.5 w-3.5 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></span>
@@ -156,11 +156,11 @@ export default function Trades({ investments, balance, onRefresh }: TradesProps)
       {/* Main page title */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h2 className="text-xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-            <ListTodo className="h-5 w-5 text-[#006B4A]" />
+          <h2 className="text-xl font-extrabold text-white tracking-tight flex items-center gap-2">
+            <ListTodo className="h-5 w-5 text-emerald-400" />
             Active and Historical Trades
           </h2>
-          <p className="text-xs text-slate-500 font-medium">
+          <p className="text-xs text-slate-400 font-medium">
             Monitor real-time progress parameters, yields, and countdowns.
           </p>
         </div>
@@ -191,9 +191,9 @@ export default function Trades({ investments, balance, onRefresh }: TradesProps)
       {/* List / Grid of investments */}
       {filteredInvestments.length === 0 ? (
         <div className="bg-[#0f131d] border border-[#212a3d] rounded-2xl p-12 text-center flex flex-col items-center justify-center">
-          <Clock className="h-10 w-10 text-slate-600 mb-2" />
+          <Clock className="h-10 w-10 text-slate-300 mb-2" />
           <h4 className="text-sm font-bold text-slate-300">No trades match this filter</h4>
-          <p className="text-xs text-slate-500 mt-1 max-w-sm leading-relaxed">
+          <p className="text-xs text-slate-400 mt-1 max-w-sm leading-relaxed">
             There are no trades to display. Navigate to the marketplace to launch your first yield-bearing plan.
           </p>
         </div>
@@ -222,7 +222,7 @@ export default function Trades({ investments, balance, onRefresh }: TradesProps)
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <h3 className="text-sm font-bold text-slate-200">{inv.planName}</h3>
-                    <span className="text-[9px] text-slate-500 font-mono">ID: {inv.id}</span>
+                    <span className="text-[9px] text-slate-400 font-mono">ID: {inv.id}</span>
                   </div>
                   <span
                     className={`px-2.5 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 ${badgeClass}`}
@@ -235,15 +235,15 @@ export default function Trades({ investments, balance, onRefresh }: TradesProps)
                 {/* Capital & Return details */}
                 <div className="bg-[#0c0f16]/85 border border-[#212a3d]/50 rounded-xl p-3.5 grid grid-cols-3 gap-2 text-xs">
                   <div className="flex flex-col gap-0.5">
-                    <span className="text-[9px] text-slate-500 uppercase font-bold">Principal Capital</span>
+                    <span className="text-[9px] text-slate-400 uppercase font-bold">Principal Capital</span>
                     <span className="font-bold text-slate-300 font-mono">{format(inv.amount)}</span>
                   </div>
                   <div className="flex flex-col gap-0.5 items-center">
-                    <span className="text-[9px] text-slate-500 uppercase font-bold">Net Profit</span>
+                    <span className="text-[9px] text-slate-400 uppercase font-bold">Net Profit</span>
                     <span className="font-bold text-emerald-400 font-mono">+{format(inv.profit)}</span>
                   </div>
                   <div className="flex flex-col gap-0.5 items-end">
-                    <span className="text-[9px] text-slate-500 uppercase font-bold">Exp. Return</span>
+                    <span className="text-[9px] text-slate-400 uppercase font-bold">Exp. Return</span>
                     <span className="font-extrabold text-white font-mono">{format(inv.return_amount)}</span>
                   </div>
                 </div>
@@ -267,13 +267,13 @@ export default function Trades({ investments, balance, onRefresh }: TradesProps)
                         style={{ width: `${percent}%` }}
                       ></div>
                     </div>
-                    <div className="flex justify-between items-center text-[10px] text-slate-500 font-mono font-medium pt-0.5">
+                    <div className="flex justify-between items-center text-[10px] text-slate-400 font-mono font-medium pt-0.5">
                       <span>Started: {new Date(inv.created_at).toLocaleDateString()}</span>
                       <span>Matures: {new Date(inv.matures_at).toLocaleDateString()}</span>
                     </div>
                   </div>
                 ) : (
-                  <div className="pt-2 flex justify-between items-center text-[10px] text-slate-500 font-mono">
+                  <div className="pt-2 flex justify-between items-center text-[10px] text-slate-400 font-mono">
                     <span>Activated: {new Date(inv.created_at).toLocaleDateString()}</span>
                     <span>
                       {inv.status === "completed" ? "Matured" : "Cancelled"}:{" "}

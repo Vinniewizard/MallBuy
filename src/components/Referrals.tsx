@@ -99,7 +99,7 @@ export default function Referrals({ user, referrals, investments, onRefresh }: R
         </div>
         
         <div className="bg-[#0c0f16] border border-[#212a3d] p-4 rounded-xl text-center min-w-[200px]">
-          <span className="text-[10px] text-slate-500 uppercase font-black tracking-widest block mb-1">Total Earned</span>
+          <span className="text-[10px] text-slate-400 uppercase font-black tracking-widest block mb-1">Total Earned</span>
           <span className="text-2xl font-mono font-black text-emerald-400">KSh {totalBonus.toLocaleString()}</span>
         </div>
       </div>
@@ -109,7 +109,7 @@ export default function Referrals({ user, referrals, investments, onRefresh }: R
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300 mb-4 flex items-center gap-2">
             <LinkIcon className="h-4 w-4 text-indigo-400" /> Invitation Link
           </h3>
-          <p className="text-xs text-slate-500 mb-4">Share this link to grow your network and earn passive income.</p>
+          <p className="text-xs text-slate-400 mb-4">Share this link to grow your network and earn passive income.</p>
           <div className="flex items-center gap-3 bg-[#0f131d] border border-[#212a3d] p-3 rounded-xl overflow-hidden">
             <input 
               type="text" 
@@ -151,8 +151,8 @@ export default function Referrals({ user, referrals, investments, onRefresh }: R
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center text-slate-500 border border-dashed border-[#212a3d] rounded-xl bg-[#0c0f16]">
-                <TrendingUpIcon className="h-8 w-8 text-slate-600 mb-2 opacity-50" />
+              <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 border border-dashed border-[#212a3d] rounded-xl bg-[#0c0f16]">
+                <TrendingUpIcon className="h-8 w-8 text-slate-300 mb-2 opacity-50" />
                 <span className="text-xs font-bold text-slate-400">No data available</span>
               </div>
             )}
@@ -165,16 +165,16 @@ export default function Referrals({ user, referrals, investments, onRefresh }: R
           <h3 className="text-xs font-extrabold text-slate-300 uppercase tracking-wider flex items-center gap-2">
             <Gift className="h-4 w-4 text-indigo-400" /> My Network ({referrals.length})
           </h3>
-          <button onClick={onRefresh} className="text-[10px] uppercase font-bold tracking-wider text-slate-500 hover:text-white transition-colors cursor-pointer">
+          <button onClick={onRefresh} className="text-[10px] uppercase font-bold tracking-wider text-slate-400 hover:text-white transition-colors cursor-pointer">
             Refresh
           </button>
         </div>
 
         {referrals.length === 0 ? (
-          <div className="p-12 text-center text-slate-500 flex flex-col items-center justify-center">
-            <Users className="h-10 w-10 text-slate-600 mb-2" />
+          <div className="p-12 text-center text-slate-400 flex flex-col items-center justify-center">
+            <Users className="h-10 w-10 text-slate-300 mb-2" />
             <h4 className="text-sm font-bold text-slate-350">No referrals yet</h4>
-            <p className="text-xs text-slate-500 mt-1 max-w-sm">
+            <p className="text-xs text-slate-400 mt-1 max-w-sm">
               Copy your link and share it to start earning passive income!
             </p>
           </div>
@@ -193,7 +193,7 @@ export default function Referrals({ user, referrals, investments, onRefresh }: R
                   <tr key={ref.id} className="hover:bg-[#121824]/40 transition-colors">
                      <td className="p-4 font-medium font-mono text-slate-450 whitespace-nowrap">
                         {new Date(ref.created_at).toLocaleDateString()}{" "}
-                        <span className="text-[10px] text-slate-500">
+                        <span className="text-[10px] text-slate-400">
                           {new Date(ref.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                         </span>
                       </td>
@@ -224,10 +224,10 @@ export default function Referrals({ user, referrals, investments, onRefresh }: R
         </div>
 
         {investments.filter(inv => inv.status === 'active').length === 0 ? (
-          <div className="p-12 text-center text-slate-500 flex flex-col items-center justify-center">
-            <Clock className="h-10 w-10 text-slate-600 mb-2" />
+          <div className="p-12 text-center text-slate-400 flex flex-col items-center justify-center">
+            <Clock className="h-10 w-10 text-slate-300 mb-2" />
             <h4 className="text-sm font-bold text-slate-350">No active sessions</h4>
-            <p className="text-xs text-slate-500 mt-1 max-w-sm">
+            <p className="text-xs text-slate-400 mt-1 max-w-sm">
               Your active investment plans will appear here with live countdowns.
             </p>
           </div>
@@ -245,7 +245,7 @@ export default function Referrals({ user, referrals, investments, onRefresh }: R
               <tbody className="divide-y divide-[#212a3d]/50">
                 {investments.filter(inv => inv.status === 'active').map((inv) => (
                   <tr key={inv.id} className="hover:bg-[#121824]/40 transition-colors">
-                      <td className="p-4 font-mono font-medium text-slate-500 text-[10px] whitespace-nowrap">
+                      <td className="p-4 font-mono font-medium text-slate-400 text-[10px] whitespace-nowrap">
                         {inv.id.toUpperCase()}
                       </td>
                       <td className="p-4">

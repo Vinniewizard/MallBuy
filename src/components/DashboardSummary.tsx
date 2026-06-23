@@ -69,7 +69,7 @@ export default function DashboardSummary({
         
         {/* Step 1 */}
         <div className="bg-[#0f131d] border border-[#212a3d] p-5 rounded-2xl relative overflow-hidden group">
-          <div className="text-3xl font-black text-slate-800 font-mono absolute top-4 right-5 select-none opacity-40">01</div>
+          <div className="text-3xl font-black text-white font-mono absolute top-4 right-5 select-none opacity-40">01</div>
           <div className="space-y-3">
             <div className="p-3 bg-indigo-500/10 text-indigo-400 rounded-xl w-fit">
               <LinkIcon className="h-4.5 w-4.5" />
@@ -85,7 +85,7 @@ export default function DashboardSummary({
 
         {/* Step 2 */}
         <div className="bg-[#0f131d] border border-[#212a3d] p-5 rounded-2xl relative overflow-hidden group">
-          <div className="text-3xl font-black text-slate-800 font-mono absolute top-4 right-5 select-none opacity-40">02</div>
+          <div className="text-3xl font-black text-white font-mono absolute top-4 right-5 select-none opacity-40">02</div>
           <div className="space-y-3">
             <div className="p-3 bg-[#a855f7]/10 text-[#c084fc] rounded-xl w-fit">
               <Users className="h-4.5 w-4.5" />
@@ -101,7 +101,7 @@ export default function DashboardSummary({
 
         {/* Step 3 */}
         <div className="bg-[#0f131d] border border-[#212a3d] p-5 rounded-2xl relative overflow-hidden group">
-          <div className="text-3xl font-black text-slate-800 font-mono absolute top-4 right-5 select-none opacity-40">03</div>
+          <div className="text-3xl font-black text-white font-mono absolute top-4 right-5 select-none opacity-40">03</div>
           <div className="space-y-3">
             <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl w-fit">
               <Gift className="h-4.5 w-4.5" />
@@ -131,14 +131,14 @@ export default function DashboardSummary({
             </p>
 
             <div className="bg-[#0c0f16] border border-[#212a3d] p-3.5 rounded-xl space-y-1.5">
-              <span className="text-[9px] font-extrabold text-slate-500 uppercase tracking-widest block font-mono">My Code ID</span>
+              <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest block font-mono">My Code ID</span>
               <span className="text-xs font-bold text-slate-300 font-mono block select-all">{user.referralCode}</span>
             </div>
           </div>
 
           <div className="mt-5 space-y-3">
             <div className="flex items-center gap-2 bg-[#090b10] border border-[#212a3d] p-1.5 rounded-xl">
-              <span className="text-[10px] font-mono text-slate-500 truncate pl-2 w-full">{referralLink}</span>
+              <span className="text-[10px] font-mono text-slate-400 truncate pl-2 w-full">{referralLink}</span>
               <button 
                 onClick={onCopyLink}
                 className="p-2 border border-slate-700 bg-slate-800 hover:bg-slate-755 text-slate-300 rounded-lg cursor-pointer flex-shrink-0 transition-colors"
@@ -165,7 +165,7 @@ export default function DashboardSummary({
                 <h3 className="text-xs font-black uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
                   <Award className="h-4.5 w-4.5 text-indigo-400" /> Network Leaderboard
                 </h3>
-                <p className="text-[10px] text-slate-500">Global rankings of top affiliate brokers on Ascent networks</p>
+                <p className="text-[10px] text-slate-400">Global rankings of top affiliate brokers on Ascent networks</p>
               </div>
               <span className="text-[9px] font-extrabold uppercase bg-emerald-500/15 border border-emerald-500/25 text-emerald-400 px-2 py-0.5 rounded tracking-widest animate-pulse">
                 Live Status
@@ -181,7 +181,7 @@ export default function DashboardSummary({
                   <div className="flex items-center gap-3">
                     <div className={`w-6 h-6 rounded-lg text-[10px] font-black flex items-center justify-center font-mono ${
                       earner.rank === 1 ? 'bg-amber-500/15 text-amber-400 border border-amber-500/25' :
-                      earner.rank === 2 ? 'bg-slate-300/15 text-slate-300 border border-slate-300/20' :
+                      earner.rank === 2 ? 'bg-slate-300/15 text-slate-300 border border-white/20/20' :
                       earner.rank === 3 ? 'bg-[#b45309]/15 text-[#f59e0b] border border-[#b45309]/20' :
                       'bg-slate-800/20 text-slate-400 border border-slate-800/10'
                     }`}>
@@ -189,13 +189,13 @@ export default function DashboardSummary({
                     </div>
                     <div>
                       <span className="text-xs font-bold text-slate-200 group-hover:text-white transition-colors">{earner.name}</span>
-                      <span className="text-[9px] text-slate-500 block">Invites: {earner.invites} clients</span>
+                      <span className="text-[9px] text-slate-400 block">Invites: {earner.invites} clients</span>
                     </div>
                   </div>
 
                   <div className="text-right">
                     <span className="text-xs font-mono font-black text-emerald-400 block">+KSh {earner.earnings.toLocaleString()}</span>
-                    <span className="text-[9px] text-slate-500 block uppercase tracking-wider font-bold">{earner.tier} Rank</span>
+                    <span className="text-[9px] text-slate-400 block uppercase tracking-wider font-bold">{earner.tier} Rank</span>
                   </div>
                 </div>
               ))}

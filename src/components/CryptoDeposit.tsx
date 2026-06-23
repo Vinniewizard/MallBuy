@@ -263,15 +263,15 @@ export default function CryptoDeposit({ onRefresh, minDeposit, maxDeposit }: Cry
 
       {!activeInvoice ? (
         <form onSubmit={handleCreateInvoice} className="space-y-6">
-          <div className="bg-slate-50 border border-slate-200/60 p-5 rounded-2xl space-y-4">
+          <div className="bg-white/5 border border-white/10/60 p-5 rounded-2xl space-y-4">
             <div className="flex items-center gap-2">
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#006B4A]/10 text-[#006B4A] text-[10px] font-bold">1</span>
-              <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Configure Funding Amount</h4>
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-bold">1</span>
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider">Configure Funding Amount</h4>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div className="space-y-2">
-                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider">
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider">
                   Capital Funding Amount ({symbol}) *
                 </label>
                 <div className="relative">
@@ -283,20 +283,20 @@ export default function CryptoDeposit({ onRefresh, minDeposit, maxDeposit }: Cry
                     min="1"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
-                    className="w-full bg-white border border-slate-200 focus:border-[#006B4A] focus:ring-1 focus:ring-[#006B4A]/10 rounded-xl pl-9 pr-4 py-2.5 text-xs font-black text-slate-800 outline-none transition-all"
+                    className="w-full bg-white/5 border border-white/10 backdrop-blur-md focus:border-[#006B4A] focus:ring-1 focus:ring-[#006B4A]/10 rounded-xl pl-9 pr-4 py-2.5 text-xs font-black text-white outline-none transition-all"
                   />
                 </div>
                 {amount && (
-                  <div className="bg-[#006B4A]/5 border border-[#006B4A]/10 rounded-lg px-2.5 py-1.5 flex items-center justify-between text-[11px] font-medium text-[#005a3e]">
+                  <div className="bg-emerald-500/5 border border-[#006B4A]/10 rounded-lg px-2.5 py-1.5 flex items-center justify-between text-[11px] font-medium text-[#005a3e]">
                     <span>Converted Local Value:</span>
                     <span className="font-extrabold font-mono">≈ KSh {convertToKES(Number(amount)).toLocaleString()}</span>
                   </div>
                 )}
                 {minDeposit !== undefined && minDeposit !== null && minDeposit > 0 ? (
                   <div className="text-[10.5px] text-slate-400 font-medium leading-normal mt-1.5">
-                    Allowed range: <span className="font-bold text-slate-700">{format(minDeposit)}</span> 
+                    Allowed range: <span className="font-bold text-slate-300">{format(minDeposit)}</span> 
                     {maxDeposit !== undefined && maxDeposit !== null && maxDeposit > 0 ? (
-                      <> to <span className="font-bold text-slate-700">{format(maxDeposit)}</span></>
+                      <> to <span className="font-bold text-slate-300">{format(maxDeposit)}</span></>
                     ) : (
                       " Minimum"
                     )}
@@ -311,13 +311,13 @@ export default function CryptoDeposit({ onRefresh, minDeposit, maxDeposit }: Cry
               </div>
 
               <div className="space-y-2">
-                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider">
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider">
                   Cryptocoin Network Node *
                 </label>
                 <select
                   value={cryptoCurrency}
                   onChange={(e) => setCryptoCurrency(e.target.value)}
-                  className="w-full bg-white border border-slate-200 focus:border-[#006B4A] rounded-xl px-4 py-2.5 text-xs font-bold text-slate-800 outline-none cursor-pointer transition-all hover:border-slate-350"
+                  className="w-full bg-white/5 border border-white/10 backdrop-blur-md focus:border-[#006B4A] rounded-xl px-4 py-2.5 text-xs font-bold text-white outline-none cursor-pointer transition-all hover:border-slate-350"
                 >
                   <option value="USDTTRC20">USDT (TRC-20 Mainnet Node)</option>
                   <option value="BTC">BTC (Bitcoin Mainnet Network)</option>
@@ -331,12 +331,12 @@ export default function CryptoDeposit({ onRefresh, minDeposit, maxDeposit }: Cry
 
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#006B4A]/10 text-[#006B4A] text-[10px] font-bold">2</span>
-              <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Optional Reference Identity</h4>
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-bold">2</span>
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider">Optional Reference Identity</h4>
             </div>
             
-            <div className="bg-slate-50 border border-slate-200/60 p-5 rounded-2xl">
-              <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-2">
+            <div className="bg-white/5 border border-white/10/60 p-5 rounded-2xl">
+              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2">
                 Memo Reference Note
               </label>
               <input
@@ -344,7 +344,7 @@ export default function CryptoDeposit({ onRefresh, minDeposit, maxDeposit }: Cry
                 placeholder="e.g. Crypto asset simulation top up"
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                className="w-full bg-white border border-slate-200 focus:border-[#006B4A] rounded-xl px-4 py-2.5 text-xs font-semibold text-slate-850 outline-none transition-all"
+                className="w-full bg-white/5 border border-white/10 backdrop-blur-md focus:border-[#006B4A] rounded-xl px-4 py-2.5 text-xs font-semibold text-slate-850 outline-none transition-all"
               />
               <span className="text-[10px] text-slate-400 block mt-1.5">For easy identification in your transaction security ledger archive.</span>
             </div>
@@ -353,7 +353,7 @@ export default function CryptoDeposit({ onRefresh, minDeposit, maxDeposit }: Cry
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 px-6 rounded-xl flex justify-center items-center gap-2.5 font-extrabold text-xs transition-all duration-200 cursor-pointer shadow-md bg-[#006B4A] hover:bg-[#005238] border border-emerald-500/10 text-white hover:shadow-lg active:scale-[0.99] disabled:opacity-50"
+            className="w-full py-3.5 px-6 rounded-xl flex justify-center items-center gap-2.5 font-extrabold text-xs transition-all duration-200 cursor-pointer shadow-md bg-emerald-500 hover:bg-emerald-600 border border-emerald-500/10 text-white hover:shadow-lg active:scale-[0.99] disabled:opacity-50"
           >
             {loading ? (
               <span className="h-4.5 w-4.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
@@ -389,7 +389,7 @@ export default function CryptoDeposit({ onRefresh, minDeposit, maxDeposit }: Cry
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
             {/* QR block */}
             <div className="md:col-span-5 bg-[#0c0f16] p-5 rounded-2xl border border-[#212a3d] flex flex-col items-center justify-center shadow-inner space-y-3.5 shrink-0">
-              <div className="p-3 bg-white rounded-xl">
+              <div className="p-3 bg-white/5 rounded-xl">
                 <img
                   src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(activeInvoice.payAddress)}`}
                   alt="Payment QR Address"
@@ -462,7 +462,7 @@ export default function CryptoDeposit({ onRefresh, minDeposit, maxDeposit }: Cry
                 type="button"
                 onClick={() => checkCryptoStatus(activeInvoice.txId)}
                 disabled={checkingStatus || cancellingInvoice}
-                className="px-4 py-3 bg-[#006B4A] hover:bg-[#005238] text-white font-black text-xs rounded-xl cursor-pointer transition-all flex items-center justify-center gap-2 flex-1 shadow-md"
+                className="px-4 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs rounded-xl cursor-pointer transition-all flex items-center justify-center gap-2 flex-1 shadow-md"
               >
                 {checkingStatus ? (
                   <span className="h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>

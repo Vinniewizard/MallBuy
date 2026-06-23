@@ -104,7 +104,7 @@ export default function Invest({ plans, balance, onInvest, onSwitchTab }: Invest
                     </span>
                     <Icon
                       className={`h-5 w-5 transition-transform duration-300 group-hover:scale-110 ${
-                        isSelected ? "text-emerald-400" : "text-slate-500"
+                        isSelected ? "text-emerald-400" : "text-slate-400"
                       }`}
                     />
                   </div>
@@ -119,11 +119,11 @@ export default function Invest({ plans, balance, onInvest, onSwitchTab }: Invest
                 {/* Lower row */}
                 <div className="flex justify-between items-end border-t border-[#212a3d]/50 pt-3 mt-3">
                   <div className="flex flex-col">
-                    <span className="text-[9px] text-slate-500 font-bold uppercase">Duration</span>
+                    <span className="text-[9px] text-slate-400 font-bold uppercase">Duration</span>
                     <span className="text-xs font-bold text-slate-300 font-mono">{plan.duration_days} Days</span>
                   </div>
                   <div className="flex flex-col items-end">
-                    <span className="text-[9px] text-slate-500 font-bold uppercase">Estimated ROI</span>
+                    <span className="text-[9px] text-slate-400 font-bold uppercase">Estimated ROI</span>
                     <span className="text-xs font-black text-emerald-400 font-mono">+{roiPercent}%</span>
                   </div>
                 </div>
@@ -155,13 +155,13 @@ export default function Invest({ plans, balance, onInvest, onSwitchTab }: Invest
 
                 <div className="grid grid-cols-2 gap-4 text-xs pt-1.5">
                   <div className="flex flex-col gap-0.5">
-                    <span className="text-[10px] text-slate-500 uppercase font-bold">Capital Required</span>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold">Capital Required</span>
                     <span className="text-sm font-bold text-slate-200 font-mono">
                       {format(selectedPlan.amount)}
                     </span>
                   </div>
                   <div className="flex flex-col gap-0.5 items-end">
-                    <span className="text-[10px] text-slate-500 uppercase font-bold">Target Payout</span>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold">Target Payout</span>
                     <span className="text-sm font-extrabold text-emerald-400 font-mono">
                       {format(selectedPlan.return_amount)}
                     </span>
@@ -170,11 +170,11 @@ export default function Invest({ plans, balance, onInvest, onSwitchTab }: Invest
 
                 <div className="grid grid-cols-2 gap-4 text-xs pt-2">
                   <div className="flex flex-col gap-0.5">
-                    <span className="text-[10px] text-slate-500 uppercase font-bold">Duration</span>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold">Duration</span>
                     <span className="text-xs font-bold text-slate-200 font-mono">{selectedPlan.duration_days} Days</span>
                   </div>
                   <div className="flex flex-col gap-0.5 items-end">
-                    <span className="text-[10px] text-slate-500 uppercase font-bold">Net Profit</span>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold">Net Profit</span>
                     <span className="text-xs font-bold text-teal-400 font-mono">
                       +{format(selectedPlan.return_amount - selectedPlan.amount)}
                     </span>
@@ -182,10 +182,10 @@ export default function Invest({ plans, balance, onInvest, onSwitchTab }: Invest
                 </div>
 
                 <div className="pt-2 border-t border-[#212a3d]/50 flex items-center justify-between text-xs">
-                  <span className="text-[10px] text-slate-500 uppercase font-bold">Daily Earnings Yield</span>
+                  <span className="text-[10px] text-slate-400 uppercase font-bold">Daily Earnings Yield</span>
                   <span className="font-bold text-slate-300 font-mono">
                     {format(Math.round((selectedPlan.return_amount - selectedPlan.amount) / selectedPlan.duration_days))}
-                    <span className="text-[10px] text-slate-500">/day</span>
+                    <span className="text-[10px] text-slate-400">/day</span>
                   </span>
                 </div>
               </div>
@@ -220,7 +220,7 @@ export default function Invest({ plans, balance, onInvest, onSwitchTab }: Invest
                   loading === selectedPlan.id
                     ? "bg-[#182030] text-slate-400 border border-[#212a3d]"
                     : balance && balance.available_balance < selectedPlan.amount
-                    ? "bg-slate-800 text-slate-500 cursor-not-allowed border border-[#212a3d]"
+                    ? "bg-slate-800 text-slate-400 cursor-not-allowed border border-[#212a3d]"
                     : "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-[#0c0f16] shadow-md shadow-emerald-950/20 hover:scale-[1.01]"
                 }`}
               >
@@ -235,8 +235,8 @@ export default function Invest({ plans, balance, onInvest, onSwitchTab }: Invest
               </button>
             </>
           ) : (
-            <div className="flex flex-col items-center justify-center text-center p-8 bg-[#0c0f16]/50 border border-dashed border-[#20293d] rounded-xl text-slate-500 text-xs">
-              <HelpCircle className="h-8 w-8 text-slate-600 mb-2" />
+            <div className="flex flex-col items-center justify-center text-center p-8 bg-[#0c0f16]/50 border border-dashed border-[#20293d] rounded-xl text-slate-400 text-xs">
+              <HelpCircle className="h-8 w-8 text-slate-300 mb-2" />
               Please select an investment package on the left to review metrics
             </div>
           )}
