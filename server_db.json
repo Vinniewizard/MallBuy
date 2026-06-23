@@ -1,0 +1,88 @@
+{
+  "users": [
+    {
+      "id": "admin-id",
+      "username": "GADMIN",
+      "email": "admin@helavest.com",
+      "phone": "0700000100",
+      "passwordHash": "GADMIN",
+      "referralCode": "ADMINVIP",
+      "isAdmin": true
+    },
+    {
+      "id": "seed-referrer-id",
+      "username": "VinnieWizard",
+      "email": "vinnie@helavest.com",
+      "phone": "0722000111",
+      "passwordHash": "vinnie123",
+      "referralCode": "HELA777",
+      "isAdmin": false
+    },
+    {
+      "id": "user-7n13l5ww5",
+      "username": "wiz",
+      "email": "wiz@gmail.com",
+      "phone": "0729168968",
+      "passwordHash": "11",
+      "referralCode": "HELA384389",
+      "isAdmin": false
+    }
+  ],
+  "plans": [
+    {
+      "id": "p1",
+      "name": "Copper (Starter)",
+      "amount": 800,
+      "return_amount": 1200,
+      "duration_days": 3,
+      "active": true,
+      "description": "Unlocks rapid 50% returns. Perfect entry plan."
+    },
+    {
+      "id": "p2",
+      "name": "Bronze (Growth)",
+      "amount": 2500,
+      "return_amount": 4000,
+      "duration_days": 5,
+      "active": true,
+      "description": "Highly popular for active local small-capital growth."
+    },
+    {
+      "id": "p3",
+      "name": "Silver (Alpha)",
+      "amount": 8000,
+      "return_amount": 14000,
+      "duration_days": 7,
+      "active": true,
+      "description": "Secure medium-scale vault yielding KSh 850 daily profit."
+    },
+    {
+      "id": "p4",
+      "name": "Gold (Prime)",
+      "amount": 20000,
+      "return_amount": 38000,
+      "duration_days": 10,
+      "active": true,
+      "description": "High-tier interest matching premium capital managers."
+    },
+    {
+      "id": "p5",
+      "name": "Platinum (Apex)",
+      "amount": 60000,
+      "return_amount": 120000,
+      "duration_days": 14,
+      "active": true,
+      "description": "Compounding apex tier designed for top HelaVest builders."
+    }
+  ],
+  "investments": [],
+  "transactions": [],
+  "referrals": [],
+  "systemOffsetDays": 0,
+  "paymentSettings": {
+    "mpesa_enabled": true,
+    "crypto_enabled": true,
+    "nowpayments_sandbox": false,
+    "nowpayments_api_key": ""
+  }
+}
