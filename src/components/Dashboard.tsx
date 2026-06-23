@@ -9,12 +9,12 @@ interface DashboardProps {
   referrals: ReferralRecord[];
   plans: Plan[];
   balance: WalletBalance | null;
-  onInvest: (planId: string) => Promise<any>;
+  onShop: (planId: string) => Promise<any>;
   onSwitchTab: (tab: string, subTab?: "deposit" | "withdraw" | "history") => void;
   onRefresh: () => void;
 }
 
-export default function Dashboard({ user, stats, referrals, plans, balance, onInvest, onSwitchTab, onRefresh }: DashboardProps) {
+export default function Dashboard({ user, stats, referrals, plans, balance, onShop, onSwitchTab, onRefresh }: DashboardProps) {
   const [loading, setLoading] = useState<string | null>(null);
   const [statusMsg, setStatusMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const { format } = useCurrency();
@@ -27,18 +27,18 @@ export default function Dashboard({ user, stats, referrals, plans, balance, onIn
     return Gem;
   };
 
-  const handleInvestSubmit = async (planId: string) => {
+  const handleShopSubmit = async (planId: string) => {
     setStatusMsg(null);
     setLoading(planId);
 
     try {
-      const res = await onInvest(planId);
+      const res = await onShop(planId);
       if (res && res.error) {
         setStatusMsg({ type: "error", text: res.error });
       } else {
         setStatusMsg({
           type: "success",
-          text: `Successfully initialized ${plans.find((p) => p.id === planId)?.name}! Tracks initialized on My Trades.`,
+          text: `Successfully initialized ${plans.find((p) => p.id === planId)?.name}! Tracks initialized on My Orders.`,
         });
       }
     } catch (err: any) {
@@ -59,7 +59,7 @@ export default function Dashboard({ user, stats, referrals, plans, balance, onIn
           <div>
             <p className="text-xs font-black uppercase tracking-wider text-emerald-300 mb-0.5">Secure Terminal Active</p>
             <p className="text-[11px] sm:text-xs text-slate-300 font-bold leading-relaxed">
-              Your capital growth workspace has been successfully initialized. Welcome to HelaVest—explore curated investment tiers below to allocate your capital and monitor compounding yields.
+              Your inventory growth workspace has been successfully initialized. Welcome to MallBuy—explore curated purchase tiers below to allocate your funds and monitor wholesale profits.
             </p>
           </div>
         </div>
@@ -67,7 +67,7 @@ export default function Dashboard({ user, stats, referrals, plans, balance, onIn
         <div>
           <h2 className="text-[11px] font-bold text-amber-400 tracking-wider uppercase mb-2">PROFESSIONAL TERMINAL</h2>
           <p className="text-sm text-slate-400 max-w-lg leading-relaxed">
-            Manage your capital, explore strategic investment plans, and monitor your affiliate network growth from a unified workspace.
+            Manage your funds, explore strategic wholesale packages, and monitor your affiliate network growth from a unified workspace.
           </p>
         </div>
       </div>
@@ -81,8 +81,8 @@ export default function Dashboard({ user, stats, referrals, plans, balance, onIn
         </div>
         
         <div className="bg-white/5 border border-white/10 p-4 rounded-xl shadow-sm relative overflow-hidden flex flex-col justify-between backdrop-blur-md">
-          <div className="text-xs font-semibold text-slate-400 mb-1">Active capital</div>
-          <div className="text-xl font-bold text-white tracking-tight">{format(stats.active_trades_capital)}</div>
+          <div className="text-xs font-semibold text-slate-400 mb-1">Active funds</div>
+          <div className="text-xl font-bold text-white tracking-tight">{format(stats.active_orders_funds)}</div>
           <div className="w-6 h-1 bg-emerald-500 rounded-full absolute bottom-4 right-4"></div>
         </div>
 
@@ -112,7 +112,7 @@ export default function Dashboard({ user, stats, referrals, plans, balance, onIn
             <Coins className="h-4.5 w-4.5 animate-pulse text-emerald-400" /> Quick Account Actions
           </h3>
           <p className="text-xs text-slate-400 font-semibold">
-            Instantly credit your balance via Safaricom M-Pesa push / Crypto invoice, or request real-time withdrawals of your trades' profit yield.
+            Instantly credit your balance via Safaricom M-Pesa push / Crypto invoice, or request real-time withdrawals of your orders' sales profit.
           </p>
         </div>
         <div className="flex items-center gap-3 w-full md:w-auto">
@@ -131,10 +131,10 @@ export default function Dashboard({ user, stats, referrals, plans, balance, onIn
         </div>
       </div>
 
-      {/* INVESTMENT DESK */}
+      {/* WHOLESALE DESK */}
       <div className="space-y-6 pt-4">
         <div>
-          <h2 className="text-xl font-extrabold text-white tracking-tight">Investment Desk</h2>
+          <h2 className="text-xl font-extrabold text-white tracking-tight">Wholesale Desk</h2>
           <p className="text-xs font-bold text-emerald-400 uppercase tracking-widest mt-1">Strategic Growth Plans</p>
         </div>
 
@@ -176,7 +176,7 @@ export default function Dashboard({ user, stats, referrals, plans, balance, onIn
                 </div>
                 
                 <p className="text-[11px] text-slate-400 mb-6 flex-grow">
-                  {plan.description || "Compounding yield package."}
+                  {plan.description || "Compounding return package."}
                 </p>
 
                 <div className="space-y-2 mb-6">
@@ -185,7 +185,7 @@ export default function Dashboard({ user, stats, referrals, plans, balance, onIn
                     <span className="font-bold text-white">{format(plan.amount)}</span>
                   </div>
                   <div className="flex justify-between items-center text-sm border-b border-white/10 pb-2">
-                    <span className="text-slate-400 font-medium">ROI</span>
+                    <span className="text-slate-400 font-medium">Margin</span>
                     <span className="font-bold text-emerald-400">+{roiPercent}%</span>
                   </div>
                   <div className="flex justify-between items-center text-sm">
@@ -195,7 +195,7 @@ export default function Dashboard({ user, stats, referrals, plans, balance, onIn
                 </div>
 
                 <button
-                  onClick={() => needsDeposit ? onSwitchTab("wallet") : handleInvestSubmit(plan.id)}
+                  onClick={() => needsDeposit ? onSwitchTab("wallet") : handleShopSubmit(plan.id)}
                   disabled={loading === plan.id}
                   className={`w-full py-3 rounded-xl text-xs font-bold transition-transform active:scale-[0.98] ${
                     needsDeposit 
@@ -223,13 +223,13 @@ export default function Dashboard({ user, stats, referrals, plans, balance, onIn
             <h3 className="font-bold text-white text-sm">Funding Network</h3>
             <p className="text-xs font-bold text-amber-400 mb-2 mt-1">Preferred lending partners across the USA, Australia, UK, UAE, and Kenya</p>
             <p className="text-xs text-slate-400 leading-relaxed">
-              The platform presents a global funding posture with clear wallet records, portfolio visibility, and fast trade access.
+              The platform presents a global funding posture with clear wallet records, portfolio visibility, and fast order access.
             </p>
           </div>
 
           <div className="bg-white/5 border border-white/10 rounded-xl p-6 shadow-sm backdrop-blur-md">
             <h3 className="font-bold text-white text-sm">Business Standard</h3>
-            <p className="text-xs font-bold text-amber-400 mb-2 mt-1">Built for transparent deposits, withdrawals, commissions, and trade history</p>
+            <p className="text-xs font-bold text-amber-400 mb-2 mt-1">Built for transparent deposits, withdrawals, commissions, and order history</p>
             <p className="text-xs text-slate-400 leading-relaxed">
               Every user action is reflected in the ledger, making account activity easier to audit and manage.
             </p>
@@ -239,7 +239,7 @@ export default function Dashboard({ user, stats, referrals, plans, balance, onIn
             <h3 className="font-bold text-white text-sm">Growth Desk</h3>
             <p className="text-xs font-bold text-amber-400 mb-2 mt-1">Invite-based growth with commission tracking for every qualifying member</p>
             <p className="text-xs text-slate-400 leading-relaxed">
-              Referral earnings, active sessions, and completed payouts stay visible without exposing staff controls.
+              Referral earnings, active sessions, and completed commissions stay visible without exposing staff controls.
             </p>
           </div>
 
@@ -247,7 +247,7 @@ export default function Dashboard({ user, stats, referrals, plans, balance, onIn
             <h3 className="font-bold text-white text-sm">Platform Security</h3>
             <p className="text-xs font-bold text-amber-400 mb-2 mt-1">Institutional Grade Wallet Protection</p>
             <p className="text-xs text-slate-400 leading-relaxed">
-              Automated session management and secured back-office auditing protect all transactions and capital records.
+              Automated session management and secured back-office auditing protect all transactions and funds records.
             </p>
           </div>
         </div>

@@ -1,12 +1,12 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { Users, Copy, CheckCircle2, Link as LinkIcon, Gift, TrendingUp as TrendingUpIcon, Clock } from "lucide-react";
-import { ReferralRecord, User, Investment } from "../types";
+import { ReferralRecord, User, Purchase } from "../types";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 interface ReferralsProps {
   user: User;
   referrals: ReferralRecord[];
-  investments: Investment[];
+  purchases: Purchase[];
   onRefresh: () => void;
 }
 
@@ -51,7 +51,7 @@ function LiveCountdown({ maturesAt }: { maturesAt: string }) {
   );
 }
 
-export default function Referrals({ user, referrals, investments, onRefresh }: ReferralsProps) {
+export default function Referrals({ user, referrals, purchases, onRefresh }: ReferralsProps) {
   const [copied, setCopied] = React.useState(false);
 
   const referralLink = `${window.location.origin}/?ref=${user.referralCode}`;
@@ -93,8 +93,8 @@ export default function Referrals({ user, referrals, investments, onRefresh }: R
             Vip Referral Program
           </h2>
           <p className="text-xs text-slate-400 max-w-lg leading-relaxed">
-            Invite your friends and earn instant cash bonuses when they subscribe to our investment plans. 
-            You get an 8% commission on their first seed capital!
+            Invite your friends and earn instant cash bonuses when they subscribe to our wholesale packages. 
+            You get an 8% commission on their first seed funds!
           </p>
         </div>
         
@@ -198,7 +198,7 @@ export default function Referrals({ user, referrals, investments, onRefresh }: R
                         </span>
                       </td>
                       <td className="p-4">
-                        <span className="text-xs font-bold text-slate-200 capitalize flex items-center gap-1.5">
+                        <span className="text-xs font-bold text-slate-200 fundsize flex items-center gap-1.5">
                           {ref.referred_username}
                         </span>
                       </td>
@@ -223,12 +223,12 @@ export default function Referrals({ user, referrals, investments, onRefresh }: R
           </h3>
         </div>
 
-        {investments.filter(inv => inv.status === 'active').length === 0 ? (
+        {purchases.filter(inv => inv.status === 'active').length === 0 ? (
           <div className="p-12 text-center text-slate-400 flex flex-col items-center justify-center">
             <Clock className="h-10 w-10 text-slate-300 mb-2" />
             <h4 className="text-sm font-bold text-slate-350">No active sessions</h4>
             <p className="text-xs text-slate-400 mt-1 max-w-sm">
-              Your active investment plans will appear here with live countdowns.
+              Your active wholesale packages will appear here with live countdowns.
             </p>
           </div>
         ) : (
@@ -238,18 +238,18 @@ export default function Referrals({ user, referrals, investments, onRefresh }: R
                 <tr className="bg-[#0c0f16] text-slate-400 text-[9px] font-bold uppercase tracking-wider border-b border-[#212a3d]">
                   <th className="p-4 font-semibold">Plan ID</th>
                   <th className="p-4 font-semibold">Package Type</th>
-                  <th className="p-4 font-semibold">Capital Entry</th>
+                  <th className="p-4 font-semibold">Funds Entry</th>
                   <th className="p-4 font-semibold text-right">Time Remaining</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#212a3d]/50">
-                {investments.filter(inv => inv.status === 'active').map((inv) => (
+                {purchases.filter(inv => inv.status === 'active').map((inv) => (
                   <tr key={inv.id} className="hover:bg-[#121824]/40 transition-colors">
                       <td className="p-4 font-mono font-medium text-slate-400 text-[10px] whitespace-nowrap">
                         {inv.id.toUpperCase()}
                       </td>
                       <td className="p-4">
-                        <span className="text-xs font-bold text-slate-200 capitalize flex items-center gap-1.5">
+                        <span className="text-xs font-bold text-slate-200 fundsize flex items-center gap-1.5">
                           {inv.planName}
                         </span>
                       </td>

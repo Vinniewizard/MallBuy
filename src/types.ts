@@ -20,22 +20,22 @@ export interface Plan {
   description: string;
 }
 
-export type InvestmentStatus = 'active' | 'completed' | 'cancelled';
+export type PurchaseStatus = 'active' | 'completed' | 'cancelled';
 
-export interface Investment {
+export interface Purchase {
   id: string;
   user_id: string;
   plan_id: string;
   amount: number;
   return_amount: number;
   profit: number;
-  status: InvestmentStatus;
+  status: PurchaseStatus;
   created_at: string;
   matures_at: string;
   planName: string; // convenient lookup
 }
 
-export type TransactionType = 'deposit' | 'withdrawal' | 'investment' | 'commission' | 'payout';
+export type TransactionType = 'deposit' | 'withdrawal' | 'purchase' | 'commission' | 'payout';
 export type TransactionStatus = 'pending' | 'approved' | 'declined';
 
 export interface Transaction {
@@ -61,17 +61,17 @@ export interface ReferralRecord {
 export interface WalletBalance {
   total_deposits: number;
   referral_bonus: number;
-  total_payouts: number;
+  total_commissions: number;
   total_withdrawals: number;
-  total_invested: number;
+  total_buyed: number;
   available_balance: number;
 }
 
 export interface DashboardStats {
   balance: WalletBalance;
-  active_trades_count: number;
-  active_trades_capital: number;
-  expected_payouts: number;
-  completed_trades_count: number;
+  active_orders_count: number;
+  active_orders_funds: number;
+  expected_commissions: number;
+  completed_orders_count: number;
   total_profit_earned: number;
 }

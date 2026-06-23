@@ -16,7 +16,7 @@ export default function Register({ onRegisterSuccess, onNavigateToLogin }: Regis
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Auto-parse invite code from URL search parameters if present (e.g. ?ref=HELA777)
+  // Auto-parse invite code from URL search parameters if present (e.g. ?ref=MALL777)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const ref = params.get("ref");
@@ -85,7 +85,7 @@ export default function Register({ onRegisterSuccess, onNavigateToLogin }: Regis
         <div className="flex items-center gap-2">
           <div className="h-9 w-9 bg-emerald-600 rounded-xl flex items-center justify-center text-white font-extrabold text-lg shadow-sm shadow-emerald-600/20">H</div>
           <span className="text-xl font-black tracking-tight text-white">
-            Hela<span className="text-emerald-600">Invest</span>
+            Mall<span className="text-emerald-600">Buy</span>
           </span>
         </div>
         <div className="flex items-center gap-4">
@@ -121,7 +121,7 @@ export default function Register({ onRegisterSuccess, onNavigateToLogin }: Regis
               Create Account
             </h2>
             <p className="text-slate-400 text-xs">
-              Complete the security profile below to register your capital growth account.
+              Complete the security profile below to register your inventory growth account.
             </p>
           </div>
 
@@ -150,7 +150,7 @@ export default function Register({ onRegisterSuccess, onNavigateToLogin }: Regis
                   <input
                     type="text"
                     required
-                    placeholder="e.g. wizardinvest"
+                    placeholder="e.g. wizardbuy"
                     value={username}
                     onChange={(e) => setUsername(e.target.value.replace(/\s+/g, ""))}
                     className="block w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-medium text-sm focus:bg-white/5"

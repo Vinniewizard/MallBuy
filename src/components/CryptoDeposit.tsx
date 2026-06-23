@@ -42,7 +42,7 @@ export default function CryptoDeposit({ onRefresh, minDeposit, maxDeposit }: Cry
       try {
         const res = await fetch("/api/transactions/active-crypto", {
           headers: {
-            "x-user-id": localStorage.getItem("hela_user_id") || "",
+            "x-user-id": localStorage.getItem("mallbuy_user_id") || "",
           }
         });
         if (res.ok) {
@@ -127,7 +127,7 @@ export default function CryptoDeposit({ onRefresh, minDeposit, maxDeposit }: Cry
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-user-id": localStorage.getItem("hela_user_id") || "",
+          "x-user-id": localStorage.getItem("mallbuy_user_id") || "",
         },
         body: JSON.stringify({
           amount: amtKES,
@@ -228,7 +228,7 @@ export default function CryptoDeposit({ onRefresh, minDeposit, maxDeposit }: Cry
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-user-id": localStorage.getItem("hela_user_id") || "",
+          "x-user-id": localStorage.getItem("mallbuy_user_id") || "",
         },
         body: JSON.stringify({ txId: activeInvoice.txId }),
       });
@@ -272,7 +272,7 @@ export default function CryptoDeposit({ onRefresh, minDeposit, maxDeposit }: Cry
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div className="space-y-2">
                 <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider">
-                  Capital Funding Amount ({symbol}) *
+                  Funds Funding Amount ({symbol}) *
                 </label>
                 <div className="relative">
                   <span className="absolute left-3.5 top-3 text-sm text-slate-400 font-bold">{symbol}</span>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ShieldCheck, Users, Wallet, ListTodo, Plus, Check, X, ToggleLeft, ToggleRight, Sparkles, Server, Edit, Eye, EyeOff, UserCog, ArrowUpDown, ChevronRight } from "lucide-react";
-import { Transaction, Investment, Plan } from "../types";
+import { Transaction, Purchase, Plan } from "../types";
 
 interface AdminHubProps {
   onRefresh: () => void;
@@ -19,12 +19,12 @@ interface AdminUserSummary {
 }
 
 export default function AdminHub({ onRefresh }: AdminHubProps) {
-  const [activeAdminTab, setActiveAdminTab] = useState<"users" | "transactions" | "investments" | "plans" | "payment_settings">("transactions");
+  const [activeAdminTab, setActiveAdminTab] = useState<"users" | "transactions" | "purchases" | "plans" | "payment_settings">("transactions");
 
   // State data loaded directly
   const [users, setUsers] = useState<AdminUserSummary[]>([]);
   const [txs, setTxs] = useState<any[]>([]);
-  const [investments, setInvestments] = useState<any[]>([]);
+  const [purchases, setPurchases] = useState<any[]>([]);
   const [plans, setPlans] = useState<Plan[]>([]);
 
   // Messages and loading
@@ -87,7 +87,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-user-id": localStorage.getItem("hela_user_id") || "",
+          "x-user-id": localStorage.getItem("mallbuy_user_id") || "",
         },
         body: JSON.stringify({
           username: editUsername,
@@ -133,7 +133,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-user-id": localStorage.getItem("hela_user_id") || "",
+          "x-user-id": localStorage.getItem("mallbuy_user_id") || "",
         },
         body: JSON.stringify(bodyPayload),
       });
@@ -157,7 +157,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
   // Manual Ledger Injection States
   const [txUserId, setTxUserId] = useState("");
   const [txAmount, setTxAmount] = useState("");
-  const [txType, setTxType] = useState<"deposit" | "withdrawal" | "investment" | "commission" | "payout">("deposit");
+  const [txType, setTxType] = useState<"deposit" | "withdrawal" | "purchase" | "commission" | "payout">("deposit");
   const [txStatus, setTxStatus] = useState<"approved" | "pending" | "declined">("approved");
   const [txNote, setTxNote] = useState("");
   const [txPhone, setTxPhone] = useState("");
@@ -186,7 +186,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-user-id": localStorage.getItem("hela_user_id") || "",
+          "x-user-id": localStorage.getItem("mallbuy_user_id") || "",
         },
         body: JSON.stringify({
           username: addUsername,
@@ -228,7 +228,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-user-id": localStorage.getItem("hela_user_id") || "",
+          "x-user-id": localStorage.getItem("mallbuy_user_id") || "",
         },
         body: JSON.stringify({
           target_user_id: txUserId,
@@ -277,13 +277,13 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
 
   const loadAdminState = async () => {
     try {
-      const h_id = localStorage.getItem("hela_user_id") || "";
+      const h_id = localStorage.getItem("mallbuy_user_id") || "";
       const opt = { headers: { "x-user-id": h_id } };
 
       const [usersRes, txsRes, invRes, plansRes, payRes] = await Promise.all([
         fetch("/api/admin/users", opt),
         fetch("/api/admin/transactions", opt),
-        fetch("/api/admin/investments", opt),
+        fetch("/api/admin/purchases", opt),
         fetch("/api/plans"),
         fetch("/api/admin/payment-settings", opt),
       ]);
@@ -306,7 +306,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
         });
       }
       if (tData.transactions) setTxs(tData.transactions);
-      if (iData.investments) setInvestments(iData.investments);
+      if (iData.purchases) setPurchases(iData.purchases);
       if (pData.plans) setPlans(pData.plans);
       if (payData.paymentSettings) {
         setPaySettings({
@@ -349,7 +349,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
     try {
       const response = await fetch(`/api/admin/transactions/${id}/approve`, {
         method: "POST",
-        headers: { "x-user-id": localStorage.getItem("hela_user_id") || "" },
+        headers: { "x-user-id": localStorage.getItem("mallbuy_user_id") || "" },
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error);
@@ -370,7 +370,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
     try {
       const response = await fetch(`/api/admin/transactions/${id}/decline`, {
         method: "POST",
-        headers: { "x-user-id": localStorage.getItem("hela_user_id") || "" },
+        headers: { "x-user-id": localStorage.getItem("mallbuy_user_id") || "" },
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error);
@@ -389,14 +389,14 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
     setActionLoading(id);
     setMsg(null);
     try {
-      const response = await fetch(`/api/admin/investments/${id}/complete`, {
+      const response = await fetch(`/api/admin/purchases/${id}/complete`, {
         method: "POST",
-        headers: { "x-user-id": localStorage.getItem("hela_user_id") || "" },
+        headers: { "x-user-id": localStorage.getItem("mallbuy_user_id") || "" },
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error);
 
-      setMsg({ type: "success", text: "Trade forced to maturity successfully! Payout credited to user." });
+      setMsg({ type: "success", text: "Order forced to maturity successfully! Payout credited to user." });
       await loadAdminState();
       onRefresh();
     } catch (err: any) {
@@ -410,14 +410,14 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
     setActionLoading(id);
     setMsg(null);
     try {
-      const response = await fetch(`/api/admin/investments/${id}/cancel`, {
+      const response = await fetch(`/api/admin/purchases/${id}/cancel`, {
         method: "POST",
-        headers: { "x-user-id": localStorage.getItem("hela_user_id") || "" },
+        headers: { "x-user-id": localStorage.getItem("mallbuy_user_id") || "" },
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error);
 
-      setMsg({ type: "success", text: "Trade cancelled. User's seed capital refunded to their account ledger." });
+      setMsg({ type: "success", text: "Order cancelled. User's seed funds refunded to their account ledger." });
       await loadAdminState();
       onRefresh();
     } catch (err: any) {
@@ -433,7 +433,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
     try {
       const response = await fetch(`/api/admin/plans/${id}/toggle`, {
         method: "POST",
-        headers: { "x-user-id": localStorage.getItem("hela_user_id") || "" },
+        headers: { "x-user-id": localStorage.getItem("mallbuy_user_id") || "" },
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error);
@@ -461,7 +461,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-user-id": localStorage.getItem("hela_user_id") || "",
+          "x-user-id": localStorage.getItem("mallbuy_user_id") || "",
         },
         body: JSON.stringify({
           name: newPlanName,
@@ -509,7 +509,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
     try {
       const response = await fetch(`/api/admin/plans/${id}/delete`, {
         method: "POST",
-        headers: { "x-user-id": localStorage.getItem("hela_user_id") || "" },
+        headers: { "x-user-id": localStorage.getItem("mallbuy_user_id") || "" },
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error);
@@ -547,7 +547,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-user-id": localStorage.getItem("hela_user_id") || "",
+          "x-user-id": localStorage.getItem("mallbuy_user_id") || "",
         },
         body: JSON.stringify(paySettings),
       });
@@ -583,10 +583,10 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
           </div>
           <div>
             <h2 className="text-sm font-extrabold text-white tracking-tight flex items-center gap-2">
-              HelaVest Administrator Command Console
+              MallBuy Administrator Command Console
             </h2>
             <p className="text-[11px] text-slate-400 font-medium">
-              Validate pending member deposits/withdrawals, reset state data, or manage yield packages.
+              Validate pending member deposits/withdrawals, reset state data, or manage return packages.
             </p>
           </div>
         </div>
@@ -615,9 +615,9 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
       <div className="flex flex-wrap gap-2 border-b border-[#212a3d] pb-0.5 pt-1">
         {[
           { id: "transactions", label: "Financial Approvals Queue", icon: Wallet },
-          { id: "investments", label: "Active Trade Controller", icon: ListTodo },
+          { id: "purchases", label: "Active Order Controller", icon: ListTodo },
           { id: "users", label: "Registrations & Balances", icon: Users },
-          { id: "plans", label: "Yield Packages & Seeding", icon: Server },
+          { id: "plans", label: "Return Packages & Seeding", icon: Server },
           { id: "payment_settings", label: "Gateways Control Center", icon: ToggleRight },
         ].map((tab) => {
           const Icon = tab.icon;
@@ -654,7 +654,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
                 Inject Manual Transaction
               </h3>
               <p className="text-[10px] text-slate-450">
-                Directly inject manual deposits, payouts, fees, withdrawals or commission entries for any user.
+                Directly inject manual deposits, commissions, fees, withdrawals or commission entries for any user.
               </p>
             </div>
 
@@ -785,7 +785,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
                             <span className="text-[10px] text-slate-400 font-mono">ID: {tx.user_id}</span>
                           </td>
                           <td className="p-4">
-                            <span className="capitalize font-bold text-slate-200">{tx.transaction_type}</span>
+                            <span className="fundsize font-bold text-slate-200">{tx.transaction_type}</span>
                             <span className="block text-[10px] text-slate-400 max-w-[150px] truncate">{tx.note}</span>
                           </td>
                           <td className="p-4 font-mono text-slate-400">{tx.phone || "None"}</td>
@@ -836,17 +836,17 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
         </div>
       )}
 
-      {/* Active Trades Controller */}
-      {activeAdminTab === "investments" && (
+      {/* Active Orders Controller */}
+      {activeAdminTab === "purchases" && (
         <div className="bg-[#0f131d] border border-[#212a3d] rounded-2xl overflow-hidden">
           <div className="p-4 bg-[#0c0f16] border-b border-[#212a3d]/70">
             <h3 className="text-xs font-extrabold text-slate-300 uppercase tracking-wider">
-              Simulated Server Active Trades
+              Simulated Server Active Orders
             </h3>
           </div>
 
-          {investments.length === 0 ? (
-            <div className="p-12 text-center text-slate-400 text-xs">No investment logs in history.</div>
+          {purchases.length === 0 ? (
+            <div className="p-12 text-center text-slate-400 text-xs">No purchase logs in history.</div>
           ) : (
             <div className="overflow-x-auto text-xs">
               <table className="w-full text-left">
@@ -854,14 +854,14 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
                   <tr className="bg-[#0c0f16] text-slate-400 uppercase text-[9px] font-bold tracking-wider border-b border-[#212a3d]">
                     <th className="p-4 font-semibold">User</th>
                     <th className="p-4 font-semibold">Tier Plan</th>
-                    <th className="p-4 font-semibold">Capital Principal</th>
+                    <th className="p-4 font-semibold">Funds Principal</th>
                     <th className="p-4 font-semibold">Maturity Return</th>
                     <th className="p-4 font-semibold">Status</th>
                     <th className="p-4 font-semibold text-right">Force Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#212a3d]/50">
-                  {investments.map((inv) => {
+                  {purchases.map((inv) => {
                     const isActive = inv.status === "active";
                     return (
                       <tr key={inv.id} className="hover:bg-[#121824]/30 font-medium">
@@ -1277,7 +1277,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
         </div>
       )}
 
-      {/* Yield Packages Manager & Creation */}
+      {/* Return Packages Manager & Creation */}
       {activeAdminTab === "plans" && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Seeder form */}
@@ -1311,7 +1311,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Price Capital (KSh) *</label>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Price Funds (KSh) *</label>
                 <input
                   type="number"
                   required
@@ -1363,7 +1363,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
               className="w-full py-3.5 rounded-xl bg-red-500 hover:bg-red-400 text-[#0c0f16] font-bold text-xs flex items-center justify-center gap-2 transition-transform duration-200 cursor-pointer active:scale-[0.99] shadow-md shadow-red-950/20"
             >
               <Plus className="h-4 w-4" />
-              {editingPlanId ? "Update Yield Package" : "Build Yield Package"}
+              {editingPlanId ? "Update Return Package" : "Build Return Package"}
             </button>
           </form>
 
@@ -1380,7 +1380,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
                 <thead>
                   <tr className="bg-[#0c0f16] text-slate-400 uppercase text-[9px] font-bold tracking-wider border-b border-[#212a3d]">
                     <th className="p-4 font-semibold whitespace-nowrap">Tier Plan</th>
-                    <th className="p-4 font-semibold whitespace-nowrap">Capital Required</th>
+                    <th className="p-4 font-semibold whitespace-nowrap">Funds Required</th>
                     <th className="p-4 font-semibold whitespace-nowrap">Return Payout</th>
                     <th className="p-4 font-semibold whitespace-nowrap">Cycle</th>
                     <th className="p-4 font-semibold text-right whitespace-nowrap">Visibility Action</th>
@@ -1460,7 +1460,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
               <div className="lg:col-span-8 space-y-3.5 text-slate-300 font-medium">
                 <p className="text-xs leading-relaxed text-slate-300">
-                  HelaVest supports automatic dynamic bridging to external cloud-hosted relational structures. Connecting to your 
+                  MallBuy supports automatic dynamic bridging to external cloud-hosted relational structures. Connecting to your 
                   <strong className="text-white"> Neon Serverless Postgres Database</strong> provides bulletproof cloud database persistence, 
                   instant transaction state safety, multi-host sync, and cluster high-availability properties.
                 </p>
@@ -1518,7 +1518,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
                   </div>
                 ) : neonStatus?.useNeon ? (
                   <div className="text-[9.5px] text-emerald-400 border border-emerald-500/15 bg-emerald-500/5 px-3 py-2 rounded-xl font-bold tracking-tight">
-                    ✅ Neon Cloud system is working perfectly. User accounts, withdrawal requests, and yield allocations are locked in.
+                    ✅ Neon Cloud system is working perfectly. User accounts, withdrawal requests, and return allocations are locked in.
                   </div>
                 ) : (
                   <div className="text-[9.5px] text-slate-400 border border-[#212a3d] bg-slate-900/40 px-3 py-2 rounded-xl font-medium tracking-tight">
@@ -1726,7 +1726,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
                 Dynamic Withdrawal Limit Controls (KES values)
               </span>
               <p className="text-[11px] leading-relaxed text-slate-400">
-                Configure your project's global minimum and maximum withdrawal limit thresholds. These are fully enforced when any investor attempts to submit an M-Pesa or Cryptocurrency withdrawal transaction request.
+                Configure your project's global minimum and maximum withdrawal limit thresholds. These are fully enforced when any buyor attempts to submit an M-Pesa or Cryptocurrency withdrawal transaction request.
                 <span className="text-red-300 block mt-1 font-semibold">Leave empty or set to 0 to disable automated withdrawal limits.</span>
               </p>
               

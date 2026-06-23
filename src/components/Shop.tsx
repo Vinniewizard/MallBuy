@@ -3,14 +3,14 @@ import { Coins, Flame, Gem, ShieldAlert, Sparkles, TrendingUp, HelpCircle, Arrow
 import { Plan, WalletBalance } from "../types";
 import { useCurrency } from "../context/CurrencyContext";
 
-interface InvestProps {
+interface ShopProps {
   plans: Plan[];
   balance: WalletBalance | null;
-  onInvest: (planId: string) => Promise<any>;
+  onShop: (planId: string) => Promise<any>;
   onSwitchTab: (tab: string) => void;
 }
 
-export default function Invest({ plans, balance, onInvest, onSwitchTab }: InvestProps) {
+export default function Shop({ plans, balance, onShop, onSwitchTab }: ShopProps) {
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
   const [statusMsg, setStatusMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -21,18 +21,18 @@ export default function Invest({ plans, balance, onInvest, onSwitchTab }: Invest
     setSelectedPlan(plans[0]);
   }
 
-  const handleInvestSubmit = async (planId: string) => {
+  const handleShopSubmit = async (planId: string) => {
     setStatusMsg(null);
     setLoading(planId);
 
     try {
-      const res = await onInvest(planId);
+      const res = await onShop(planId);
       if (res && res.error) {
         setStatusMsg({ type: "error", text: res.error });
       } else {
         setStatusMsg({
           type: "success",
-          text: `Successfully initialized ${plans.find((p) => p.id === planId)?.name}! Tracks initialized on My Trades.`,
+          text: `Successfully initialized ${plans.find((p) => p.id === planId)?.name}! Tracks initialized on My Orders.`,
         });
       }
     } catch (err: any) {
@@ -56,7 +56,7 @@ export default function Invest({ plans, balance, onInvest, onSwitchTab }: Invest
       <div className="flex flex-col gap-1.5">
         <h2 className="text-xl font-extrabold text-white tracking-tight">Active Plan Marketplace</h2>
         <p className="text-xs text-slate-400 max-w-xl">
-          Purchase structured investment packages tailored to generate daily yields. Assets automatically maturity-clear to your cash balance.
+          Purchase structured purchase packages tailored to generate daily returns. Assets automatically maturity-clear to your cash balance.
         </p>
       </div>
 
@@ -73,7 +73,7 @@ export default function Invest({ plans, balance, onInvest, onSwitchTab }: Invest
         </div>
       )}
 
-      {/* Main Container: Grid layout split into packages list and the live ROI calculator */}
+      {/* Main Container: Grid layout split into packages list and the live Margin calculator */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Plans List Column (8 cols) */}
         <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -112,7 +112,7 @@ export default function Invest({ plans, balance, onInvest, onSwitchTab }: Invest
                     {format(plan.amount)}
                   </h3>
                   <p className="text-[10px] text-slate-400 mt-1.5 leading-relaxed font-medium">
-                    {plan.description || "Micro-finance daily compounding yield package."}
+                    {plan.description || "Micro-finance daily wholesale profit package."}
                   </p>
                 </div>
 
@@ -123,7 +123,7 @@ export default function Invest({ plans, balance, onInvest, onSwitchTab }: Invest
                     <span className="text-xs font-bold text-slate-300 font-mono">{plan.duration_days} Days</span>
                   </div>
                   <div className="flex flex-col items-end">
-                    <span className="text-[9px] text-slate-400 font-bold uppercase">Estimated ROI</span>
+                    <span className="text-[9px] text-slate-400 font-bold uppercase">Estimated Margin</span>
                     <span className="text-xs font-black text-emerald-400 font-mono">+{roiPercent}%</span>
                   </div>
                 </div>
@@ -132,12 +132,12 @@ export default function Invest({ plans, balance, onInvest, onSwitchTab }: Invest
           })}
         </div>
 
-        {/* Dynamic ROI Side Calculator Widget (5 cols) */}
+        {/* Dynamic Margin Side Calculator Widget (5 cols) */}
         <div className="lg:col-span-5 bg-[#0f131d] border border-[#212a3d] rounded-2xl p-6 space-y-5 sticky top-28">
           <div>
             <h3 className="text-sm font-extrabold text-white uppercase tracking-tight flex items-center gap-1.5">
               <TrendingUp className="h-4.5 w-4.5 text-emerald-400" />
-              Investment Estimator
+              Purchase Estimator
             </h3>
             <p className="text-[10px] text-slate-400 mt-0.5">
               Review payout schedules before activating selected plan.
@@ -155,7 +155,7 @@ export default function Invest({ plans, balance, onInvest, onSwitchTab }: Invest
 
                 <div className="grid grid-cols-2 gap-4 text-xs pt-1.5">
                   <div className="flex flex-col gap-0.5">
-                    <span className="text-[10px] text-slate-400 uppercase font-bold">Capital Required</span>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold">Funds Required</span>
                     <span className="text-sm font-bold text-slate-200 font-mono">
                       {format(selectedPlan.amount)}
                     </span>
@@ -182,7 +182,7 @@ export default function Invest({ plans, balance, onInvest, onSwitchTab }: Invest
                 </div>
 
                 <div className="pt-2 border-t border-[#212a3d]/50 flex items-center justify-between text-xs">
-                  <span className="text-[10px] text-slate-400 uppercase font-bold">Daily Earnings Yield</span>
+                  <span className="text-[10px] text-slate-400 uppercase font-bold">Daily Earnings Return</span>
                   <span className="font-bold text-slate-300 font-mono">
                     {format(Math.round((selectedPlan.return_amount - selectedPlan.amount) / selectedPlan.duration_days))}
                     <span className="text-[10px] text-slate-400">/day</span>
@@ -214,7 +214,7 @@ export default function Invest({ plans, balance, onInvest, onSwitchTab }: Invest
 
               {/* Action Button */}
               <button
-                onClick={() => handleInvestSubmit(selectedPlan.id)}
+                onClick={() => handleShopSubmit(selectedPlan.id)}
                 disabled={loading !== null || (balance !== null && balance.available_balance < selectedPlan.amount)}
                 className={`w-full py-3.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                   loading === selectedPlan.id
@@ -237,7 +237,7 @@ export default function Invest({ plans, balance, onInvest, onSwitchTab }: Invest
           ) : (
             <div className="flex flex-col items-center justify-center text-center p-8 bg-[#0c0f16]/50 border border-dashed border-[#20293d] rounded-xl text-slate-400 text-xs">
               <HelpCircle className="h-8 w-8 text-slate-300 mb-2" />
-              Please select an investment package on the left to review metrics
+              Please select an purchase package on the left to review metrics
             </div>
           )}
         </div>

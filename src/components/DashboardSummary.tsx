@@ -109,7 +109,7 @@ export default function DashboardSummary({
             <div>
               <h4 className="text-xs font-black uppercase text-slate-200 tracking-wider">Claim Commissions</h4>
               <p className="text-[11px] text-slate-400 mt-1 leading-normal">
-                Earn KSh 500 automatically on registration, increasing to KSh 2,500 once clients trade in dynamic plans.
+                Earn KSh 500 automatically on registration, increasing to KSh 2,500 once clients order in dynamic plans.
               </p>
             </div>
           </div>

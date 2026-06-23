@@ -34,7 +34,7 @@ export default function Header({
             <span className="font-bold text-white italic">H</span>
           </div>
           <span className="text-base sm:text-xl font-bold tracking-tight text-white truncate">
-            HelaInvest
+            MallBuy
           </span>
           {isAdminMode && (
             <div className="flex items-center gap-1 flex-shrink-0">
@@ -118,7 +118,7 @@ export default function Header({
               { id: "dashboard", label: "Overview", icon: TrendingUp },
               { id: "wallet", label: "Wallet", icon: Wallet },
               { id: "referrals", label: "Network", icon: Users },
-              { id: "trades", label: "History", icon: ListTodo },
+              { id: "orders", label: "History", icon: ListTodo },
               { id: "profile", label: "Profile", icon: User },
             ].map((tab) => {
               const isActive = currentTab === tab.id;

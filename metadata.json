@@ -1,6 +1,6 @@
 {
-  "name": "HelaVest",
-  "description": "Premium Investment & M-Pesa Wallet Simulation Suite with Referrals and Active Trade Manager",
+  "name": "MallBuy",
+  "description": "Premium Purchase & M-Pesa Wallet Simulation Suite with Referrals and Active Order Manager",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

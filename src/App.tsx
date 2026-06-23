@@ -3,13 +3,13 @@ import { AnimatePresence, motion } from "motion/react";
 import { ShieldAlert, AlertCircle, RefreshCw, Info } from "lucide-react";
 import { Toaster, toast } from "sonner";
 
-import { User, WalletBalance, DashboardStats, Transaction, Investment, ReferralRecord, Plan } from "./types";
+import { User, WalletBalance, DashboardStats, Transaction, Purchase, ReferralRecord, Plan } from "./types";
 import Header from "./components/Header";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import Dashboard from "./components/Dashboard";
-import Invest from "./components/Invest";
-import Trades from "./components/Trades";
+import Shop from "./components/Shop";
+import Orders from "./components/Orders";
 import WalletComponent from "./components/Wallet";
 import AdminHub from "./components/AdminHub";
 import Referrals from "./components/Referrals";
@@ -30,12 +30,12 @@ export default function App() {
   const [balance, setBalance] = useState<WalletBalance | null>(null);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [investments, setInvestments] = useState<Investment[]>([]);
+  const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [referrals, setReferrals] = useState<ReferralRecord[]>([]);
   const [plans, setPlans] = useState<Plan[]>([]);
 
   const prevTxRef = useRef<Transaction[]>([]);
-  const prevInvRef = useRef<Investment[]>([]);
+  const prevInvRef = useRef<Purchase[]>([]);
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -51,7 +51,7 @@ export default function App() {
         fetch("/api/user/balance", { headers: authHeaders }),
         fetch("/api/user/stats", { headers: authHeaders }),
         fetch("/api/transactions", { headers: authHeaders }),
-        fetch("/api/investments", { headers: authHeaders }),
+        fetch("/api/purchases", { headers: authHeaders }),
         fetch("/api/referrals", { headers: authHeaders }),
         fetch("/api/plans"),
       ]);
@@ -84,17 +84,17 @@ export default function App() {
         prevTxRef.current = txData.transactions;
       }
       
-      if (invData.investments) {
+      if (invData.purchases) {
         if (silent && prevInvRef.current.length > 0) {
-          invData.investments.forEach((inv: Investment) => {
+          invData.purchases.forEach((inv: Purchase) => {
             const oldInv = prevInvRef.current.find(i => i.id === inv.id);
             if (oldInv && oldInv.status === "active" && inv.status === "completed") {
-              toast.success(`Your investment of KSh ${inv.amount.toLocaleString()} just completed!`);
+              toast.success(`Your purchase of KSh ${inv.amount.toLocaleString()} just completed!`);
             }
           });
         }
-        setInvestments(invData.investments);
-        prevInvRef.current = invData.investments;
+        setPurchases(invData.purchases);
+        prevInvRef.current = invData.purchases;
       }
 
       if (refData.referrals) setReferrals(refData.referrals);
@@ -118,7 +118,7 @@ export default function App() {
 
   // Check login on startup
   const checkSession = useCallback(async () => {
-    const savedUserId = localStorage.getItem("hela_user_id");
+    const savedUserId = localStorage.getItem("mallbuy_user_id");
     if (!savedUserId) {
       setAppInitialized(true);
       return;
@@ -138,7 +138,7 @@ export default function App() {
         }
         await loadAllUserData(data.user.id);
       } else {
-        localStorage.removeItem("hela_user_id");
+        localStorage.removeItem("mallbuy_user_id");
       }
     } catch (err) {
       console.error("Session lookup aborted.", err);
@@ -228,7 +228,7 @@ export default function App() {
               if (nextMode) {
                 setCurrentTab("admin");
                 window.history.pushState(null, "", "/secure-admin/");
-                toast.success("HelaVest Secure Admin Interface Opened");
+                toast.success("MallBuy Secure Admin Interface Opened");
               } else {
                 setCurrentTab("dashboard");
                 window.history.pushState(null, "", "/");
@@ -252,7 +252,7 @@ export default function App() {
   }, [currentUser]);
 
   const handleLoginSuccess = async (user: User) => {
-    localStorage.setItem("hela_user_id", user.id);
+    localStorage.setItem("mallbuy_user_id", user.id);
     setCurrentUser(user);
     if (window.location.pathname.startsWith('/secure-admin') && user.isAdmin) {
       setIsAdminMode(true);
@@ -265,12 +265,12 @@ export default function App() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("hela_user_id");
+    localStorage.removeItem("mallbuy_user_id");
     setCurrentUser(null);
     setBalance(null);
     setStats(null);
     setTransactions([]);
-    setInvestments([]);
+    setPurchases([]);
     setReferrals([]);
     setIsAdminMode(false);
     setCurrentTab("dashboard");
@@ -409,10 +409,10 @@ export default function App() {
     }
   };
 
-  const handleInvest = async (planId: string) => {
+  const handleShop = async (planId: string) => {
     if (!currentUser) return;
     try {
-      const response = await fetch("/api/investments/create", {
+      const response = await fetch("/api/purchases/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -427,7 +427,7 @@ export default function App() {
       return data;
     } catch (errOrError) {
       console.error(errOrError);
-      return { error: "Investment transaction failed." };
+      return { error: "Purchase transaction failed." };
     }
   };
 
@@ -444,7 +444,7 @@ export default function App() {
         <div className="flex flex-col items-center gap-4">
           <div className="h-10 w-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
           <span className="text-xs font-bold uppercase tracking-widest text-[#f3f4f6] animate-pulse">
-            Configuring HelaVest Terminal...
+            Configuring MallBuy Terminal...
           </span>
         </div>
       </div>
@@ -573,7 +573,7 @@ export default function App() {
           <div className="bg-[#e8f5e9] border border-[#006B4A]/20 p-3.5 rounded-xl flex items-center justify-between text-xs text-emerald-400 font-semibold mb-6">
             <span className="flex items-center gap-2">
               <RefreshCw className="h-4.5 w-4.5 animate-spin" />
-              Synchronizing with HelaVest state...
+              Synchronizing with MallBuy state...
             </span>
             <span className="text-[10px] text-slate-500 font-mono">UTC: {new Date().toISOString().slice(0,19).replace("T"," ")}</span>
           </div>
@@ -597,7 +597,7 @@ export default function App() {
                 referrals={referrals}
                 plans={plans}
                 balance={balance}
-                onInvest={handleInvest}
+                onShop={handleShop}
                 onSwitchTab={(tab, subTab) => {
                   setCurrentTab(tab);
                   if (subTab) {
@@ -607,9 +607,9 @@ export default function App() {
                 }}
                 onRefresh={triggerRefresh}
               />
-            ) : currentTab === "trades" ? (
-              <Trades
-                investments={investments}
+            ) : currentTab === "orders" ? (
+              <Orders
+                purchases={purchases}
                 balance={balance}
                 onRefresh={triggerRefresh}
               />
@@ -628,7 +628,7 @@ export default function App() {
               <Referrals
                  user={currentUser}
                  referrals={referrals}
-                 investments={investments}
+                 purchases={purchases}
                  onRefresh={triggerRefresh}
               />
             ) : currentTab === "profile" ? (
@@ -659,8 +659,8 @@ export default function App() {
       <footer className="w-full bg-white/5 border-t border-white/10 backdrop-blur-md py-12 mt-auto">
         <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
            <div>
-             <h3 className="text-xl font-bold mb-4 text-white">HelaVest</h3>
-             <p className="text-sm text-slate-400">Professional investment platform for consistent capital growth and secure financial management.</p>
+             <h3 className="text-xl font-bold mb-4 text-white">MallBuy</h3>
+             <p className="text-sm text-slate-400">Professional wholesale platform for consistent inventory growth and secure financial management.</p>
            </div>
            <div>
              <h4 className="font-bold mb-4 text-white">Quick Links</h4>
@@ -678,7 +678,7 @@ export default function App() {
            </div>
         </div>
         <div className="w-full border-t border-white/10 pt-8 mt-4 text-center">
-           <p className="text-xs text-slate-500">© 2026 HelaVest. All rights reserved.</p>
+           <p className="text-xs text-slate-500">© 2026 MallBuy. All rights reserved.</p>
         </div>
       </footer>
       

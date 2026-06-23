@@ -60,7 +60,7 @@ export default function WalletComponent({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-user-id": localStorage.getItem("hela_user_id") || "",
+          "x-user-id": localStorage.getItem("mallbuy_user_id") || "",
         },
         body: JSON.stringify({ txId }),
       });
@@ -252,7 +252,7 @@ export default function WalletComponent({
                 Account & Ledger Management
               </h2>
               <p className="text-xs text-slate-400 font-medium mt-0.5">
-                Fund your live trading simulator or request secure payouts.
+                Fund your live trading simulator or request secure commissions.
               </p>
             </div>
           </div>
@@ -297,7 +297,7 @@ export default function WalletComponent({
           }`}
         >
           <ArrowDownCircle className="h-4 w-4" />
-          Deposit Capital
+          Deposit Funds
         </button>
 
         <button
@@ -464,7 +464,7 @@ export default function WalletComponent({
 
                 <div className="border-t border-white/10 pt-4 space-y-2.5">
                   <div className="flex justify-between items-center text-xs">
-                    <span className="text-slate-400 font-semibold">Minimum Capital:</span>
+                    <span className="text-slate-400 font-semibold">Minimum Funds:</span>
                     <span className="text-emerald-400 font-extrabold">
                       {paymentSettings.min_deposit !== undefined && paymentSettings.min_deposit !== null && paymentSettings.min_deposit > 0 ? (
                         `${format(paymentSettings.min_deposit)} (~${paymentSettings.min_deposit.toLocaleString()} KSh)`
@@ -507,7 +507,7 @@ export default function WalletComponent({
                   <div className="space-y-4">
                     <div>
                       <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-                        Deposit Capital Amount ({symbol}) *
+                        Deposit Funds Amount ({symbol}) *
                       </label>
                       <div className="relative">
                         <span className="absolute left-3.5 top-3 text-sm text-slate-400 font-bold">{symbol}</span>
@@ -806,7 +806,7 @@ export default function WalletComponent({
                     <th className="p-4 font-bold">Ledger Type</th>
                     <th className="p-4 font-bold">Transfer reference</th>
                     <th className="p-4 font-bold">Audit Status</th>
-                    <th className="p-4 font-bold text-right">Raw Capital Value ({activeCurrency})</th>
+                    <th className="p-4 font-bold text-right">Raw Funds Value ({activeCurrency})</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -842,7 +842,7 @@ export default function WalletComponent({
                       sign = "-";
                       amountClass = "text-rose-600 font-extrabold";
                       TypeIcon = ArrowUpCircle;
-                    } else if (tx.transaction_type === "investment") {
+                    } else if (tx.transaction_type === "purchase") {
                       sign = "-";
                       amountClass = "text-slate-400 font-semibold";
                       TypeIcon = ListTodo;
@@ -857,13 +857,13 @@ export default function WalletComponent({
                           </span>
                         </td>
                         <td className="p-4 whitespace-nowrap">
-                          <span className="text-xs font-bold text-slate-300 capitalize flex items-center gap-1.5">
+                          <span className="text-xs font-bold text-slate-300 fundsize flex items-center gap-1.5">
                             <TypeIcon className="h-4 w-4 text-slate-400 shrink-0" />
                             {tx.transaction_type === "commission" ? "Referral Bonus" : tx.transaction_type}
                           </span>
                         </td>
                         <td className="p-4 text-slate-300 max-w-[200px] truncate font-medium">
-                          <span className="text-slate-300 font-bold block text-xs">{tx.note || "HelaVest Transfer"}</span>
+                          <span className="text-slate-300 font-bold block text-xs">{tx.note || "MallBuy Transfer"}</span>
                           {tx.phone && (
                             <span className="text-[9.5px] text-slate-400 font-mono block mt-0.5">
                               {tx.phone.includes("Crypto") ? "Gateway" : "Phone"}: {tx.phone}

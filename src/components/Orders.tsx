@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ListTodo, TrendingUp, Sparkles, Clock, CheckCircle2, XCircle, ArrowUpRight, HelpCircle, FastForward } from "lucide-react";
-import { Investment, InvestmentStatus, WalletBalance } from "../types";
+import { Purchase, PurchaseStatus, WalletBalance } from "../types";
 import { useCurrency } from "../context/CurrencyContext";
 
 function LiveCountdown({ maturesAt }: { maturesAt: string }) {
@@ -47,20 +47,20 @@ function LiveCountdown({ maturesAt }: { maturesAt: string }) {
   );
 }
 
-interface TradesProps {
-  investments: Investment[];
+interface OrdersProps {
+  purchases: Purchase[];
   balance: WalletBalance | null;
   onRefresh: () => void;
 }
 
-export default function Trades({ investments, balance, onRefresh }: TradesProps) {
-  const [filter, setFilter] = useState<"all" | InvestmentStatus>("all");
+export default function Orders({ purchases, balance, onRefresh }: OrdersProps) {
+  const [filter, setFilter] = useState<"all" | PurchaseStatus>("all");
   const [fastForwarding, setFastForwarding] = useState<number | null>(null);
   const [simulationResult, setSimulationResult] = useState<string | null>(null);
   const { format } = useCurrency();
 
-  // Filtered investments
-  const filteredInvestments = investments.filter((inv) =>
+  // Filtered purchases
+  const filteredPurchases = purchases.filter((inv) =>
     filter === "all" ? true : inv.status === filter
   );
 
@@ -90,7 +90,7 @@ export default function Trades({ investments, balance, onRefresh }: TradesProps)
   };
 
   // Helper: calculate progress on client side to show live countdown logic
-  const getProgressInfo = (inv: Investment) => {
+  const getProgressInfo = (inv: Purchase) => {
     const createdTime = new Date(inv.created_at).getTime();
     const maturesTime = new Date(inv.matures_at).getTime();
     const nowTime = Date.now();
@@ -119,10 +119,10 @@ export default function Trades({ investments, balance, onRefresh }: TradesProps)
           <div className="space-y-1">
             <h3 className="text-sm font-extrabold text-emerald-400 uppercase tracking-tight flex items-center gap-1.5">
               <FastForward className="h-4 w-4" />
-              Timeline Simulation Controls (HelaVest SandBox)
+              Timeline Simulation Controls (MallBuy SandBox)
             </h3>
             <p className="text-xs text-slate-400 max-w-xl font-medium leading-relaxed">
-              These developer controls allow you to shift the system calendar days into the future. Instantly trigger trade lifecycle maturity, payout disbursements, and bonus referral conversions to verify app features.
+              These developer controls allow you to shift the system calendar days into the future. Instantly trigger order lifecycle maturity, payout disbursements, and bonus referral conversions to verify app features.
             </p>
           </div>
 
@@ -158,10 +158,10 @@ export default function Trades({ investments, balance, onRefresh }: TradesProps)
         <div className="flex flex-col gap-1">
           <h2 className="text-xl font-extrabold text-white tracking-tight flex items-center gap-2">
             <ListTodo className="h-5 w-5 text-emerald-400" />
-            Active and Historical Trades
+            Active and Historical Orders
           </h2>
           <p className="text-xs text-slate-400 font-medium">
-            Monitor real-time progress parameters, yields, and countdowns.
+            Monitor real-time progress parameters, returns, and countdowns.
           </p>
         </div>
 
@@ -188,18 +188,18 @@ export default function Trades({ investments, balance, onRefresh }: TradesProps)
         </div>
       </div>
 
-      {/* List / Grid of investments */}
-      {filteredInvestments.length === 0 ? (
+      {/* List / Grid of purchases */}
+      {filteredPurchases.length === 0 ? (
         <div className="bg-[#0f131d] border border-[#212a3d] rounded-2xl p-12 text-center flex flex-col items-center justify-center">
           <Clock className="h-10 w-10 text-slate-300 mb-2" />
-          <h4 className="text-sm font-bold text-slate-300">No trades match this filter</h4>
+          <h4 className="text-sm font-bold text-slate-300">No orders match this filter</h4>
           <p className="text-xs text-slate-400 mt-1 max-w-sm leading-relaxed">
-            There are no trades to display. Navigate to the marketplace to launch your first yield-bearing plan.
+            There are no orders to display. Navigate to the marketplace to launch your first return-bearing plan.
           </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredInvestments.map((inv) => {
+          {filteredPurchases.map((inv) => {
             const { percent, daysLeft, isMatured } = getProgressInfo(inv);
 
             // Badge coloring
@@ -232,10 +232,10 @@ export default function Trades({ investments, balance, onRefresh }: TradesProps)
                   </span>
                 </div>
 
-                {/* Capital & Return details */}
+                {/* Funds & Return details */}
                 <div className="bg-[#0c0f16]/85 border border-[#212a3d]/50 rounded-xl p-3.5 grid grid-cols-3 gap-2 text-xs">
                   <div className="flex flex-col gap-0.5">
-                    <span className="text-[9px] text-slate-400 uppercase font-bold">Principal Capital</span>
+                    <span className="text-[9px] text-slate-400 uppercase font-bold">Principal Funds</span>
                     <span className="font-bold text-slate-300 font-mono">{format(inv.amount)}</span>
                   </div>
                   <div className="flex flex-col gap-0.5 items-center">

@@ -28,12 +28,12 @@ const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined
 
 export function CurrencyProvider({ children }: { children: React.ReactNode }) {
   const [activeCurrency, setActiveCurrency] = useState<CurrencyType>(() => {
-    const saved = localStorage.getItem("helavest_currency");
+    const saved = localStorage.getItem("mallbuy_currency");
     return (saved as CurrencyType) || "USD"; // Default to dollars as requested!
   });
 
   useEffect(() => {
-    localStorage.setItem("helavest_currency", activeCurrency);
+    localStorage.setItem("mallbuy_currency", activeCurrency);
   }, [activeCurrency]);
 
   const config = CURRENCY_CONFIGS[activeCurrency];
