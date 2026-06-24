@@ -97,11 +97,11 @@ interface DatabaseSchema {
 // SEEDING DEFAULT DATABASE STATE
 // -------------------------------------------------------------
 const DEFAULT_PLANS: ServerPlan[] = [
-  { id: "p1", name: "Copper (Starter)", amount: 800, return_amount: 1200, duration_days: 3, active: true, description: "Unlocks rapid 50% returns. Perfect entry plan." },
-  { id: "p2", name: "Bronze (Growth)", amount: 2500, return_amount: 4000, duration_days: 5, active: true, description: "Highly popular for active local small-inventory growth." },
-  { id: "p3", name: "Silver (Alpha)", amount: 8000, return_amount: 14000, duration_days: 7, active: true, description: "Secure medium-scale vault returning KSh 850 daily profit." },
-  { id: "p4", name: "Gold (Prime)", amount: 20000, return_amount: 38000, duration_days: 10, active: true, description: "High-tier interest matching premium funds managers." },
-  { id: "p5", name: "Platinum (Apex)", amount: 60000, return_amount: 120000, duration_days: 14, active: true, description: "Compounding apex tier designed for top MallBuy builders." }
+  { id: "p1", name: "Handheld Vacuum Cleaner", amount: 800, return_amount: 1200, duration_days: 3, active: true, description: "Compact cordless handheld vacuum cleaner. High-demand home appliance." },
+  { id: "p2", name: "Electric Air Fryer", amount: 2500, return_amount: 4000, duration_days: 5, active: true, description: "4.5L digital touch air fryer. Wholesale batch lot with rapid turnover." },
+  { id: "p3", name: "Smart Dishwasher", amount: 8000, return_amount: 14000, duration_days: 7, active: true, description: "Countertop compact smart dishwasher. Prime kitchen automation item." },
+  { id: "p4", name: "Robot Vacuum Cleaner", amount: 20000, return_amount: 38000, duration_days: 10, active: true, description: "LiDAR-navigation self-emptying robot vacuum. High-ticket tech item." },
+  { id: "p5", name: "Commercial Espresso Machine", amount: 60000, return_amount: 120000, duration_days: 14, active: true, description: "Dual-boiler professional espresso station. Premium commercial appliance lot." }
 ];
 
 const DEFAULT_USERS: ServerUser[] = [
@@ -247,9 +247,46 @@ function ensureGadminAdmin(db: DatabaseSchema): boolean {
   return modified;
 }
 
+function migrateDB(db: any): boolean {
+  let changed = false;
+  
+  if (db.investments && !db.purchases) {
+    db.purchases = db.investments;
+    delete db.investments;
+    changed = true;
+  }
+  if (!db.purchases) {
+    db.purchases = [];
+    changed = true;
+  }
+  
+  if (db.transactions) {
+    for (const t of db.transactions) {
+      if (t.transaction_type === "investment") {
+        t.transaction_type = "purchase";
+        changed = true;
+      }
+    }
+  }
+
+  if (!db.paymentSettings) {
+    db.paymentSettings = {
+      mpesa_enabled: true,
+      crypto_enabled: true,
+      nowpayments_sandbox: false,
+      nowpayments_api_key: ""
+    };
+    changed = true;
+  }
+  
+  if (ensureGadminAdmin(db)) changed = true;
+  
+  return changed;
+}
+
 function getDatabase(): DatabaseSchema {
   if (useNeon && neonInMemoryCache) {
-    const changed = ensureGadminAdmin(neonInMemoryCache);
+    const changed = migrateDB(neonInMemoryCache);
     if (changed) {
       saveDatabase(neonInMemoryCache);
     }
@@ -279,17 +316,9 @@ function getDatabase(): DatabaseSchema {
     const raw = fs.readFileSync(DB_FILE, "utf-8");
     const db = JSON.parse(raw);
     
-    const changed = ensureGadminAdmin(db);
+    const changed = migrateDB(db);
     
-    if (!db.paymentSettings) {
-      db.paymentSettings = {
-        mpesa_enabled: true,
-        crypto_enabled: true,
-        nowpayments_sandbox: false,
-        nowpayments_api_key: ""
-      };
-      fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2), "utf-8");
-    } else if (changed) {
+    if (changed) {
       fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2), "utf-8");
     }
     return db;

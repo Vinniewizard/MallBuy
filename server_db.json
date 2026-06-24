@@ -31,54 +31,54 @@
   "plans": [
     {
       "id": "p1",
-      "name": "Copper (Starter)",
+      "name": "Handheld Vacuum Cleaner",
       "amount": 800,
       "return_amount": 1200,
       "duration_days": 3,
       "active": true,
-      "description": "Unlocks rapid 50% returns. Perfect entry plan."
+      "description": "Compact cordless handheld vacuum cleaner. High-demand home appliance."
     },
     {
       "id": "p2",
-      "name": "Bronze (Growth)",
+      "name": "Electric Air Fryer",
       "amount": 2500,
       "return_amount": 4000,
       "duration_days": 5,
       "active": true,
-      "description": "Highly popular for active local small-capital growth."
+      "description": "4.5L digital touch air fryer. Wholesale batch lot with rapid turnover."
     },
     {
       "id": "p3",
-      "name": "Silver (Alpha)",
+      "name": "Smart Dishwasher",
       "amount": 8000,
       "return_amount": 14000,
       "duration_days": 7,
       "active": true,
-      "description": "Secure medium-scale vault yielding KSh 850 daily profit."
+      "description": "Countertop compact smart dishwasher. Prime kitchen automation item."
     },
     {
       "id": "p4",
-      "name": "Gold (Prime)",
+      "name": "Robot Vacuum Cleaner",
       "amount": 20000,
       "return_amount": 38000,
       "duration_days": 10,
       "active": true,
-      "description": "High-tier interest matching premium capital managers."
+      "description": "LiDAR-navigation self-emptying robot vacuum. High-ticket tech item."
     },
     {
       "id": "p5",
-      "name": "Platinum (Apex)",
+      "name": "Commercial Espresso Machine",
       "amount": 60000,
       "return_amount": 120000,
       "duration_days": 14,
       "active": true,
-      "description": "Compounding apex tier designed for top HelaVest builders."
+      "description": "Dual-boiler professional espresso station. Premium commercial appliance lot."
     }
   ],
-  "investments": [],
+  "purchases": [],
   "transactions": [],
   "referrals": [],
-  "systemOffsetDays": 0,
+  "systemOffsetDays": 1,
   "paymentSettings": {
     "mpesa_enabled": true,
     "crypto_enabled": true,

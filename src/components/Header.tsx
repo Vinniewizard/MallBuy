@@ -1,5 +1,5 @@
 import React from "react";
-import { Coins, LogOut, ShieldCheck, User, TrendingUp, Wallet, ListTodo, Users, Globe } from "lucide-react";
+import { Coins, LogOut, ShieldCheck, User, TrendingUp, Wallet, ListTodo, Users, Globe, Sun } from "lucide-react";
 import { User as UserType, WalletBalance } from "../types";
 import { useCurrency, CurrencyType } from "../context/CurrencyContext";
 
@@ -25,16 +25,16 @@ export default function Header({
   const { activeCurrency, setCurrency, format } = useCurrency();
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white/5 border-b border-white/10 shadow-sm backdrop-blur-xl">
+    <header className="sticky top-0 z-50 w-full bg-slate-950/90 border-b border-white/10 shadow-lg backdrop-blur-md">
       <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-1 sm:gap-4">
         
         {/* Brand */}
         <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-shrink-0">
           <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center mr-2">
-            <span className="font-bold text-white italic">H</span>
+            <span className="font-bold text-white italic">W</span>
           </div>
           <span className="text-base sm:text-xl font-bold tracking-tight text-white truncate">
-            MallBuy
+            World Legitimate Official Wholesale Desk
           </span>
           {isAdminMode && (
             <div className="flex items-center gap-1 flex-shrink-0">
@@ -69,6 +69,12 @@ export default function Header({
             <option value="EUR">EUR (€)</option>
             <option value="GBP">GBP (£)</option>
           </select>
+        </div>
+
+        {/* Keep-Wake Live Status Badge */}
+        <div className="hidden md:flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider text-emerald-400 shadow-sm flex-shrink-0">
+          <Sun className="h-3.5 w-3.5 text-emerald-400 animate-pulse" />
+          <span>Keep-Wake Active</span>
         </div>
  
         {/* Desktop nav links */}
@@ -112,32 +118,34 @@ export default function Header({
 
       {/* Navigation sub-header for inner pages (unless Admin Mode) */}
       {!isAdminMode && (
-        <div className="w-full bg-black/20 border-b border-white/10 overflow-x-auto hide-scrollbar backdrop-blur-md">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-start md:justify-center gap-1.5 sm:gap-3">
-            {[
-              { id: "dashboard", label: "Overview", icon: TrendingUp },
-              { id: "wallet", label: "Wallet", icon: Wallet },
-              { id: "referrals", label: "Network", icon: Users },
-              { id: "orders", label: "History", icon: ListTodo },
-              { id: "profile", label: "Profile", icon: User },
-            ].map((tab) => {
-              const isActive = currentTab === tab.id;
-              const TabIcon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setCurrentTab(tab.id)}
-                  className={`group px-3 md:px-5 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 ease-out whitespace-nowrap cursor-pointer flex items-center gap-1.5 sm:gap-2 hover:scale-104 active:scale-96 ${
-                    isActive
-                      ? "bg-white/10 text-white border border-white/10"
-                      : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10"
-                  }`}
-                >
-                  <TabIcon className={`h-3.5 w-3.5 transition-transform duration-300 ease-out group-hover:scale-115 group-hover:rotate-3 ${isActive ? "text-emerald-400" : "text-slate-400 group-hover:text-emerald-400"}`} />
-                  <span className="transition-colors duration-200">{tab.label}</span>
-                </button>
-              );
-            })}
+        <div className="w-full bg-black/20 border-b border-white/10 overflow-hidden backdrop-blur-md">
+          <div className="max-w-6xl mx-auto px-2 sm:px-6 lg:px-8 py-2 flex items-center justify-between sm:justify-center gap-1 sm:gap-3">
+            <div className="flex-1 sm:flex-initial flex items-center justify-between sm:justify-center gap-1 sm:gap-3 w-full">
+              {[
+                { id: "dashboard", label: "Overview", icon: TrendingUp },
+                { id: "wallet", label: "Wallet", icon: Wallet },
+                { id: "referrals", label: "Network", icon: Users },
+                { id: "orders", label: "History", icon: ListTodo },
+                { id: "profile", label: "Profile", icon: User },
+              ].map((tab) => {
+                const isActive = currentTab === tab.id;
+                const TabIcon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setCurrentTab(tab.id)}
+                    className={`group flex-1 sm:flex-initial justify-center px-1.5 xs:px-3 sm:px-5 py-2 rounded-xl text-[10px] xs:text-xs sm:text-sm font-medium transition-all duration-200 ease-out whitespace-nowrap cursor-pointer flex items-center gap-1 sm:gap-2 hover:scale-104 active:scale-96 ${
+                      isActive
+                        ? "bg-white/10 text-white border border-white/10"
+                        : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10"
+                    }`}
+                  >
+                    <TabIcon className={`h-3.5 w-3.5 transition-transform duration-300 ease-out group-hover:scale-115 group-hover:rotate-3 ${isActive ? "text-emerald-400" : "text-slate-400 group-hover:text-emerald-400"}`} />
+                    <span className="transition-colors duration-200">{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
             
             {user.isAdmin && (
               <button
@@ -145,10 +153,11 @@ export default function Header({
                   setIsAdminMode(true);
                   setCurrentTab("admin");
                 }}
-                className={`group px-3 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 whitespace-nowrap cursor-pointer text-amber-400 hover:bg-amber-500/20 border border-amber-500/30 hover:border-amber-400 ml-auto md:ml-4 flex items-center gap-1.5 hover:scale-104 active:scale-96`}
+                className={`group px-2 xs:px-3 py-2 rounded-xl text-[10px] xs:text-xs sm:text-sm font-bold transition-all duration-200 whitespace-nowrap cursor-pointer text-amber-400 hover:bg-amber-500/20 border border-amber-500/30 hover:border-amber-400 ml-1 sm:ml-4 flex items-center gap-1 hover:scale-104 active:scale-96 flex-shrink-0`}
               >
                 <ShieldCheck className="h-3.5 w-3.5 text-amber-500 transition-transform duration-300 ease-out group-hover:rotate-12 group-hover:scale-110" />
-                <span>Go to Admin</span>
+                <span className="hidden xs:inline">Admin</span>
+                <span className="inline xs:hidden">Adm</span>
               </button>
             )}
           </div>

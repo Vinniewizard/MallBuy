@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Coins, Flame, Gem, ShieldAlert, Sparkles, TrendingUp, HelpCircle, ArrowRight } from "lucide-react";
+import { Coins, Flame, Gem, ShieldAlert, Sparkles, TrendingUp, HelpCircle, ArrowRight, Wind, Droplets, Bot, Coffee, Package } from "lucide-react";
 import { Plan, WalletBalance } from "../types";
 import { useCurrency } from "../context/CurrencyContext";
 
@@ -43,11 +43,13 @@ export default function Shop({ plans, balance, onShop, onSwitchTab }: ShopProps)
   };
 
   const getTierIcon = (name: string) => {
-    if (name.toLowerCase().includes("copper")) return Sparkles;
-    if (name.toLowerCase().includes("bronze")) return TrendingUp;
-    if (name.toLowerCase().includes("silver")) return Coins;
-    if (name.toLowerCase().includes("gold")) return Flame;
-    return Gem;
+    const n = name.toLowerCase();
+    if (n.includes("handheld") || (n.includes("vacuum") && !n.includes("robot"))) return Wind;
+    if (n.includes("fryer") || n.includes("air")) return Flame;
+    if (n.includes("dishwasher") || n.includes("dish")) return Droplets;
+    if (n.includes("robot")) return Bot;
+    if (n.includes("espresso") || n.includes("coffee")) return Coffee;
+    return Package;
   };
 
   return (
@@ -90,7 +92,7 @@ export default function Shop({ plans, balance, onShop, onSwitchTab }: ShopProps)
                   setSelectedPlan(plan);
                   setStatusMsg(null);
                 }}
-                className={`bg-[#0f131d] border rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 cursor-pointer h-[190px] relative overflow-hidden group ${
+                className={`bg-[#0f131d] border rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 cursor-pointer h-auto min-h-[230px] relative overflow-hidden group ${
                   isSelected
                     ? "border-emerald-500/50 glow-emerald"
                     : "border-[#212a3d]/80 hover:border-slate-600"
@@ -116,15 +118,23 @@ export default function Shop({ plans, balance, onShop, onSwitchTab }: ShopProps)
                   </p>
                 </div>
 
-                {/* Lower row */}
-                <div className="flex justify-between items-end border-t border-[#212a3d]/50 pt-3 mt-3">
-                  <div className="flex flex-col">
-                    <span className="text-[9px] text-slate-400 font-bold uppercase">Duration</span>
-                    <span className="text-xs font-bold text-slate-300 font-mono">{plan.duration_days} Days</span>
+                {/* Lower specs grid */}
+                <div className="mt-4 pt-3 border-t border-[#212a3d]/50 space-y-1.5 text-xs">
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-400 font-medium text-[10px] uppercase font-sans">Duration</span>
+                    <span className="font-bold text-slate-300 font-mono">{plan.duration_days} Days</span>
                   </div>
-                  <div className="flex flex-col items-end">
-                    <span className="text-[9px] text-slate-400 font-bold uppercase">Estimated Margin</span>
-                    <span className="text-xs font-black text-emerald-400 font-mono">+{roiPercent}%</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-400 font-medium text-[10px] uppercase font-sans">Profit Yield</span>
+                    <span className="font-bold text-slate-200 font-mono">+{format(profitVal)}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-400 font-medium text-[10px] uppercase font-sans">Estimated Margin</span>
+                    <span className="font-bold text-emerald-400 font-mono">+{roiPercent}%</span>
+                  </div>
+                  <div className="flex justify-between items-center pt-2 border-t border-[#212a3d]/30 font-semibold">
+                    <span className="text-emerald-400 text-[10px] uppercase font-bold font-sans">Total Earn</span>
+                    <span className="text-emerald-400 font-bold font-mono">{format(plan.return_amount)}</span>
                   </div>
                 </div>
               </div>

@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Copy, ArrowRight, ShieldAlert, ShieldCheck, Sparkles, Coins, Flame, Gem, TrendingUp, HelpCircle } from "lucide-react";
+import { Copy, ArrowRight, ShieldAlert, ShieldCheck, Sparkles, Coins, Flame, Gem, TrendingUp, HelpCircle, Wind, Droplets, Bot, Coffee, Package, ChevronDown, ChevronUp } from "lucide-react";
 import { User, DashboardStats, ReferralRecord, Plan, WalletBalance } from "../types";
 import { useCurrency } from "../context/CurrencyContext";
+import KeepWakeWidget from "./KeepWakeWidget";
 
 interface DashboardProps {
   user: User;
@@ -17,14 +18,17 @@ interface DashboardProps {
 export default function Dashboard({ user, stats, referrals, plans, balance, onShop, onSwitchTab, onRefresh }: DashboardProps) {
   const [loading, setLoading] = useState<string | null>(null);
   const [statusMsg, setStatusMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [isStatsExpanded, setIsStatsExpanded] = useState(false);
   const { format } = useCurrency();
 
   const getTierIcon = (name: string) => {
-    if (name.toLowerCase().includes("copper")) return Sparkles;
-    if (name.toLowerCase().includes("bronze")) return TrendingUp;
-    if (name.toLowerCase().includes("silver")) return Coins;
-    if (name.toLowerCase().includes("gold")) return Flame;
-    return Gem;
+    const n = name.toLowerCase();
+    if (n.includes("handheld") || (n.includes("vacuum") && !n.includes("robot"))) return Wind;
+    if (n.includes("fryer") || n.includes("air")) return Flame;
+    if (n.includes("dishwasher") || n.includes("dish")) return Droplets;
+    if (n.includes("robot")) return Bot;
+    if (n.includes("espresso") || n.includes("coffee")) return Coffee;
+    return Package;
   };
 
   const handleShopSubmit = async (planId: string) => {
@@ -59,7 +63,7 @@ export default function Dashboard({ user, stats, referrals, plans, balance, onSh
           <div>
             <p className="text-xs font-black uppercase tracking-wider text-emerald-300 mb-0.5">Secure Terminal Active</p>
             <p className="text-[11px] sm:text-xs text-slate-300 font-bold leading-relaxed">
-              Your inventory growth workspace has been successfully initialized. Welcome to MallBuy—explore curated purchase tiers below to allocate your funds and monitor wholesale profits.
+              Your inventory growth workspace has been successfully initialized. Welcome to the World Legitimate Official Wholesale Desk—explore curated purchase tiers below to allocate your funds and monitor wholesale profits.
             </p>
           </div>
         </div>
@@ -72,38 +76,83 @@ export default function Dashboard({ user, stats, referrals, plans, balance, onSh
         </div>
       </div>
 
-      {/* Stats row */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="bg-white/5 border border-white/10 p-4 rounded-xl shadow-sm relative overflow-hidden flex flex-col justify-between backdrop-blur-md">
-          <div className="text-xs font-semibold text-slate-400 mb-1">Available balance</div>
-          <div className="text-xl font-bold text-white tracking-tight">{format(stats.balance.available_balance)}</div>
-          <div className="w-6 h-1 bg-emerald-500 rounded-full absolute bottom-4 right-4"></div>
-        </div>
-        
-        <div className="bg-white/5 border border-white/10 p-4 rounded-xl shadow-sm relative overflow-hidden flex flex-col justify-between backdrop-blur-md">
-          <div className="text-xs font-semibold text-slate-400 mb-1">Active funds</div>
-          <div className="text-xl font-bold text-white tracking-tight">{format(stats.active_orders_funds)}</div>
-          <div className="w-6 h-1 bg-emerald-500 rounded-full absolute bottom-4 right-4"></div>
-        </div>
+      {/* Collapsible Stats Row */}
+      <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden backdrop-blur-md">
+        <button
+          onClick={() => setIsStatsExpanded(!isStatsExpanded)}
+          className="w-full px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-left hover:bg-white/5 transition-all duration-200 cursor-pointer group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-emerald-500/10 rounded-xl text-emerald-400 group-hover:scale-105 transition-transform">
+              <Coins className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-extrabold text-white uppercase tracking-wider">
+                Account Balances &amp; Overview
+              </h3>
+              <p className="text-xs text-slate-400 font-medium">
+                {isStatsExpanded ? "Click to collapse detailed ledger" : "Click to view detailed breakdown of your funds"}
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-4 self-end sm:self-center">
+            {/* Short preview of balance if collapsed */}
+            {!isStatsExpanded && (
+              <div className="text-right hidden xs:block">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">Available Balance</span>
+                <p className="text-sm font-bold text-emerald-400">{format(stats.balance.available_balance)}</p>
+              </div>
+            )}
+            <div className="p-1.5 rounded-lg bg-white/5 text-slate-400 group-hover:text-white transition-colors">
+              {isStatsExpanded ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
+            </div>
+          </div>
+        </button>
 
-        <div className="bg-white/5 border border-white/10 p-4 rounded-xl shadow-sm relative overflow-hidden flex flex-col justify-between backdrop-blur-md">
-          <div className="text-xs font-semibold text-slate-400 mb-1">Total deposits</div>
-          <div className="text-xl font-bold text-white tracking-tight">{format(stats.balance.total_deposits)}</div>
-          <div className="w-6 h-1 bg-emerald-500 rounded-full absolute bottom-4 right-4"></div>
-        </div>
+        {isStatsExpanded && (
+          <div className="p-5 border-t border-white/10 bg-black/20">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              <div className="bg-white/5 border border-white/10 p-4 rounded-xl shadow-sm relative overflow-hidden flex flex-col justify-between backdrop-blur-md">
+                <div className="text-xs font-semibold text-slate-400 mb-1">Available balance</div>
+                <div className="text-xl font-bold text-white tracking-tight">{format(stats.balance.available_balance)}</div>
+                <div className="w-6 h-1 bg-emerald-500 rounded-full absolute bottom-4 right-4"></div>
+              </div>
+              
+              <div className="bg-white/5 border border-white/10 p-4 rounded-xl shadow-sm relative overflow-hidden flex flex-col justify-between backdrop-blur-md">
+                <div className="text-xs font-semibold text-slate-400 mb-1">Active funds</div>
+                <div className="text-xl font-bold text-white tracking-tight">{format(stats.active_orders_funds)}</div>
+                <div className="w-6 h-1 bg-emerald-500 rounded-full absolute bottom-4 right-4"></div>
+              </div>
 
-        <div className="bg-white/5 border border-white/10 p-4 rounded-xl shadow-sm relative overflow-hidden flex flex-col justify-between backdrop-blur-md">
-          <div className="text-xs font-semibold text-slate-400 mb-1">Referral bonus</div>
-          <div className="text-xl font-bold text-white tracking-tight">{format(stats.balance.referral_bonus || 0)}</div>
-          <div className="w-6 h-1 bg-emerald-500 rounded-full absolute bottom-4 right-4"></div>
-        </div>
-        
-        <div className="bg-white/5 border border-white/10 p-4 rounded-xl shadow-sm relative overflow-hidden flex flex-col justify-between col-span-2 md:col-span-1 backdrop-blur-md">
-          <div className="text-xs font-semibold text-slate-400 mb-1">Completed profit</div>
-          <div className="text-xl font-bold text-white tracking-tight">{format(stats.total_profit_earned)}</div>
-          <div className="w-6 h-1 bg-emerald-500 rounded-full absolute bottom-4 right-4"></div>
-        </div>
+              <div className="bg-white/5 border border-white/10 p-4 rounded-xl shadow-sm relative overflow-hidden flex flex-col justify-between backdrop-blur-md">
+                <div className="text-xs font-semibold text-slate-400 mb-1">Total deposits</div>
+                <div className="text-xl font-bold text-white tracking-tight">{format(stats.balance.total_deposits)}</div>
+                <div className="w-6 h-1 bg-emerald-500 rounded-full absolute bottom-4 right-4"></div>
+              </div>
+
+              <div className="bg-white/5 border border-white/10 p-4 rounded-xl shadow-sm relative overflow-hidden flex flex-col justify-between backdrop-blur-md">
+                <div className="text-xs font-semibold text-slate-400 mb-1">Referral bonus</div>
+                <div className="text-xl font-bold text-white tracking-tight">{format(stats.balance.referral_bonus || 0)}</div>
+                <div className="w-6 h-1 bg-emerald-500 rounded-full absolute bottom-4 right-4"></div>
+              </div>
+              
+              <div className="bg-white/5 border border-white/10 p-4 rounded-xl shadow-sm relative overflow-hidden flex flex-col justify-between col-span-2 md:col-span-1 backdrop-blur-md">
+                <div className="text-xs font-semibold text-slate-400 mb-1">Completed profit</div>
+                <div className="text-xl font-bold text-white tracking-tight">{format(stats.total_profit_earned)}</div>
+                <div className="w-6 h-1 bg-emerald-500 rounded-full absolute bottom-4 right-4"></div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* KEEP WAKE SERVICE PANEL */}
+      <KeepWakeWidget />
 
       {/* QUICK ACCOUNT PORTAL */}
       <div className="bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm backdrop-blur-md">
@@ -182,15 +231,19 @@ export default function Dashboard({ user, stats, referrals, plans, balance, onSh
                 <div className="space-y-2 mb-6">
                   <div className="flex justify-between items-center text-sm border-b border-white/10 pb-2">
                     <span className="text-slate-400 font-medium">Entry</span>
-                    <span className="font-bold text-white">{format(plan.amount)}</span>
+                    <span className="font-bold text-white font-mono">{format(plan.amount)}</span>
                   </div>
                   <div className="flex justify-between items-center text-sm border-b border-white/10 pb-2">
                     <span className="text-slate-400 font-medium">Margin</span>
-                    <span className="font-bold text-emerald-400">+{roiPercent}%</span>
+                    <span className="font-bold text-emerald-400 font-mono">+{roiPercent}%</span>
                   </div>
-                  <div className="flex justify-between items-center text-sm">
+                  <div className="flex justify-between items-center text-sm border-b border-white/10 pb-2">
                     <span className="text-slate-400 font-medium">Profit</span>
-                    <span className="font-bold text-white">{format(profitVal)}</span>
+                    <span className="font-bold text-white font-mono">{format(profitVal)}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm font-semibold">
+                    <span className="text-emerald-400 font-medium">Total Earn</span>
+                    <span className="font-bold text-emerald-400 font-mono">{format(plan.return_amount)}</span>
                   </div>
                 </div>
 
