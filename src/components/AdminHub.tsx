@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ShieldCheck, Users, Wallet, ListTodo, Plus, Check, X, ToggleLeft, ToggleRight, Sparkles, Server, Edit, Eye, EyeOff, UserCog, ArrowUpDown, ChevronRight, Headphones, MessageSquare, Send, Volume2, VolumeX, Mail } from "lucide-react";
+import { ShieldCheck, Users, Wallet, ListTodo, Plus, Check, X, ToggleLeft, ToggleRight, Sparkles, Server, Edit, Eye, EyeOff, UserCog, ArrowUpDown, ChevronRight, Headphones, MessageSquare, Send, Volume2, VolumeX, Mail, Megaphone } from "lucide-react";
 import { Transaction, Purchase, Plan, SupportTicket } from "../types";
 
 interface AdminHubProps {
@@ -21,7 +21,7 @@ interface AdminUserSummary {
 }
 
 export default function AdminHub({ onRefresh }: AdminHubProps) {
-  const [activeAdminTab, setActiveAdminTab] = useState<"users" | "transactions" | "purchases" | "plans" | "payment_settings" | "support">("transactions");
+  const [activeAdminTab, setActiveAdminTab] = useState<"users" | "transactions" | "purchases" | "plans" | "payment_settings" | "support" | "marketing">("transactions");
 
   // State data loaded directly
   const [users, setUsers] = useState<AdminUserSummary[]>([]);
@@ -788,6 +788,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
           { id: "plans", label: "Return Packages & Seeding", icon: Server },
           { id: "payment_settings", label: "Gateways Control Center", icon: ToggleRight },
           { id: "support", label: "Support Desk Center", icon: Headphones },
+          { id: "marketing", label: "Marketing Hub", icon: Megaphone },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeAdminTab === tab.id;
@@ -2289,6 +2290,76 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
                   </div>
                 );
               })()}
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* Marketing Hub */}
+      {activeAdminTab === "marketing" && (
+        <div className="space-y-6 text-left">
+          <div className="bg-[#0b0e14] border border-[#212a3d] rounded-2xl p-6">
+            <h3 className="text-sm font-extrabold text-white uppercase tracking-widest flex items-center gap-2 mb-2">
+              <Megaphone className="h-5 w-5 text-purple-400" />
+              Meta (Facebook/IG) Compliance Marketing Hub
+            </h3>
+            <p className="text-xs text-slate-400 font-medium mb-6">
+              Use these Meta-compliant ad copies and creative guidelines to market MallBuy without violating the "Unrealistic Income" or "MLM" advertising policies. We position this as an E-commerce/Wholesale Agent tool.
+            </p>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Policy Rules */}
+              <div className="bg-[#0f131d] rounded-xl p-5 border border-[#212a3d]">
+                <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-3">✅ Meta Policy DOs & DONTs</h4>
+                <ul className="space-y-3 text-xs text-slate-300 font-medium">
+                  <li className="flex gap-2"><Check className="h-4 w-4 text-emerald-500 shrink-0" /> <span><b>DO</b> focus on "Wholesale purchasing", "Task Dispatching", and "E-commerce Logistics".</span></li>
+                  <li className="flex gap-2"><Check className="h-4 w-4 text-emerald-500 shrink-0" /> <span><b>DO</b> frame it as a platform for dropshippers and independent retail agents.</span></li>
+                  <li className="flex gap-2"><X className="h-4 w-4 text-rose-500 shrink-0" /> <span><b>DONT</b> use words like "Investment", "Guaranteed Income", "Make Money Online", or "Passive Income".</span></li>
+                  <li className="flex gap-2"><X className="h-4 w-4 text-rose-500 shrink-0" /> <span><b>DONT</b> show screenshots of huge bank withdrawals or crypto wallets in ad images.</span></li>
+                </ul>
+              </div>
+
+              {/* Creative Guidelines */}
+              <div className="bg-[#0f131d] rounded-xl p-5 border border-[#212a3d]">
+                <h4 className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-3">🖼️ Ad Creative Ideas</h4>
+                <ul className="space-y-3 text-xs text-slate-300 font-medium">
+                  <li>• <b>Image 1:</b> A person working on a laptop at a coffee shop with a clean dashboard on screen.</li>
+                  <li>• <b>Image 2:</b> Warehouse boxes or wholesale goods (sneakers, electronics) being packed.</li>
+                  <li>• <b>Video:</b> A short screen recording of the "Active Orders" page showing a dispatch task being completed.</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div className="mt-6 space-y-6">
+              {/* Ad Copy 1 */}
+              <div className="bg-[#0f131d] rounded-xl p-5 border border-[#212a3d]">
+                <div className="flex justify-between items-center mb-3 border-b border-[#212a3d] pb-2">
+                  <h4 className="text-xs font-bold text-white uppercase tracking-widest">Ad Copy 1: The E-commerce Agent (Best for Conversions)</h4>
+                  <button onClick={() => {navigator.clipboard.writeText(`Tired of handling your own inventory? 📦\n\nJoin hundreds of independent retail agents using MallBuy to participate in wholesale group purchases. We aggregate buyer demand so you get bulk pricing on trending consumer goods, and you earn commissions by helping us dispatch orders directly from our platform.\n\n✅ Start with small orders\n✅ No physical warehouse needed\n✅ Real-time dashboard tracking\n\nClick "Learn More" to register your agent account today! 👇`)}} className="text-[10px] bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded text-white font-bold transition-colors cursor-pointer">COPY</button>
+                </div>
+                <p className="text-xs text-slate-300 whitespace-pre-wrap font-medium">
+                  Tired of handling your own inventory? 📦{"\n\n"}
+                  Join hundreds of independent retail agents using MallBuy to participate in wholesale group purchases. We aggregate buyer demand so you get bulk pricing on trending consumer goods, and you earn commissions by helping us dispatch orders directly from our platform.{"\n\n"}
+                  ✅ Start with small orders{"\n"}
+                  ✅ No physical warehouse needed{"\n"}
+                  ✅ Real-time dashboard tracking{"\n\n"}
+                  Click "Learn More" to register your agent account today! 👇
+                </p>
+              </div>
+
+              {/* Ad Copy 2 */}
+              <div className="bg-[#0f131d] rounded-xl p-5 border border-[#212a3d]">
+                <div className="flex justify-between items-center mb-3 border-b border-[#212a3d] pb-2">
+                  <h4 className="text-xs font-bold text-white uppercase tracking-widest">Ad Copy 2: The Side Hustle (Task Based)</h4>
+                  <button onClick={() => {navigator.clipboard.writeText(`Looking for flexible remote tasks? 📱\n\nMallBuy connects smart shoppers with global wholesale logistics. Our platform allows you to participate in active order fulfillment. Simply log in, select an active order dispatch task, and earn a commission when the wholesale cycle completes.\n\nJoin our network of order dispatchers and start scaling your wholesale portfolio today. Tap below to create your free account! 🚀`)}} className="text-[10px] bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded text-white font-bold transition-colors cursor-pointer">COPY</button>
+                </div>
+                <p className="text-xs text-slate-300 whitespace-pre-wrap font-medium">
+                  Looking for flexible remote tasks? 📱{"\n\n"}
+                  MallBuy connects smart shoppers with global wholesale logistics. Our platform allows you to participate in active order fulfillment. Simply log in, select an active order dispatch task, and earn a commission when the wholesale cycle completes.{"\n\n"}
+                  Join our network of order dispatchers and start scaling your wholesale portfolio today. Tap below to create your free account! 🚀
+                </p>
+              </div>
             </div>
 
           </div>

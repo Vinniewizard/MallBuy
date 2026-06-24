@@ -946,7 +946,7 @@ Always try to be direct and precise. Since you are an automated AI assistant, if
         }
 
         const chat = ai.chats.create({
-          model: "gemini-3.5-flash",
+          model: "gemini-2.5-flash",
           history: formattedHistory,
           config: {
             systemInstruction,
