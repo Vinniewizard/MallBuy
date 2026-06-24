@@ -418,7 +418,7 @@ export default function App() {
         return data;
       }
 
-      // Default to Standard M-Pesa deposit
+      // Default to Standard PesaPal deposit
       const response = await fetch("/api/transactions/deposit", {
         method: "POST",
         headers: {

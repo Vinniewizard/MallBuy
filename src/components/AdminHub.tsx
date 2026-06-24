@@ -944,7 +944,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
                     <tr className="bg-[#0c0f16] text-slate-400 uppercase text-[9px] font-bold tracking-wider border-b border-[#212a3d]">
                       <th className="p-4 font-semibold">User</th>
                       <th className="p-4 font-semibold">Transfer Type</th>
-                      <th className="p-4 font-semibold">Phone (M-Pesa)</th>
+                      <th className="p-4 font-semibold">Phone (PesaPal)</th>
                       <th className="p-4 font-semibold">Amount</th>
                       <th className="p-4 font-semibold">Status</th>
                       <th className="p-4 font-semibold text-right">Verification Actions</th>
@@ -1752,11 +1752,11 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-            {/* Safaricom M-Pesa Integration (Lipia Online API) */}
+            {/* PesaPal Integration (Lipia Online API) */}
             <div className="bg-[#0c0f16]/90 border border-[#212a3d] p-5 rounded-xl space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-black text-emerald-400 uppercase tracking-widest block font-sans">
-                  Safaricom M-Pesa Mobile Method
+                  PesaPal Mobile Method
                 </span>
                 <button
                   type="button"
@@ -1944,7 +1944,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
                 Dynamic Deposit Limit Controls (KES values)
               </span>
               <p className="text-[11px] leading-relaxed text-slate-400">
-                Configure your project's global minimum and maximum deposit limit thresholds. These restrictions are instantly enforced during checkout when clients attempt either Safaricom M-Pesa Express deposits or NOWPayments Cryptocurency invoice generations. 
+                Configure your project's global minimum and maximum deposit limit thresholds. These restrictions are instantly enforced during checkout when clients attempt either PesaPal Express deposits or NOWPayments Cryptocurency invoice generations. 
                 <span className="text-red-300 block mt-1 font-semibold">Leave empty or set to 0 to disable automated limit validations on both Cashier interfaces.</span>
               </p>
               
@@ -1985,7 +1985,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
                 Dynamic Withdrawal Limit Controls (KES values)
               </span>
               <p className="text-[11px] leading-relaxed text-slate-400">
-                Configure your project's global minimum and maximum withdrawal limit thresholds. These are fully enforced when any buyor attempts to submit an M-Pesa or Cryptocurrency withdrawal transaction request.
+                Configure your project's global minimum and maximum withdrawal limit thresholds. These are fully enforced when any buyor attempts to submit an PesaPal or Cryptocurrency withdrawal transaction request.
                 <span className="text-red-300 block mt-1 font-semibold">Leave empty or set to 0 to disable automated withdrawal limits.</span>
               </p>
               
@@ -2226,7 +2226,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
 
                       <div className="grid grid-cols-2 gap-3 text-[10.5px] text-slate-400 pt-2 border-t border-[#212a3d]/40">
                         <div>
-                          <span className="text-slate-500">M-Pesa Line:</span> <strong className="text-slate-300">{ticket.user_phone}</strong>
+                          <span className="text-slate-500">PesaPal Line:</span> <strong className="text-slate-300">{ticket.user_phone}</strong>
                         </div>
                         {ticket.user_email && (
                           <div>

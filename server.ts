@@ -849,7 +849,7 @@ function getSmartFallbackResponse(message: string): string {
     msg.includes("send money") || 
     msg.includes("pay")
   ) {
-    return "To deposit, simply head over to your **Wallet** tab! 💳 You can choose:\n\n1. **M-Pesa Mobile**: Enter your active phone number and click **'Deposit'** to trigger an instant Lipia Online STK push notification directly to your phone.\n2. **NOWPayments Crypto**: Securely deposit using USDT, BTC, ETH, or USDC.\n\nAll deposits are processed automatically and credited to your available balance in seconds!";
+    return "To deposit, simply head over to your **Wallet** tab! 💳 You can choose:\n\n1. **PesaPal (M-Pesa, Airtel)**: Enter your active phone number and click **'Deposit'** to trigger an instant STK push notification directly to your phone.\n2. **NOWPayments Crypto**: Securely deposit using USDT, BTC, ETH, or USDC.\n\nAll deposits are processed automatically and credited to your available balance in seconds!";
   }
 
   if (
@@ -861,7 +861,7 @@ function getSmartFallbackResponse(message: string): string {
     msg.includes("transfer") || 
     msg.includes("pay out")
   ) {
-    return "Withdrawing your earnings is quick and direct! 💸 Navigate to the **Wallet** section, select **'Request e-Withdraw'**, and choose your preferred channel:\n\n- **M-Pesa Mobile**: Withdrawals are processed instantly straight to your active mobile line.\n- **Crypto Address**: Disburse your balance directly to your personal crypto wallet address.\n\nNormal withdrawals are automated and instant. Please ensure your details are entered correctly!";
+    return "Withdrawing your earnings is quick and direct! 💸 Navigate to the **Wallet** section, select **'Request e-Withdraw'**, and choose your preferred channel:\n\n- **PesaPal (M-Pesa, Airtel)**: Withdrawals are processed instantly straight to your active mobile line.\n- **Crypto Address**: Disburse your balance directly to your personal crypto wallet address.\n\nNormal withdrawals are automated and instant. Please ensure your details are entered correctly!";
   }
 
   if (
@@ -908,7 +908,7 @@ function getSmartFallbackResponse(message: string): string {
     msg.includes("fake") ||
     msg.includes("trust")
   ) {
-    return "MallBuy is a fully verified, safe, and transparent purchase suite platform! 🔒 We collaborate with major wholesale nodes in the region. All transactions, including M-Pesa STK deposits and automated e-withdrawals, are encrypted and tracked under absolute ledger audit. If you ever have any questions, our 24/7 Support Desk is always here to assist you!";
+    return "MallBuy is a fully verified, safe, and transparent purchase suite platform! 🔒 We collaborate with major wholesale nodes in the region. All transactions, including PesaPal deposits and automated e-withdrawals, are encrypted and tracked under absolute ledger audit. If you ever have any questions, our 24/7 Support Desk is always here to assist you!";
   }
 
   return "That is a great question! 💡 As the MallBuy AI Assistant, I can answer queries about deposits, e-withdrawals, group buying, order dispatch tasks, commissions, and team referrals.\n\nIf you need custom account assistance or want physical operator intervention, click the **'Connect to Live Agent'** tab at the top or use **'Notify via WhatsApp'** to alert our support desk!";
@@ -926,11 +926,11 @@ app.post("/api/support/ai-chat", async (req, res) => {
       try {
         const ai = getAiClient();
         const systemInstruction = `You are "MallBuy AI Assistant", an instant smart helper for MallBuy e-commerce & agent buying platform.
-MallBuy is a premium purchase suite, wholesale group buy, and dispatch order manager in Kenya, using M-Pesa & Crypto wallets.
+MallBuy is a premium purchase suite, wholesale group buy, and dispatch order manager in Kenya, using PesaPal (M-Pesa, Airtel) & Crypto wallets.
 Provide professional, polite, concise, and helpful responses to user inquiries about:
-- deposits: Users can deposit via M-Pesa (Kenya) or Crypto (USDT, BTC).
+- deposits: Users can deposit via PesaPal or Crypto (USDT, BTC).
 - group buy / shopping: Users join group buying wholesale deals of hot products and earn daily task commissions when dispatching orders.
-- withdrawals: Users can withdraw their earnings instantly to their M-Pesa registered lines or crypto addresses.
+- withdrawals: Users can withdraw their earnings instantly to their mobile money registered lines or crypto addresses.
 - referrals: Users earn commissions by inviting friends to join under their team.
 
 Always try to be direct and precise. Since you are an automated AI assistant, if they have specialized deposit issues or want direct human agent intervention, invite them to click "Connect to Live Agent" or "Notify via WhatsApp" to page our physical desk dispatch managers. Do not refer to database internals or technical code structures. Be humble and helpful.`;
@@ -1285,7 +1285,7 @@ async function triggerImBankDeposit(
       return {
         success: true,
         referenceId: data.transaction_reference || data.reference || txId,
-        gatewayMessage: data.message || "I&M STK checkout simulation push generated successfully. Please unlock and enter M-Pesa PIN."
+        gatewayMessage: data.message || "I&M checkout simulation push generated successfully. Please unlock and enter Mobile Money PIN."
       };
     } else {
       return {
@@ -1306,7 +1306,7 @@ async function triggerImBankDeposit(
 app.post("/api/transactions/deposit", async (req, res) => {
   const { amount, phone, note } = req.body;
   if (!amount || amount <= 0) return res.status(400).json({ error: "Please provide a valid deposit amount." });
-  if (!phone) return res.status(400).json({ error: "Please enter your M-Pesa phone number." });
+  if (!phone) return res.status(400).json({ error: "Please enter your PesaPal phone number." });
 
   const db = getDatabase();
   const user = getAuthenticatedUser(req, db);
@@ -1334,7 +1334,7 @@ app.post("/api/transactions/deposit", async (req, res) => {
   // Admin Toggle Check
   const mpesaEnabled = db.paymentSettings?.mpesa_enabled ?? true;
   if (!mpesaEnabled) {
-    return res.status(400).json({ error: "M-Pesa deposits are currently disabled by the administrator. Please pay using Crypto / NOWPayments!" });
+    return res.status(400).json({ error: "PesaPal deposits are currently disabled by the administrator. Please pay using Crypto / NOWPayments!" });
   }
 
   const pendingExists = db.transactions.some(
@@ -1367,7 +1367,7 @@ app.post("/api/transactions/deposit", async (req, res) => {
       userNotificationMsg = `[I&M Bank Integration Connected] Credentials registered. Direct checkout returned an error (${result.error || "Access Denied"}). A mock pending deposit request has been registered under sandbox mode so you are safe to test this in the Admin Hub!`;
     }
   } else if (lipiaKey) {
-    // Lipia Online M-Pesa push fallback trace
+    // PesaPal push fallback trace
     try {
       const lipiaResponse = await fetch('https://lipia-api.kreativelabske.com/api/v2/payments/stk-push', {
         method: 'POST',
@@ -1388,15 +1388,15 @@ app.post("/api/transactions/deposit", async (req, res) => {
       const lipiaResult = await lipiaResponse.json();
       if (lipiaResult.success) {
         gatewayUsed = "Lipia Online STK Push";
-        userNotificationMsg = lipiaResult.customerMessage || "M-Pesa payment prompt sent to your phone. Enter PIN to complete deposit.";
+        userNotificationMsg = lipiaResult.customerMessage || "PesaPal payment prompt sent to your phone. Enter PIN to complete deposit.";
       } else {
         console.error("Lipia API Failure:", lipiaResult);
         gatewayUsed = "Lipia (Error State)";
-        return res.status(400).json({ error: lipiaResult.customerMessage || "Failed to initiate M-Pesa payment prompt." });
+        return res.status(400).json({ error: lipiaResult.customerMessage || "Failed to initiate PesaPal payment prompt." });
       }
     } catch (err: any) {
       console.error("Error connecting to Lipia:", err);
-      return res.status(500).json({ error: "Failed to connect to M-Pesa payment gateway." });
+      return res.status(500).json({ error: "Failed to connect to PesaPal payment gateway." });
     }
   } else {
     // Sandbox simulation fallback mode

@@ -97,7 +97,7 @@ export default function Profile({ user, onRefresh }: ProfileProps) {
 
         <div className="space-y-1">
           <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 mb-2">
-            <Phone className="h-3 w-3" /> M-Pesa Phone
+            <Phone className="h-3 w-3" /> PesaPal Phone
           </label>
           <input
             type="text"

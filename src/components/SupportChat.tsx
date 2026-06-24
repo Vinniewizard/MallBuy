@@ -32,7 +32,7 @@ export default function SupportChat({ currentUser }: SupportChatProps) {
   const [aiMessages, setAiMessages] = useState<{ role: "user" | "assistant"; content: string; time: string }[]>([
     {
       role: "assistant",
-      content: "Hello! I am your MallBuy AI Support Assistant. Ask me anything about M-Pesa deposits, order tasks, commissions, or withdrawals. I can answer instantly!",
+      content: "Hello! I am your MallBuy AI Support Assistant. Ask me anything about PesaPal deposits, order tasks, commissions, or withdrawals. I can answer instantly!",
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
   ]);
@@ -43,8 +43,8 @@ export default function SupportChat({ currentUser }: SupportChatProps) {
   const aiEndRef = useRef<HTMLDivElement | null>(null);
 
   const QUICK_QUESTIONS = [
-    { label: "💳 Deposit Issue", query: "My M-Pesa deposit is not reflecting in my wallet. How can I get it credited?" },
-    { label: "💰 M-Pesa Withdraw", query: "How do I withdraw my earnings to my M-Pesa account, and what are the rules?" },
+    { label: "💳 Deposit Issue", query: "My PesaPal deposit is not reflecting in my wallet. How can I get it credited?" },
+    { label: "💰 PesaPal Withdraw", query: "How do I withdraw my earnings to my PesaPal account, and what are the rules?" },
     { label: "🤝 Referral Program", query: "What is the team referral commission structure and how do I earn from my downlines?" },
     { label: "📦 Wholesale Tasks", query: "How do group buy wholesale dispatch tasks work and what are the commission rates?" }
   ];
@@ -342,7 +342,7 @@ export default function SupportChat({ currentUser }: SupportChatProps) {
     const textMessage = `Hello MallBuy Support, I have initiated an instant support request on the website.\n\n` +
       `📌 Ticket ID: #${ticketId.toUpperCase()}\n` +
       `👤 Client: ${activeTicket.user_name}\n` +
-      `📞 M-Pesa Phone: ${activeTicket.user_phone}\n` +
+      `📞 PesaPal Phone: ${activeTicket.user_phone}\n` +
       `💼 Subject: ${activeTicket.subject}\n\n` +
       `Please connect me to a desk support representative!`;
 
@@ -679,7 +679,7 @@ export default function SupportChat({ currentUser }: SupportChatProps) {
 
                     {/* Phone Number */}
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">M-Pesa / Contact Phone *</label>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">PesaPal / Contact Phone *</label>
                       <div className="relative">
                         <Phone className="absolute left-3.5 top-3 h-3.5 w-3.5 text-slate-500" />
                         <input

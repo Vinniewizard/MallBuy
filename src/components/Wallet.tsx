@@ -142,7 +142,7 @@ export default function WalletComponent({
     }
 
     if (!depPhone) {
-      setFormMsg({ type: "error", text: "Please enter a phone number to trigger the M-Pesa push." });
+      setFormMsg({ type: "error", text: "Please enter a phone number to trigger the PesaPal push." });
       return;
     }
 
@@ -161,7 +161,7 @@ export default function WalletComponent({
         onRefresh();
       }
     } catch (err: any) {
-      setFormMsg({ type: "error", text: err.message || "Failed to trigger M-Pesa push." });
+      setFormMsg({ type: "error", text: err.message || "Failed to trigger PesaPal push." });
     } finally {
       setDepLoading(false);
     }
@@ -423,7 +423,7 @@ export default function WalletComponent({
                         : "text-slate-300 hover:text-white"
                     }`}
                   >
-                    M-Pesa Mobile
+                    PesaPal (M-Pesa, Airtel)
                   </button>
                 )}
 
@@ -452,12 +452,12 @@ export default function WalletComponent({
               <div className="bg-white/5 border border-white/10 rounded-2xl p-6 shadow-sm space-y-4">
                 <h3 className="text-xs font-extrabold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
                   <Sparkles className="h-4.5 w-4.5" />
-                  {depositMethod === "mpesa" ? "M-Pesa Express Deposit" : "Global Cryptocurreny Portal"}
+                  {depositMethod === "mpesa" ? "PesaPal Express Deposit" : "Global Cryptocurreny Portal"}
                 </h3>
 
                 <p className="text-xs text-slate-400 font-medium leading-relaxed">
                   {depositMethod === "mpesa"
-                    ? "Supply your active Safaricom mobile phone details. The payment gateway initiates an instant M-Pesa STK PIN entry box immediately on your handset."
+                    ? "Supply your active mobile phone details. The PesaPal payment gateway initiates an instant STK PIN entry box immediately on your handset for M-Pesa or Airtel Money."
                     : "A secure unique NOWPayments blockchain checkout layout will be initialized. Safely dispatch token transfers directly to the verified network coordinates."}
                 </p>
 
@@ -529,7 +529,7 @@ export default function WalletComponent({
 
                     <div>
                       <label className="block text-[10px] font-bold text-emerald-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                        <Smartphone className="h-3.5 w-3.5" /> M-Pesa Phone Number *
+                        <Smartphone className="h-3.5 w-3.5" /> Mobile Phone Number *
                       </label>
                       <input
                         type="text"
@@ -542,7 +542,7 @@ export default function WalletComponent({
                         onChange={(e) => setDepPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
                         className="w-full bg-white/5 border border-white/10 focus:border-[#006B4A] focus:bg-white/5 rounded-xl px-4 py-2.5 text-xs text-white font-mono font-bold outline-none transition-all"
                       />
-                      <span className="text-[9.5px] text-slate-400 block mt-1">Provide the phone linked to your M-Pesa client app</span>
+                      <span className="text-[9.5px] text-slate-400 block mt-1">Provide the phone linked to your Mobile Money client app</span>
                     </div>
 
                     <div>
@@ -578,7 +578,7 @@ export default function WalletComponent({
                     )}
                   </button>
                   <p className="text-[10px] text-slate-400 text-center leading-normal">
-                    This M-Pesa transaction is processed live. Standard carrier fees and regulations apply. Please keep your device unlocked to receive the prompt.
+                    This PesaPal transaction is processed live. Standard carrier fees and regulations apply. Please keep your device unlocked to receive the prompt.
                   </p>
                 </form>
               ) : (
@@ -615,7 +615,7 @@ export default function WalletComponent({
                         : "text-slate-300 hover:text-white"
                     }`}
                   >
-                    M-Pesa Payout
+                    PesaPal Payout
                   </button>
                 )}
 

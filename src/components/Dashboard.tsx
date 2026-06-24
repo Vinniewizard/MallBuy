@@ -161,7 +161,7 @@ export default function Dashboard({ user, stats, referrals, plans, balance, onSh
             <Coins className="h-4.5 w-4.5 animate-pulse text-emerald-400" /> Quick Account Actions
           </h3>
           <p className="text-xs text-slate-400 font-semibold">
-            Instantly credit your balance via Safaricom M-Pesa push / Crypto invoice, or request real-time withdrawals of your orders' sales profit.
+            Instantly credit your balance via PesaPal push / Crypto invoice, or request real-time withdrawals of your orders' sales profit.
           </p>
         </div>
         <div className="flex items-center gap-3 w-full md:w-auto">
