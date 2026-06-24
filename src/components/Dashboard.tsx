@@ -63,7 +63,7 @@ export default function Dashboard({ user, stats, referrals, plans, balance, onSh
           <div>
             <p className="text-xs font-black uppercase tracking-wider text-emerald-300 mb-0.5">Secure Terminal Active</p>
             <p className="text-[11px] sm:text-xs text-slate-300 font-bold leading-relaxed">
-              Your inventory growth workspace has been successfully initialized. Welcome to the World Legitimate Official Wholesale Desk—explore curated purchase tiers below to allocate your funds and monitor wholesale profits.
+              Your inventory growth workspace has been successfully initialized. Welcome to MallBuy—explore curated purchase tiers below to allocate your funds and monitor wholesale profits.
             </p>
           </div>
         </div>

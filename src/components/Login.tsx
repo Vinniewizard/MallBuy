@@ -46,7 +46,7 @@ export default function Login({ onLoginSuccess, onNavigateToRegister }: LoginPro
     <div className="min-h-screen flex flex-col font-sans bg-slate-950 relative overflow-hidden"><div className="absolute inset-0 overflow-hidden pointer-events-none z-0"><div className="absolute -top-1/4 -left-1/4 w-full h-full bg-blue-600/20 rounded-full blur-[120px]"></div><div className="absolute top-1/2 -right-1/4 w-full h-full bg-emerald-500/10 rounded-full blur-[120px]"></div></div><div className="relative z-10 w-full h-full flex flex-col">
       {/* Navbar area */}
       <div className="w-full h-20 px-8 flex items-center justify-between bg-white/5 shadow-sm">
-        <div className="text-xl font-bold tracking-tight text-emerald-400">World Legitimate Official Wholesale Desk</div>
+        <div className="text-xl font-bold tracking-tight text-emerald-400">MallBuy</div>
         <div className="flex items-center gap-4">
           <button className="text-sm font-semibold text-white hover:text-emerald-400 transition-colors cursor-pointer">Login</button>
           <button 

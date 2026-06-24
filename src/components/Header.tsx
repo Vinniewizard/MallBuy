@@ -31,10 +31,10 @@ export default function Header({
         {/* Brand */}
         <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-shrink-0">
           <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center mr-2">
-            <span className="font-bold text-white italic">W</span>
+            <span className="font-bold text-white italic">H</span>
           </div>
           <span className="text-base sm:text-xl font-bold tracking-tight text-white truncate">
-            World Legitimate Official Wholesale Desk
+            MallBuy
           </span>
           {isAdminMode && (
             <div className="flex items-center gap-1 flex-shrink-0">
@@ -71,11 +71,7 @@ export default function Header({
           </select>
         </div>
 
-        {/* Keep-Wake Live Status Badge */}
-        <div className="hidden md:flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider text-emerald-400 shadow-sm flex-shrink-0">
-          <Sun className="h-3.5 w-3.5 text-emerald-400 animate-pulse" />
-          <span>Keep-Wake Active</span>
-        </div>
+
  
         {/* Desktop nav links */}
         <div className="hidden sm:flex items-center justify-end gap-6 font-semibold flex-shrink-0">

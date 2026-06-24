@@ -659,7 +659,7 @@ export default function App() {
       <footer className="w-full bg-white/5 border-t border-white/10 backdrop-blur-md py-12 mt-auto">
         <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
            <div>
-             <h3 className="text-xl font-bold mb-4 text-white">World Legitimate Official Wholesale Desk</h3>
+             <h3 className="text-xl font-bold mb-4 text-white">MallBuy</h3>
              <p className="text-sm text-slate-400">Professional wholesale platform for consistent inventory growth and secure financial management.</p>
            </div>
            <div>
@@ -678,7 +678,7 @@ export default function App() {
            </div>
         </div>
         <div className="w-full border-t border-white/10 pt-8 mt-4 text-center">
-           <p className="text-xs text-slate-500">© 2026 World Legitimate Official Wholesale Desk. All rights reserved.</p>
+           <p className="text-xs text-slate-500">© 2026 MallBuy. All rights reserved.</p>
         </div>
       </footer>
       
