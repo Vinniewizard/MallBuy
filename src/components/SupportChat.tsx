@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { MessageSquare, Headphones, X, Send, ChevronRight, Phone, Mail, User, ShieldAlert, CheckCircle2, MessageCircle, Clock, Volume2, VolumeX, Sparkles, AlertCircle } from "lucide-react";
+import { MessageSquare, Headphones, X, Minus, Send, ChevronRight, Phone, Mail, User, ShieldAlert, CheckCircle2, MessageCircle, Clock, Volume2, VolumeX, Sparkles, AlertCircle } from "lucide-react";
 import { User as UserType, SupportTicket, SupportMessage } from "../types";
 
 interface SupportChatProps {
@@ -121,6 +121,7 @@ export default function SupportChat({ currentUser }: SupportChatProps) {
               // Only play beep if the message is from someone else (e.g. support/admin)
               if (lastMsg.sender_id === "admin") {
                 playBeep();
+                setIsOpen(true); // Automatically pop open/unminimize for alert
               }
             }
             
@@ -403,10 +404,20 @@ export default function SupportChat({ currentUser }: SupportChatProps) {
               >
                 {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
               </button>
+
+              {/* Minimize Button */}
+              <button
+                onClick={() => setIsOpen(false)}
+                className="p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+                title="Minimize Chat"
+              >
+                <Minus className="h-4 w-4" />
+              </button>
               
               <button
                 onClick={() => setIsOpen(false)}
                 className="p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+                title="Close Chat"
               >
                 <X className="h-4 w-4" />
               </button>

@@ -296,6 +296,76 @@ export default function App() {
     window.history.pushState(null, "", "/");
   };
 
+  // Inactivity / Auto-logout state and hooks
+  const [showInactivityModal, setShowInactivityModal] = useState(false);
+  const [inactivityCountdown, setInactivityCountdown] = useState(60);
+  const lastActiveTimeRef = useRef<number>(Date.now());
+
+  const resetInactivityTimer = useCallback(() => {
+    lastActiveTimeRef.current = Date.now();
+    setShowInactivityModal(false);
+  }, []);
+
+  useEffect(() => {
+    if (!currentUser) {
+      setShowInactivityModal(false);
+      return;
+    }
+
+    lastActiveTimeRef.current = Date.now();
+
+    const handleActivity = () => {
+      lastActiveTimeRef.current = Date.now();
+      if (showInactivityModal) {
+        setShowInactivityModal(false);
+      }
+    };
+
+    const events = ["mousemove", "keydown", "mousedown", "click", "scroll", "touchstart"];
+    events.forEach((event) => {
+      window.addEventListener(event, handleActivity);
+    });
+
+    const checkInterval = setInterval(() => {
+      if (!showInactivityModal) {
+        const elapsed = Date.now() - lastActiveTimeRef.current;
+        const fourteenMinutesMs = 14 * 60 * 1000; // 14 minutes
+        if (elapsed >= fourteenMinutesMs) {
+          setShowInactivityModal(true);
+          setInactivityCountdown(60);
+        }
+      }
+    }, 1000);
+
+    return () => {
+      events.forEach((event) => {
+        window.removeEventListener(event, handleActivity);
+      });
+      clearInterval(checkInterval);
+    };
+  }, [currentUser, showInactivityModal]);
+
+  useEffect(() => {
+    if (!showInactivityModal || !currentUser) return;
+
+    const countdownInterval = setInterval(() => {
+      setInactivityCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(countdownInterval);
+          handleLogout();
+          setShowInactivityModal(false);
+          toast.warning("You have been logged out due to inactivity.", {
+            duration: 6000,
+          });
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(countdownInterval);
+  }, [showInactivityModal, currentUser]);
+
   const handleDeposit = async (amount: number, phone: string, note: string, isCrypto?: boolean, cryptoCurrency?: string) => {
     if (!currentUser) return;
     try {
@@ -717,6 +787,65 @@ export default function App() {
         </a>
         )}
       </div>
+      
+      {/* Inactivity Auto-Logout Warning Modal */}
+      <AnimatePresence>
+        {showInactivityModal && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="w-full max-w-md bg-slate-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden font-sans text-white p-6 relative"
+            >
+              <div className="flex flex-col items-center text-center">
+                <div className="w-16 h-16 bg-amber-500/10 border border-amber-500/20 rounded-full flex items-center justify-center mb-4 text-amber-500 animate-pulse">
+                  <AlertCircle className="h-8 w-8" />
+                </div>
+                
+                <h3 className="text-lg font-extrabold uppercase tracking-wider text-amber-400">
+                  Inactivity Timeout Warning
+                </h3>
+                
+                <p className="text-sm text-slate-300 mt-2 leading-relaxed">
+                  You have been inactive for more than <span className="font-bold text-white">14 minutes</span>. For your account security, you will be automatically logged out in:
+                </p>
+
+                {/* Countdown display */}
+                <div className="my-6 relative flex items-center justify-center">
+                  <div className="w-24 h-24 rounded-full border-4 border-amber-500/20 flex items-center justify-center">
+                    <span className="text-4xl font-extrabold text-amber-400 font-mono">
+                      {inactivityCountdown}
+                    </span>
+                  </div>
+                  <div className="absolute inset-0 w-24 h-24 rounded-full border-4 border-t-amber-500 animate-spin mx-auto pointer-events-none"></div>
+                </div>
+
+                <p className="text-xs text-slate-400">
+                  Any movement, keypress, or click will keep you signed in.
+                </p>
+
+                <div className="flex items-center gap-3 w-full mt-6">
+                  <button
+                    onClick={handleLogout}
+                    className="flex-1 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-300 transition-all cursor-pointer"
+                  >
+                    Logout Now
+                  </button>
+                  <button
+                    onClick={resetInactivityTimer}
+                    className="flex-1 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-extrabold uppercase tracking-wider shadow-lg shadow-blue-500/20 transition-all cursor-pointer"
+                  >
+                    Stay Logged In
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       </div>
     </div>
   );

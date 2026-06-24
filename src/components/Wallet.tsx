@@ -89,8 +89,13 @@ export default function WalletComponent({
           // Set default available tab based on enabled settings
           if (!data.paymentSettings.mpesa_enabled && data.paymentSettings.crypto_enabled) {
             setDepositMethod("crypto");
+            setWithdrawMethod("crypto");
+          } else if (data.paymentSettings.mpesa_enabled && !data.paymentSettings.crypto_enabled) {
+            setDepositMethod("mpesa");
+            setWithdrawMethod("mpesa");
           } else {
             setDepositMethod("mpesa");
+            setWithdrawMethod("mpesa");
           }
         }
       })
@@ -312,7 +317,7 @@ export default function WalletComponent({
           }`}
         >
           <ArrowUpCircle className="h-4 w-4" />
-          Request Payout
+          Request e-Withdraw
         </button>
 
         <button
@@ -398,54 +403,48 @@ export default function WalletComponent({
           })()}
 
           {/* Method chooser */}
-          <div className="bg-white/5 border border-white/10 p-4 rounded-xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-left">
-              <h4 className="text-sm font-bold text-white">Choose Deposit Route</h4>
-              <p className="text-xs text-slate-400 font-medium">Select your preferred payment channel gateway</p>
-            </div>
+          {(paymentSettings.mpesa_enabled || paymentSettings.crypto_enabled) && (
+            <div className="bg-white/5 border border-white/10 p-4 rounded-xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-left">
+                <h4 className="text-sm font-bold text-white">Choose Deposit Route</h4>
+                <p className="text-xs text-slate-400 font-medium">Select your preferred payment channel gateway</p>
+              </div>
 
-            <div className="bg-white/10 p-1 rounded-lg flex border border-white/10/80 w-full sm:w-auto">
-              <button
-                onClick={() => {
-                  if (paymentSettings.mpesa_enabled) {
-                    setDepositMethod("mpesa");
-                    setFormMsg(null);
-                  } else {
-                    toast.error("M-Pesa deposits are currently deactivated by the administrator.");
-                  }
-                }}
-                className={`py-2 px-4 rounded-md text-xs font-bold transition-all whitespace-nowrap flex-1 sm:flex-initial cursor-pointer ${
-                  !paymentSettings.mpesa_enabled
-                    ? "opacity-40 cursor-not-allowed text-slate-400"
-                    : depositMethod === "mpesa"
-                    ? "bg-white/5 text-emerald-800 shadow-sm font-extrabold"
-                    : "text-slate-300 hover:text-white"
-                }`}
-              >
-                M-Pesa Mobile
-              </button>
+              <div className="bg-white/10 p-1 rounded-lg flex border border-white/10/80 w-full sm:w-auto">
+                {paymentSettings.mpesa_enabled && (
+                  <button
+                    onClick={() => {
+                      setDepositMethod("mpesa");
+                      setFormMsg(null);
+                    }}
+                    className={`py-2 px-4 rounded-md text-xs font-bold transition-all whitespace-nowrap flex-1 sm:flex-initial cursor-pointer ${
+                      depositMethod === "mpesa"
+                        ? "bg-white/5 text-emerald-800 shadow-sm font-extrabold"
+                        : "text-slate-300 hover:text-white"
+                    }`}
+                  >
+                    M-Pesa Mobile
+                  </button>
+                )}
 
-              <button
-                onClick={() => {
-                  if (paymentSettings.crypto_enabled) {
-                    setDepositMethod("crypto");
-                    setFormMsg(null);
-                  } else {
-                    toast.error("Cryptocurrency deposits are deactivated by administrator.");
-                  }
-                }}
-                className={`py-2 px-4 rounded-md text-xs font-bold transition-all whitespace-nowrap flex-1 sm:flex-initial cursor-pointer ${
-                  !paymentSettings.crypto_enabled
-                    ? "opacity-40 cursor-not-allowed text-slate-400"
-                    : depositMethod === "crypto"
-                    ? "bg-white/5 text-indigo-700 shadow-sm font-extrabold"
-                    : "text-slate-300 hover:text-white"
-                }`}
-              >
-                NOWPayments Crypto
-              </button>
+                {paymentSettings.crypto_enabled && (
+                  <button
+                    onClick={() => {
+                      setDepositMethod("crypto");
+                      setFormMsg(null);
+                    }}
+                    className={`py-2 px-4 rounded-md text-xs font-bold transition-all whitespace-nowrap flex-1 sm:flex-initial cursor-pointer ${
+                      depositMethod === "crypto"
+                        ? "bg-white/5 text-indigo-700 shadow-sm font-extrabold"
+                        : "text-slate-300 hover:text-white"
+                    }`}
+                  >
+                    NOWPayments Crypto
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Guide segment */}
@@ -574,7 +573,7 @@ export default function WalletComponent({
                     ) : (
                       <>
                         <Sparkles className="h-4 w-4 text-emerald-300" />
-                        Trigger STK Push Notification
+                        Deposit
                       </>
                     )}
                   </button>
@@ -598,38 +597,44 @@ export default function WalletComponent({
       {activeSubTab === "withdraw" && (
         <div className="space-y-6">
           {/* Channel selections */}
-          <div className="bg-white/5 border border-white/10 p-4 rounded-xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-left">
-              <h4 className="text-sm font-bold text-white">Select Payout Destination</h4>
-              <p className="text-xs text-slate-400 font-medium">Select where to disburse trading earnings</p>
-            </div>
+          {(paymentSettings.mpesa_enabled || paymentSettings.crypto_enabled) && (
+            <div className="bg-white/5 border border-white/10 p-4 rounded-xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-left">
+                <h4 className="text-sm font-bold text-white">Select Withdraw Destination</h4>
+                <p className="text-xs text-slate-400 font-medium">Select where to disburse trading earnings</p>
+              </div>
 
-            <div className="bg-white/10 p-1 rounded-lg flex border border-white/10/80 w-full sm:w-auto">
-              <button
-                type="button"
-                onClick={() => setWithdrawMethod("mpesa")}
-                className={`py-2 px-4 rounded-md text-xs font-bold transition-all whitespace-nowrap flex-1 sm:flex-initial cursor-pointer ${
-                  withdrawMethod === "mpesa"
-                    ? "bg-white/5 text-emerald-800 shadow-sm font-extrabold"
-                    : "text-slate-300 hover:text-white"
-                }`}
-              >
-                M-Pesa Payout
-              </button>
+              <div className="bg-white/10 p-1 rounded-lg flex border border-white/10/80 w-full sm:w-auto">
+                {paymentSettings.mpesa_enabled && (
+                  <button
+                    type="button"
+                    onClick={() => setWithdrawMethod("mpesa")}
+                    className={`py-2 px-4 rounded-md text-xs font-bold transition-all whitespace-nowrap flex-1 sm:flex-initial cursor-pointer ${
+                      withdrawMethod === "mpesa"
+                        ? "bg-white/5 text-emerald-800 shadow-sm font-extrabold"
+                        : "text-slate-300 hover:text-white"
+                    }`}
+                  >
+                    M-Pesa Payout
+                  </button>
+                )}
 
-              <button
-                type="button"
-                onClick={() => setWithdrawMethod("crypto")}
-                className={`py-2 px-4 rounded-md text-xs font-bold transition-all whitespace-nowrap flex-1 sm:flex-initial cursor-pointer ${
-                  withdrawMethod === "crypto"
-                    ? "bg-white/5 text-rose-700 shadow-sm font-extrabold"
-                    : "text-slate-300 hover:text-white"
-                }`}
-              >
-                Crypto Address
-              </button>
+                {paymentSettings.crypto_enabled && (
+                  <button
+                    type="button"
+                    onClick={() => setWithdrawMethod("crypto")}
+                    className={`py-2 px-4 rounded-md text-xs font-bold transition-all whitespace-nowrap flex-1 sm:flex-initial cursor-pointer ${
+                      withdrawMethod === "crypto"
+                        ? "bg-white/5 text-rose-700 shadow-sm font-extrabold"
+                        : "text-slate-300 hover:text-white"
+                    }`}
+                  >
+                    Crypto Address
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Guide summary card */}
@@ -670,108 +675,114 @@ export default function WalletComponent({
 
             {/* Form segment */}
             <div className="lg:col-span-7 bg-white/5 border border-white/10 rounded-2xl p-6 shadow-sm">
-              <form onSubmit={handleWithdrawalSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-                      Withdrawn Amount ({symbol}) *
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-3.5 top-3 text-xs text-slate-400 font-bold">{symbol}</span>
-                      <input
-                        type="number"
-                        placeholder="e.g. 20"
-                        required
-                        min="1"
-                        value={withAmount}
-                        onChange={(e) => setWithAmount(e.target.value)}
-                        className="w-full bg-white/5 border border-white/10 focus:border-rose-500 rounded-xl pl-9 pr-4 py-2.5 text-xs font-bold text-white outline-none transition-all"
-                      />
+              {!paymentSettings.mpesa_enabled && !paymentSettings.crypto_enabled ? (
+                <div className="text-center py-8 text-slate-400 font-bold text-xs">
+                  ⚠️ All withdrawal routes are currently deactivated by the administrator.
+                </div>
+              ) : (
+                <form onSubmit={handleWithdrawalSubmit} className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                        Withdrawn Amount ({symbol}) *
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3.5 top-3 text-xs text-slate-400 font-bold">{symbol}</span>
+                        <input
+                          type="number"
+                          placeholder="e.g. 20"
+                          required
+                          min="1"
+                          value={withAmount}
+                          onChange={(e) => setWithAmount(e.target.value)}
+                          className="w-full bg-white/5 border border-white/10 focus:border-rose-500 rounded-xl pl-9 pr-4 py-2.5 text-xs font-bold text-white outline-none transition-all"
+                        />
+                      </div>
+                      {withAmount && (
+                        <span className="text-[10px] text-rose-600 font-semibold mt-1.5 block">
+                          Est. KSh {convertToKES(Number(withAmount)).toLocaleString()} base
+                        </span>
+                      )}
                     </div>
-                    {withAmount && (
-                      <span className="text-[10px] text-rose-600 font-semibold mt-1.5 block">
-                        Est. KSh {convertToKES(Number(withAmount)).toLocaleString()} base
-                      </span>
+
+                    {withdrawMethod === "mpesa" ? (
+                      <div>
+                        <label className="block text-[10px] font-bold text-emerald-400 uppercase tracking-wider mb-2">
+                          Receiver Phone Number *
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. 0712345678"
+                          required={withdrawMethod === "mpesa"}
+                          value={withPhone}
+                          onChange={(e) => setWithPhone(e.target.value)}
+                          className="w-full bg-white/5 border border-white/10 focus:border-[#006B4A] rounded-xl px-4 py-2.5 text-xs text-white font-mono font-bold outline-none transition-all"
+                        />
+                      </div>
+                    ) : (
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                          Receive Coin *
+                        </label>
+                        <select
+                          value={withCryptoCurrency}
+                          onChange={(e) => setWithCryptoCurrency(e.target.value)}
+                          className="w-full bg-white/5 border border-white/10 focus:border-indigo-500 rounded-xl px-4 py-2.5 text-xs text-white font-bold outline-none cursor-pointer transition-all"
+                        >
+                          <option value="USDTTRC20">USDT (TRC-20)</option>
+                          <option value="BTC">BTC (Bitcoin Mainnet)</option>
+                          <option value="ETH">ETH (Ethereum ERC-20)</option>
+                          <option value="USDC">USDC (USD Coin Polygon)</option>
+                        </select>
+                      </div>
                     )}
                   </div>
 
-                  {withdrawMethod === "mpesa" ? (
+                  {withdrawMethod === "crypto" && (
                     <div>
                       <label className="block text-[10px] font-bold text-emerald-400 uppercase tracking-wider mb-2">
-                        Receiver Phone Number *
+                        Recipient Crypto Wallet Address *
                       </label>
                       <input
                         type="text"
-                        placeholder="e.g. 0712345678"
-                        required={withdrawMethod === "mpesa"}
-                        value={withPhone}
-                        onChange={(e) => setWithPhone(e.target.value)}
-                        className="w-full bg-white/5 border border-white/10 focus:border-[#006B4A] rounded-xl px-4 py-2.5 text-xs text-white font-mono font-bold outline-none transition-all"
+                        placeholder="Enter target TRC-20, ERC-20, or BTC wallet address"
+                        required={withdrawMethod === "crypto"}
+                        value={withCryptoAddress}
+                        onChange={(e) => setWithCryptoAddress(e.target.value)}
+                        className="w-full bg-white/5 border border-white/10 focus:border-[#006B4A] rounded-xl px-4 py-2.5 text-xs text-white font-mono outline-none transition-all"
                       />
                     </div>
-                  ) : (
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-                        Receive Coin *
-                      </label>
-                      <select
-                        value={withCryptoCurrency}
-                        onChange={(e) => setWithCryptoCurrency(e.target.value)}
-                        className="w-full bg-white/5 border border-white/10 focus:border-indigo-500 rounded-xl px-4 py-2.5 text-xs text-white font-bold outline-none cursor-pointer transition-all"
-                      >
-                        <option value="USDTTRC20">USDT (TRC-20)</option>
-                        <option value="BTC">BTC (Bitcoin Mainnet)</option>
-                        <option value="ETH">ETH (Ethereum ERC-20)</option>
-                        <option value="USDC">USDC (USD Coin Polygon)</option>
-                      </select>
-                    </div>
                   )}
-                </div>
 
-                {withdrawMethod === "crypto" && (
                   <div>
-                    <label className="block text-[10px] font-bold text-emerald-400 uppercase tracking-wider mb-2">
-                      Recipient Crypto Wallet Address *
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                      Memo description Note
                     </label>
                     <input
                       type="text"
-                      placeholder="Enter target TRC-20, ERC-20, or BTC wallet address"
-                      required={withdrawMethod === "crypto"}
-                      value={withCryptoAddress}
-                      onChange={(e) => setWithCryptoAddress(e.target.value)}
-                      className="w-full bg-white/5 border border-white/10 focus:border-[#006B4A] rounded-xl px-4 py-2.5 text-xs text-white font-mono outline-none transition-all"
+                      placeholder="e.g. Live withdrawal payload / profits"
+                      value={withNote}
+                      onChange={(e) => setWithNote(e.target.value)}
+                      className="w-full bg-white/5 border border-white/10 focus:border-[#006B4A] rounded-xl px-4 py-2.5 text-xs text-white font-medium outline-none transition-all"
                     />
                   </div>
-                )}
 
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-                    Memo description Note
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Live withdrawal payload / profits"
-                    value={withNote}
-                    onChange={(e) => setWithNote(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 focus:border-[#006B4A] rounded-xl px-4 py-2.5 text-xs text-white font-medium outline-none transition-all"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={withLoading}
-                  className="px-6 py-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] w-full justify-center shadow-md"
-                >
-                  {withLoading ? (
-                    <span className="h-4.5 w-4.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                  ) : (
-                    <>
-                      <ArrowUpCircle className="h-4.5 w-4.5 text-rose-200" />
-                      Initiate Payout Transfer
-                    </>
-                  )}
-                </button>
-              </form>
+                  <button
+                    type="submit"
+                    disabled={withLoading}
+                    className="px-6 py-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] w-full justify-center shadow-md"
+                  >
+                    {withLoading ? (
+                      <span className="h-4.5 w-4.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    ) : (
+                      <>
+                        <ArrowUpCircle className="h-4.5 w-4.5 text-rose-200" />
+                        Withdraw
+                      </>
+                    )}
+                  </button>
+                </form>
+              )}
             </div>
           </div>
         </div>

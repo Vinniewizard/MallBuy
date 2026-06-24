@@ -805,6 +805,115 @@ function getAiClient() {
   return aiClient;
 }
 
+function getSmartFallbackResponse(message: string): string {
+  const msg = message.toLowerCase().trim();
+
+  if (
+    msg.includes("human") || 
+    msg.includes("agent") || 
+    msg.includes("person") || 
+    msg.includes("real") || 
+    msg.includes("operator") || 
+    msg.includes("admin") || 
+    msg.includes("speak to") || 
+    msg.includes("talk to") || 
+    msg.includes("support") ||
+    msg.includes("desk") ||
+    msg.includes("whatsapp") ||
+    msg.includes("help me")
+  ) {
+    return "I can absolutely connect you with a physical support representative! 🤝 Please select the **'Connect to Live Agent'** tab at the top of this panel, or use the **'Notify via WhatsApp'** button to page our active physical desk managers directly. They are available to assist you with any custom requests immediately!";
+  }
+
+  if (
+    msg === "hi" || 
+    msg === "hello" || 
+    msg.includes("hey") || 
+    msg.includes("jambo") || 
+    msg.includes("habari") || 
+    msg.includes("good morning") || 
+    msg.includes("good afternoon") || 
+    msg.includes("good evening") ||
+    msg.includes("greetings")
+  ) {
+    return "Hello! Welcome to MallBuy smart helper. 🌟 How can I assist you today? I can help answer questions about deposits, e-withdrawals, participating in wholesale group buys, daily task commissions, and team referrals!";
+  }
+
+  if (
+    msg.includes("deposit") || 
+    msg.includes("recharge") || 
+    msg.includes("add money") || 
+    msg.includes("add fund") || 
+    msg.includes("stk") || 
+    msg.includes("lipia") || 
+    msg.includes("send money") || 
+    msg.includes("pay")
+  ) {
+    return "To deposit, simply head over to your **Wallet** tab! 💳 You can choose:\n\n1. **M-Pesa Mobile**: Enter your active phone number and click **'Deposit'** to trigger an instant Lipia Online STK push notification directly to your phone.\n2. **NOWPayments Crypto**: Securely deposit using USDT, BTC, ETH, or USDC.\n\nAll deposits are processed automatically and credited to your available balance in seconds!";
+  }
+
+  if (
+    msg.includes("withdraw") || 
+    msg.includes("cashout") || 
+    msg.includes("cash out") || 
+    msg.includes("payout") || 
+    msg.includes("get money") || 
+    msg.includes("transfer") || 
+    msg.includes("pay out")
+  ) {
+    return "Withdrawing your earnings is quick and direct! 💸 Navigate to the **Wallet** section, select **'Request e-Withdraw'**, and choose your preferred channel:\n\n- **M-Pesa Mobile**: Withdrawals are processed instantly straight to your active mobile line.\n- **Crypto Address**: Disburse your balance directly to your personal crypto wallet address.\n\nNormal withdrawals are automated and instant. Please ensure your details are entered correctly!";
+  }
+
+  if (
+    msg.includes("group buy") || 
+    msg.includes("shop") || 
+    msg.includes("wholesale") || 
+    msg.includes("order") || 
+    msg.includes("dispatch") || 
+    msg.includes("task") || 
+    msg.includes("buy") || 
+    msg.includes("commission") || 
+    msg.includes("product") ||
+    msg.includes("plan")
+  ) {
+    return "In the **Shop** section, you can participate in lucrative wholesale group buy plans of hot retail products! 🛒 By pooling buying power, you earn daily task commissions when dispatching orders. Each plan runs for a specific maturity period, after which your initial deposit principal is fully returned and credited to your available balance alongside your total earnings!";
+  }
+
+  if (
+    msg.includes("refer") || 
+    msg.includes("invite") || 
+    msg.includes("friend") || 
+    msg.includes("team") || 
+    msg.includes("affiliate") || 
+    msg.includes("link") || 
+    msg.includes("code")
+  ) {
+    return "Earn high passive income through our **Referral Hub**! 👥 Grab your unique invitation link and share it with friends and groups. You'll receive cash commissions instantly whenever members of your team participate in wholesale group buying plans. It's a great way to build a residual team income!";
+  }
+
+  if (
+    msg.includes("mallbuy") || 
+    msg.includes("what is") || 
+    msg.includes("about") || 
+    msg.includes("how does")
+  ) {
+    return "MallBuy is Kenya's premier purchase suite, wholesale group buy, and order dispatch platform! 🚀 We connect smart shoppers with global wholesale logistics. By pooling capital, users can secure bulk product discounts and earn daily task commissions on dispatches. It's simple, automated, and rewarding!";
+  }
+
+  if (
+    msg.includes("scam") || 
+    msg.includes("legit") || 
+    msg.includes("real") || 
+    msg.includes("safe") || 
+    msg.includes("fake") ||
+    msg.includes("trust")
+  ) {
+    return "MallBuy is a fully verified, safe, and transparent purchase suite platform! 🔒 We collaborate with major wholesale nodes in the region. All transactions, including M-Pesa STK deposits and automated e-withdrawals, are encrypted and tracked under absolute ledger audit. If you ever have any questions, our 24/7 Support Desk is always here to assist you!";
+  }
+
+  return "That is a great question! 💡 As the MallBuy AI Assistant, I can answer queries about deposits, e-withdrawals, group buying, order dispatch tasks, commissions, and team referrals.\n\nIf you need custom account assistance or want physical operator intervention, click the **'Connect to Live Agent'** tab at the top or use **'Notify via WhatsApp'** to alert our support desk!";
+}
+
 app.post("/api/support/ai-chat", async (req, res) => {
   try {
     const { message, history } = req.body;
@@ -812,9 +921,11 @@ app.post("/api/support/ai-chat", async (req, res) => {
       return res.status(400).json({ error: "Message cannot be empty." });
     }
 
-    const ai = getAiClient();
-    
-    const systemInstruction = `You are "MallBuy AI Assistant", an instant smart helper for MallBuy e-commerce & agent buying platform.
+    // Try to run using Gemini if available
+    if (process.env.GEMINI_API_KEY) {
+      try {
+        const ai = getAiClient();
+        const systemInstruction = `You are "MallBuy AI Assistant", an instant smart helper for MallBuy e-commerce & agent buying platform.
 MallBuy is a premium purchase suite, wholesale group buy, and dispatch order manager in Kenya, using M-Pesa & Crypto wallets.
 Provide professional, polite, concise, and helpful responses to user inquiries about:
 - deposits: Users can deposit via M-Pesa (Kenya) or Crypto (USDT, BTC).
@@ -824,29 +935,41 @@ Provide professional, polite, concise, and helpful responses to user inquiries a
 
 Always try to be direct and precise. Since you are an automated AI assistant, if they have specialized deposit issues or want direct human agent intervention, invite them to click "Connect to Live Agent" or "Notify via WhatsApp" to page our physical desk dispatch managers. Do not refer to database internals or technical code structures. Be humble and helpful.`;
 
-    const formattedHistory = [];
-    if (history && Array.isArray(history)) {
-      for (const msg of history) {
-        formattedHistory.push({
-          role: msg.role === "assistant" ? "model" : "user",
-          parts: [{ text: msg.content }]
+        const formattedHistory = [];
+        if (history && Array.isArray(history)) {
+          for (const msg of history) {
+            formattedHistory.push({
+              role: msg.role === "assistant" ? "model" : "user",
+              parts: [{ text: msg.content }]
+            });
+          }
+        }
+
+        const chat = ai.chats.create({
+          model: "gemini-3.5-flash",
+          history: formattedHistory,
+          config: {
+            systemInstruction,
+          },
         });
+
+        const response = await chat.sendMessage({ message });
+        if (response && response.text) {
+          return res.json({ success: true, response: response.text });
+        }
+      } catch (geminiErr) {
+        console.warn("Gemini service failed, falling back to smart local response:", geminiErr);
       }
     }
 
-    const chat = ai.chats.create({
-      model: "gemini-3.5-flash",
-      history: formattedHistory,
-      config: {
-        systemInstruction,
-      },
-    });
+    // Fallback response if GEMINI_API_KEY is not defined or the model API call failed
+    const responseText = getSmartFallbackResponse(message);
+    return res.json({ success: true, response: responseText });
 
-    const response = await chat.sendMessage({ message });
-    return res.json({ success: true, response: response.text });
   } catch (error: any) {
-    console.error("AI Support Chat Error:", error);
-    return res.status(500).json({ error: error.message || "Failed to process AI chat query." });
+    console.error("AI Support Chat Fallback Route Exception:", error);
+    const responseText = getSmartFallbackResponse(req.body.message || "");
+    return res.json({ success: true, response: responseText });
   }
 });
 
