@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { MessageSquare, Headphones, X, Send, ChevronRight, Phone, Mail, User, ShieldAlert, CheckCircle2, MessageCircle, Clock, Volume2, VolumeX } from "lucide-react";
+import { MessageSquare, Headphones, X, Send, ChevronRight, Phone, Mail, User, ShieldAlert, CheckCircle2, MessageCircle, Clock, Volume2, VolumeX, Sparkles, AlertCircle } from "lucide-react";
 import { User as UserType, SupportTicket, SupportMessage } from "../types";
 
 interface SupportChatProps {
@@ -13,6 +13,9 @@ export default function SupportChat({ currentUser }: SupportChatProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
 
+  // Tabs state
+  const [activeTab, setActiveTab] = useState<"ai" | "live">("ai");
+
   // Form states for creating a ticket
   const [subject, setSubject] = useState("");
   const [name, setName] = useState(currentUser?.username || "");
@@ -25,8 +28,26 @@ export default function SupportChat({ currentUser }: SupportChatProps) {
   const [replyText, setReplyText] = useState("");
   const [sendingReply, setSendingReply] = useState(false);
 
+  // AI assistant state
+  const [aiMessages, setAiMessages] = useState<{ role: "user" | "assistant"; content: string; time: string }[]>([
+    {
+      role: "assistant",
+      content: "Hello! I am your MallBuy AI Support Assistant. Ask me anything about M-Pesa deposits, order tasks, commissions, or withdrawals. I can answer instantly!",
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    }
+  ]);
+  const [aiText, setAiText] = useState("");
+  const [aiIsTyping, setAiIsTyping] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
-  const previousMessagesCountRef = useRef<number>(0);
+  const aiEndRef = useRef<HTMLDivElement | null>(null);
+
+  const QUICK_QUESTIONS = [
+    { label: "💳 Deposit Issue", query: "My M-Pesa deposit is not reflecting in my wallet. How can I get it credited?" },
+    { label: "💰 M-Pesa Withdraw", query: "How do I withdraw my earnings to my M-Pesa account, and what are the rules?" },
+    { label: "🤝 Referral Program", query: "What is the team referral commission structure and how do I earn from my downlines?" },
+    { label: "📦 Wholesale Tasks", query: "How do group buy wholesale dispatch tasks work and what are the commission rates?" }
+  ];
 
   // Update form values if user logs in/out
   useEffect(() => {
@@ -117,6 +138,11 @@ export default function SupportChat({ currentUser }: SupportChatProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [activeTicket?.messages]);
 
+  // Scroll to bottom of AI chat whenever messages are added
+  useEffect(() => {
+    aiEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [aiMessages, aiIsTyping]);
+
   const fetchUserTickets = async () => {
     try {
       let url = "/api/support/tickets";
@@ -145,6 +171,7 @@ export default function SupportChat({ currentUser }: SupportChatProps) {
         const data = await res.json();
         if (data.ticket) {
           setActiveTicket(data.ticket);
+          setActiveTab("live"); // auto-switch to live if there's active session
           localStorage.setItem("mallbuy_active_support_ticket_id", data.ticket.id);
         }
       } else {
@@ -234,6 +261,73 @@ export default function SupportChat({ currentUser }: SupportChatProps) {
     }
   };
 
+  const handleAiSend = async (e?: React.FormEvent, presetMessage?: string) => {
+    if (e) e.preventDefault();
+    const textToSend = presetMessage || aiText;
+    if (!textToSend.trim() || aiIsTyping) return;
+
+    // Add user message
+    const userMsg = {
+      role: "user" as const,
+      content: textToSend,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+    setAiMessages(prev => [...prev, userMsg]);
+    setAiText("");
+    setAiIsTyping(true);
+
+    try {
+      const historyToSend = aiMessages.map(m => ({
+        role: m.role,
+        content: m.content
+      }));
+
+      const res = await fetch("/api/support/ai-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: textToSend,
+          history: historyToSend
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.response) {
+          setAiMessages(prev => [...prev, {
+            role: "assistant" as const,
+            content: data.response,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }]);
+        } else {
+          throw new Error("Invalid response format");
+        }
+      } else {
+        throw new Error("Failed to reach AI helper");
+      }
+    } catch (err) {
+      setAiMessages(prev => [...prev, {
+        role: "assistant" as const,
+        content: "I'm having difficulty connecting to my AI brain at the moment. Please try asking again or switch directly to our Live Support Agent desk!",
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }]);
+    } finally {
+      setAiIsTyping(false);
+    }
+  };
+
+  const handleEscalateToLive = () => {
+    const transcript = aiMessages
+      .map(m => `${m.role === "user" ? "Client" : "AI Assistant"} (${m.time}): ${m.content}`)
+      .join("\n");
+
+    const escalationMsg = `[Escalation from AI Assistant Chat Transcript]\n\n${transcript}\n\nClient has requested direct escalation to a live support desk agent.`;
+    
+    setSubject("AI Escalation - Human Assistance Required");
+    setInitialMsg(escalationMsg);
+    setActiveTab("live");
+  };
+
   const handleDisconnectTicket = () => {
     setActiveTicket(null);
     localStorage.removeItem("mallbuy_active_support_ticket_id");
@@ -279,7 +373,7 @@ export default function SupportChat({ currentUser }: SupportChatProps) {
       {isOpen && (
         <div 
           id="support-chat-sheet"
-          className="fixed bottom-24 right-4 sm:right-6 w-[92vw] sm:w-[420px] h-[550px] bg-slate-900 border border-white/10 rounded-2xl shadow-2xl z-50 flex flex-col overflow-hidden font-sans backdrop-blur-md"
+          className="fixed bottom-24 right-4 sm:right-6 w-[92vw] sm:w-[420px] h-[580px] bg-slate-900 border border-white/10 rounded-2xl shadow-2xl z-50 flex flex-col overflow-hidden font-sans backdrop-blur-md"
         >
           {/* Header */}
           <div className="bg-gradient-to-r from-blue-700 to-indigo-900 px-5 py-4 flex items-center justify-between border-b border-white/10">
@@ -294,7 +388,7 @@ export default function SupportChat({ currentUser }: SupportChatProps) {
                 <div className="flex items-center gap-1">
                   <span className="h-2 w-2 rounded-full bg-emerald-400"></span>
                   <span className="text-[10px] font-bold text-emerald-300 uppercase tracking-widest">
-                    Live Response Agent
+                    Live Response Active
                   </span>
                 </div>
               </div>
@@ -304,7 +398,7 @@ export default function SupportChat({ currentUser }: SupportChatProps) {
               {/* Sound Toggle */}
               <button
                 onClick={() => setSoundEnabled(!soundEnabled)}
-                className="p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all"
+                className="p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
                 title={soundEnabled ? "Mute audio" : "Unmute audio"}
               >
                 {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
@@ -312,23 +406,54 @@ export default function SupportChat({ currentUser }: SupportChatProps) {
               
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all"
+                className="p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
           </div>
 
+          {/* Tab Selector */}
+          {!activeTicket && (
+            <div className="flex bg-slate-950 border-b border-white/5 p-1">
+              <button
+                onClick={() => setActiveTab("ai")}
+                className={`flex-1 py-2.5 text-xs font-black uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                  activeTab === "ai"
+                    ? "bg-blue-600 text-white shadow"
+                    : "text-slate-400 hover:text-slate-200 hover:bg-white/5"
+                }`}
+              >
+                <Sparkles className="h-3.5 w-3.5 text-yellow-300 fill-yellow-300/30" />
+                Instant AI Help
+              </button>
+              <button
+                onClick={() => setActiveTab("live")}
+                className={`flex-1 py-2.5 text-xs font-black uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer relative ${
+                  activeTab === "live"
+                    ? "bg-blue-600 text-white shadow"
+                    : "text-slate-400 hover:text-slate-200 hover:bg-white/5"
+                }`}
+              >
+                <Headphones className="h-3.5 w-3.5" />
+                Live Support Desk
+                {ticketsList.some(t => t.unread_by_user) && (
+                  <span className="absolute top-1.5 right-4 h-2 w-2 bg-red-500 rounded-full animate-pulse"></span>
+                )}
+              </button>
+            </div>
+          )}
+
           {/* Body Content */}
-          <div className="flex-1 overflow-y-auto p-5 bg-slate-950/60 flex flex-col">
+          <div className="flex-1 overflow-y-auto p-5 bg-slate-950/60 flex flex-col min-h-0">
             {activeTicket ? (
               // ACTIVE CHAT SCREEN
-              <div className="flex-1 flex flex-col h-full">
+              <div className="flex-1 flex flex-col h-full min-h-0">
                 {/* Info Card */}
                 <div className="bg-white/5 border border-white/5 rounded-xl px-4 py-3 mb-4 text-xs">
                   <div className="flex items-center justify-between font-bold text-slate-300">
-                    <span className="text-blue-400 uppercase tracking-wider">Subject: {activeTicket.subject}</span>
-                    <span className={`px-2 py-0.5 rounded-full text-[9px] uppercase font-black ${
+                    <span className="text-blue-400 uppercase tracking-wider truncate mr-2">Subject: {activeTicket.subject}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-[9px] uppercase font-black shrink-0 ${
                       activeTicket.status === "open" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-white/10 text-slate-400"
                     }`}>
                       {activeTicket.status}
@@ -340,13 +465,13 @@ export default function SupportChat({ currentUser }: SupportChatProps) {
                   <div className="flex items-center gap-2 mt-3 pt-2 border-t border-white/5">
                     <button
                       onClick={handleNotifyWhatsApp}
-                      className="flex-1 flex items-center justify-center gap-1 bg-[#25D366] hover:bg-[#128C7E] text-white py-1.5 rounded-lg font-extrabold text-[11px] uppercase tracking-wider transition-all"
+                      className="flex-1 flex items-center justify-center gap-1 bg-[#25D366] hover:bg-[#128C7E] text-white py-1.5 rounded-lg font-extrabold text-[11px] uppercase tracking-wider transition-all cursor-pointer"
                     >
-                      <MessageCircle className="h-3 w-3" /> Notify via WhatsApp
+                      <MessageCircle className="h-3 w-3" /> Notify Support
                     </button>
                     <button
                       onClick={handleDisconnectTicket}
-                      className="px-2 py-1.5 bg-white/5 hover:bg-white/10 text-slate-300 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all"
+                      className="px-2 py-1.5 bg-white/5 hover:bg-white/10 text-slate-300 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer"
                     >
                       New Support
                     </button>
@@ -400,10 +525,112 @@ export default function SupportChat({ currentUser }: SupportChatProps) {
                   </button>
                 </form>
               </div>
+            ) : activeTab === "ai" ? (
+              // AI ASSISTANT CHAT SCREEN
+              <div className="flex-1 flex flex-col h-full min-h-0">
+                {/* Messages Bubbles Area */}
+                <div className="flex-1 overflow-y-auto space-y-3 mb-3 pr-1 min-h-0 flex flex-col">
+                  {aiMessages.map((msg, index) => {
+                    const isAI = msg.role === "assistant";
+                    return (
+                      <div
+                        key={index}
+                        className={`flex flex-col max-w-[85%] ${isAI ? "self-start" : "self-end"}`}
+                      >
+                        <span className={`text-[9px] font-black uppercase tracking-wider mb-1 px-1 flex items-center gap-1 ${isAI ? "text-yellow-400 self-start" : "text-emerald-400 self-end"}`}>
+                          {isAI && <Sparkles className="h-2 w-2 fill-yellow-400" />}
+                          {isAI ? "MallBuy AI Assistant" : "You"}
+                        </span>
+                        <div className={`p-3 rounded-2xl text-xs leading-relaxed font-medium ${
+                          isAI 
+                            ? "bg-slate-800 border border-white/5 rounded-tl-none text-slate-200 font-sans" 
+                            : "bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-tr-none shadow-lg shadow-blue-900/20"
+                        }`}>
+                          {msg.content}
+                        </div>
+                        <span className={`text-[8.5px] text-slate-500 font-bold mt-1 px-1 ${isAI ? "self-start" : "self-end"}`}>
+                          {msg.time}
+                        </span>
+                      </div>
+                    );
+                  })}
+                  {aiIsTyping && (
+                    <div className="flex flex-col max-w-[85%] self-start">
+                      <span className="text-[9px] font-black uppercase tracking-wider mb-1 px-1 text-yellow-400 flex items-center gap-1">
+                        <Sparkles className="h-2 w-2 fill-yellow-400" /> MallBuy AI Assistant
+                      </span>
+                      <div className="bg-slate-800 border border-white/5 rounded-2xl rounded-tl-none p-3.5 text-xs text-slate-400 flex items-center gap-1.5 font-semibold">
+                        <span className="animate-bounce">●</span>
+                        <span className="animate-bounce [animation-delay:0.2s]">●</span>
+                        <span className="animate-bounce [animation-delay:0.4s]">●</span>
+                        <span className="text-[9px] ml-1 uppercase font-black text-slate-500 tracking-wider">AI is thinking...</span>
+                      </div>
+                    </div>
+                  )}
+                  <div ref={aiEndRef} />
+                </div>
+
+                {/* Quick actions FAQ panel */}
+                {aiMessages.length <= 2 && (
+                  <div className="mb-3.5 shrink-0">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Frequently Asked Inquiries</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {QUICK_QUESTIONS.map((q, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={(e) => handleAiSend(e, q.query)}
+                          className="p-2.5 text-left bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl text-[10.5px] font-extrabold text-slate-300 hover:text-white transition-all leading-tight cursor-pointer"
+                        >
+                          {q.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Handover Escalation Alert */}
+                {aiMessages.length > 1 && (
+                  <div className="bg-blue-950/40 border border-blue-900/30 rounded-xl p-3 mb-3 flex items-center justify-between gap-3 text-xs shrink-0">
+                    <div className="flex-1">
+                      <p className="text-[10.5px] font-bold text-blue-300 uppercase tracking-wider flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3 text-blue-400" /> Need human desk review?
+                      </p>
+                      <p className="text-[9.5px] text-slate-400 mt-0.5 leading-normal">Instantly transfer this chat log to our human support desk.</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleEscalateToLive}
+                      className="bg-blue-600 hover:bg-blue-500 text-white font-extrabold px-3 py-1.5 rounded-lg text-[9.5px] uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer"
+                    >
+                      Connect Live
+                    </button>
+                  </div>
+                )}
+
+                {/* Send AI Message Bar */}
+                <form onSubmit={(e) => handleAiSend(e)} className="flex gap-2 pt-2 border-t border-white/5 mt-auto shrink-0">
+                  <input
+                    type="text"
+                    value={aiText}
+                    onChange={(e) => setAiText(e.target.value)}
+                    placeholder="Ask MallBuy AI support..."
+                    className="flex-1 bg-white/5 border border-white/10 px-4 py-3 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-medium"
+                    disabled={aiIsTyping}
+                  />
+                  <button
+                    type="submit"
+                    disabled={aiIsTyping || !aiText.trim()}
+                    className="bg-blue-600 hover:bg-blue-500 text-white p-3 rounded-xl flex items-center justify-center transition-all disabled:opacity-40 disabled:hover:bg-blue-600 cursor-pointer"
+                  >
+                    <Send className="h-4 w-4" />
+                  </button>
+                </form>
+              </div>
             ) : (
               // CREATE NEW TICKET FORM
-              <div className="flex-1 flex flex-col justify-between">
-                <div>
+              <div className="flex-1 flex flex-col justify-between min-h-0">
+                <div className="overflow-y-auto flex-1 pr-1">
                   <p className="text-[11px] font-medium text-slate-400 leading-relaxed mb-4">
                     Create an instant desk ticket to chat directly with our legitimate wholesale dispatch support desk. Our administrative team will be paged immediately on-site and through secure WhatsApp channels.
                   </p>
@@ -428,13 +655,13 @@ export default function SupportChat({ currentUser }: SupportChatProps) {
                       <div className="relative">
                         <User className="absolute left-3.5 top-3 h-3.5 w-3.5 text-slate-500" />
                         <input
-                          type="text"
-                          value={name}
-                          onChange={(e) => setName(e.target.value)}
-                          placeholder="Your Name"
-                          className="w-full bg-white/5 border border-white/10 pl-10 pr-3.5 py-2.5 rounded-xl text-xs text-white focus:outline-none focus:border-blue-500 transition-all"
-                          required
-                          disabled={!!currentUser}
+                           type="text"
+                           value={name}
+                           onChange={(e) => setName(e.target.value)}
+                           placeholder="Your Name"
+                           className="w-full bg-white/5 border border-white/10 pl-10 pr-3.5 py-2.5 rounded-xl text-xs text-white focus:outline-none focus:border-blue-500 transition-all"
+                           required
+                           disabled={!!currentUser}
                         />
                       </div>
                     </div>
@@ -511,7 +738,7 @@ export default function SupportChat({ currentUser }: SupportChatProps) {
 
                 {/* Tickets list / reconnect view */}
                 {ticketsList.length > 0 && (
-                  <div className="mt-6 pt-5 border-t border-white/5">
+                  <div className="mt-6 pt-5 border-t border-white/5 shrink-0">
                     <h5 className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2">Previous Active Sessions</h5>
                     <div className="space-y-1.5 max-h-[120px] overflow-y-auto">
                       {ticketsList.map((t) => (

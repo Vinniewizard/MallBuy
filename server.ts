@@ -6,6 +6,7 @@ import crypto from "crypto";
 import pg from "pg";
 import http from "http";
 import https from "https";
+import { GoogleGenAI } from "@google/genai";
 
 const { Pool } = pg;
 
@@ -141,6 +142,8 @@ interface ServerPaymentSettings {
   max_deposit?: number;
   min_withdrawal?: number;
   max_withdrawal?: number;
+  whatsapp_enabled?: boolean;
+  whatsapp_url?: string;
 }
 
 interface DatabaseSchema {
@@ -780,6 +783,71 @@ app.post("/api/support/tickets/:id/messages", (req, res) => {
 
   saveDatabase(db);
   return res.json({ success: true, message: newMessage, ticket });
+});
+
+// Support: AI Chat Assistant (powered by Gemini)
+let aiClient: any = null;
+function getAiClient() {
+  if (!aiClient) {
+    const key = process.env.GEMINI_API_KEY;
+    if (!key) {
+      throw new Error("GEMINI_API_KEY environment variable is required.");
+    }
+    aiClient = new GoogleGenAI({
+      apiKey: key,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build',
+        }
+      }
+    });
+  }
+  return aiClient;
+}
+
+app.post("/api/support/ai-chat", async (req, res) => {
+  try {
+    const { message, history } = req.body;
+    if (!message) {
+      return res.status(400).json({ error: "Message cannot be empty." });
+    }
+
+    const ai = getAiClient();
+    
+    const systemInstruction = `You are "MallBuy AI Assistant", an instant smart helper for MallBuy e-commerce & agent buying platform.
+MallBuy is a premium purchase suite, wholesale group buy, and dispatch order manager in Kenya, using M-Pesa & Crypto wallets.
+Provide professional, polite, concise, and helpful responses to user inquiries about:
+- deposits: Users can deposit via M-Pesa (Kenya) or Crypto (USDT, BTC).
+- group buy / shopping: Users join group buying wholesale deals of hot products and earn daily task commissions when dispatching orders.
+- withdrawals: Users can withdraw their earnings instantly to their M-Pesa registered lines or crypto addresses.
+- referrals: Users earn commissions by inviting friends to join under their team.
+
+Always try to be direct and precise. Since you are an automated AI assistant, if they have specialized deposit issues or want direct human agent intervention, invite them to click "Connect to Live Agent" or "Notify via WhatsApp" to page our physical desk dispatch managers. Do not refer to database internals or technical code structures. Be humble and helpful.`;
+
+    const formattedHistory = [];
+    if (history && Array.isArray(history)) {
+      for (const msg of history) {
+        formattedHistory.push({
+          role: msg.role === "assistant" ? "model" : "user",
+          parts: [{ text: msg.content }]
+        });
+      }
+    }
+
+    const chat = ai.chats.create({
+      model: "gemini-3.5-flash",
+      history: formattedHistory,
+      config: {
+        systemInstruction,
+      },
+    });
+
+    const response = await chat.sendMessage({ message });
+    return res.json({ success: true, response: response.text });
+  } catch (error: any) {
+    console.error("AI Support Chat Error:", error);
+    return res.status(500).json({ error: error.message || "Failed to process AI chat query." });
+  }
 });
 
 // Support Admin: Get all tickets
@@ -1520,7 +1588,9 @@ app.get("/api/payment-settings", (req, res) => {
       min_deposit: db.paymentSettings?.min_deposit,
       max_deposit: db.paymentSettings?.max_deposit,
       min_withdrawal: db.paymentSettings?.min_withdrawal,
-      max_withdrawal: db.paymentSettings?.max_withdrawal
+      max_withdrawal: db.paymentSettings?.max_withdrawal,
+      whatsapp_enabled: db.paymentSettings?.whatsapp_enabled ?? true,
+      whatsapp_url: db.paymentSettings?.whatsapp_url || "https://chat.whatsapp.com/Ljjp8G34scTCVzLeFCt35F"
     }
   });
 });
@@ -1894,7 +1964,18 @@ app.post("/api/admin/payment-settings", (req, res) => {
   if (!user || !user.isAdmin) {
     return res.status(403).json({ error: "Forbidden: Admin access only." });
   }
-  const { mpesa_enabled, crypto_enabled, nowpayments_sandbox, nowpayments_api_key, min_deposit, max_deposit, min_withdrawal, max_withdrawal } = req.body;
+  const { 
+    mpesa_enabled, 
+    crypto_enabled, 
+    nowpayments_sandbox, 
+    nowpayments_api_key, 
+    min_deposit, 
+    max_deposit, 
+    min_withdrawal, 
+    max_withdrawal,
+    whatsapp_enabled,
+    whatsapp_url
+  } = req.body;
   
   db.paymentSettings = {
     mpesa_enabled: mpesa_enabled !== undefined ? !!mpesa_enabled : (db.paymentSettings?.mpesa_enabled ?? true),
@@ -1904,7 +1985,9 @@ app.post("/api/admin/payment-settings", (req, res) => {
     min_deposit: min_deposit !== undefined ? (min_deposit === "" || min_deposit === null || isNaN(Number(min_deposit)) ? undefined : Number(min_deposit)) : db.paymentSettings?.min_deposit,
     max_deposit: max_deposit !== undefined ? (max_deposit === "" || max_deposit === null || isNaN(Number(max_deposit)) ? undefined : Number(max_deposit)) : db.paymentSettings?.max_deposit,
     min_withdrawal: min_withdrawal !== undefined ? (min_withdrawal === "" || min_withdrawal === null || isNaN(Number(min_withdrawal)) ? undefined : Number(min_withdrawal)) : db.paymentSettings?.min_withdrawal,
-    max_withdrawal: max_withdrawal !== undefined ? (max_withdrawal === "" || max_withdrawal === null || isNaN(Number(max_withdrawal)) ? undefined : Number(max_withdrawal)) : db.paymentSettings?.max_withdrawal
+    max_withdrawal: max_withdrawal !== undefined ? (max_withdrawal === "" || max_withdrawal === null || isNaN(Number(max_withdrawal)) ? undefined : Number(max_withdrawal)) : db.paymentSettings?.max_withdrawal,
+    whatsapp_enabled: whatsapp_enabled !== undefined ? !!whatsapp_enabled : (db.paymentSettings?.whatsapp_enabled ?? true),
+    whatsapp_url: whatsapp_url !== undefined ? whatsapp_url : (db.paymentSettings?.whatsapp_url || "https://chat.whatsapp.com/Ljjp8G34scTCVzLeFCt35F")
   };
   
   saveDatabase(db);

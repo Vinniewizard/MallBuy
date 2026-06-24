@@ -283,6 +283,8 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
     max_deposit: "" as string | number,
     min_withdrawal: "" as string | number,
     max_withdrawal: "" as string | number,
+    whatsapp_enabled: true,
+    whatsapp_url: "https://chat.whatsapp.com/Ljjp8G34scTCVzLeFCt35F",
   });
   const [envDetected, setEnvDetected] = useState({
     nowpayments_api_key_set: false,
@@ -335,6 +337,8 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
           max_deposit: payData.paymentSettings.max_deposit ?? "",
           min_withdrawal: payData.paymentSettings.min_withdrawal ?? "",
           max_withdrawal: payData.paymentSettings.max_withdrawal ?? "",
+          whatsapp_enabled: payData.paymentSettings.whatsapp_enabled ?? true,
+          whatsapp_url: payData.paymentSettings.whatsapp_url || "https://chat.whatsapp.com/Ljjp8G34scTCVzLeFCt35F",
         });
       }
       if (payData.envDetected) {
@@ -722,6 +726,8 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
           max_deposit: data.paymentSettings.max_deposit ?? "",
           min_withdrawal: data.paymentSettings.min_withdrawal ?? "",
           max_withdrawal: data.paymentSettings.max_withdrawal ?? "",
+          whatsapp_enabled: data.paymentSettings.whatsapp_enabled ?? true,
+          whatsapp_url: data.paymentSettings.whatsapp_url || "https://chat.whatsapp.com/Ljjp8G34scTCVzLeFCt35F",
         });
       }
       if (data.envDetected) {
@@ -1880,6 +1886,54 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
                 <div className="text-[9.5px] text-slate-400 leading-relaxed pt-1.5 border-t border-[#212a3d]/25">
                   💡 <strong className="text-slate-400">Where to set on Render:</strong> Live variables can be set under <span className="text-indigo-400 font-semibold font-mono">Render Dashboard &gt; Web Service &gt; Environment &gt; Environment Variables</span>. Adding them there ensures security and auto-sync!
                 </div>
+              </div>
+            </div>
+
+            {/* WhatsApp Group Support & Link Gatekeeper */}
+            <div className="bg-[#0c0f16]/90 border border-[#212a3d] p-5 rounded-xl space-y-4 md:col-span-2">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <span className="text-xs font-black text-emerald-400 uppercase tracking-widest block font-sans">
+                    WhatsApp Community & Support Group Gatekeeper
+                  </span>
+                  <p className="text-[11px] leading-relaxed text-slate-400 mt-0.5">
+                    Control whether the WhatsApp Group shortcut banner is visible to users on the Login, Register, and Main App dashboards, and customize the link.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPaySettings({ ...paySettings, whatsapp_enabled: !paySettings.whatsapp_enabled })}
+                  className="bg-[#182030] border border-[#212a3d] rounded-xl px-3.5 py-1.5 text-[10px] uppercase font-bold text-slate-300 flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer shrink-0 self-start sm:self-center"
+                >
+                  {paySettings.whatsapp_enabled ? (
+                    <>
+                      <ToggleRight className="h-5 w-5 text-emerald-400" />
+                      Status: Enabled (Visible)
+                    </>
+                  ) : (
+                    <>
+                      <ToggleLeft className="h-5 w-5 text-slate-400" />
+                      Status: Disabled (Hidden)
+                    </>
+                  )}
+                </button>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-[10px] text-slate-400 uppercase font-bold tracking-wider">
+                  WhatsApp Group Invite URL *
+                </label>
+                <input
+                  type="url"
+                  placeholder="e.g. https://chat.whatsapp.com/your-code"
+                  value={paySettings.whatsapp_url || ""}
+                  onChange={(e) => setPaySettings({ ...paySettings, whatsapp_url: e.target.value })}
+                  className="w-full bg-[#0c0f16] border border-[#212a3d] focus:border-emerald-500/40 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 font-mono outline-none"
+                  required
+                />
+                <span className="text-[9.5px] text-slate-500 block">
+                  Current target link served to users: <strong className="text-emerald-400 font-mono break-all">{paySettings.whatsapp_url || "https://chat.whatsapp.com/Ljjp8G34scTCVzLeFCt35F"}</strong>
+                </span>
               </div>
             </div>
 
