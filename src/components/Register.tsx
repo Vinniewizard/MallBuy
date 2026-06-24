@@ -6,10 +6,58 @@ interface RegisterProps {
   onNavigateToLogin: () => void;
 }
 
+interface CountryConfig {
+  name: string;
+  flag: string;
+  placeholder: string;
+  pattern: RegExp;
+  errorMsg: string;
+}
+
+const COUNTRIES: CountryConfig[] = [
+  {
+    name: "Kenya",
+    flag: "🇰🇪",
+    placeholder: "e.g. 0712345678 or 254712345678",
+    pattern: /^(254[17]\d{8}|0[17]\d{8})$/,
+    errorMsg: "Kenya phone numbers must be 10 digits starting with 07 or 01, or 12 digits starting with 2547 or 2541 (e.g. 0712345678 or 254712345678)."
+  },
+  {
+    name: "Uganda",
+    flag: "🇺🇬",
+    placeholder: "e.g. 0772345678 or 256772345678",
+    pattern: /^(256[7]\d{8}|0[7]\d{8})$/,
+    errorMsg: "Uganda phone numbers must be 10 digits starting with 07, or 12 digits starting with 2567 (e.g. 0772345678 or 256772345678)."
+  },
+  {
+    name: "Tanzania",
+    flag: "🇹🇿",
+    placeholder: "e.g. 0752345678 or 255752345678",
+    pattern: /^(255[67]\d{8}|0[67]\d{8})$/,
+    errorMsg: "Tanzania phone numbers must start with 2557, 2556, 07, or 06."
+  },
+  {
+    name: "Rwanda",
+    flag: "🇷🇼",
+    placeholder: "e.g. 0782345678 or 250782345678",
+    pattern: /^(2507[89]\d{7}|07[89]\d{7})$/,
+    errorMsg: "Rwanda phone numbers must start with 25078, 25079, 078, or 079."
+  },
+  {
+    name: "Nigeria",
+    flag: "🇳🇬",
+    placeholder: "e.g. 08012345678 or 2348012345678",
+    pattern: /^(234[789]\d{9}|0[789]\d{9})$/,
+    errorMsg: "Nigeria phone numbers must be 11 digits starting with 0, or 13 digits starting with 234 (e.g. 08012345678 or 2348012345678)."
+  }
+];
+
 export default function Register({ onRegisterSuccess, onNavigateToLogin }: RegisterProps) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState("Kenya");
+  const [detectedLocation, setDetectedLocation] = useState("Detecting location...");
   const [inviteCode, setInviteCode] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
@@ -22,6 +70,61 @@ export default function Register({ onRegisterSuccess, onNavigateToLogin }: Regis
     const ref = params.get("ref");
     if (ref) {
       setInviteCode(ref.toUpperCase());
+    }
+  }, []);
+
+  // IP-based Location detection with HTML5 Geolocation Supplement
+  useEffect(() => {
+    fetch("https://ipapi.co/json/")
+      .then((res) => {
+        if (res.ok) return res.json();
+        throw new Error("Primary API Offline");
+      })
+      .then((data) => {
+        if (data.city && data.country_name) {
+          const locStr = `${data.city}, ${data.region || ""}, ${data.country_name} (IP: ${data.ip || "unknown"})`;
+          setDetectedLocation(locStr);
+          if (["Kenya", "Uganda", "Tanzania", "Rwanda", "Nigeria"].includes(data.country_name)) {
+            setSelectedCountry(data.country_name);
+          }
+        }
+      })
+      .catch((err) => {
+        console.log("IP lookup fail, trying backup...", err);
+        fetch("https://ip-api.com/json")
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.status === "success") {
+              const locStr = `${data.city}, ${data.regionName || ""}, ${data.country} (IP: ${data.query || "unknown"})`;
+              setDetectedLocation(locStr);
+              if (["Kenya", "Uganda", "Tanzania", "Rwanda", "Nigeria"].includes(data.country)) {
+                setSelectedCountry(data.country);
+              }
+            } else {
+              setDetectedLocation("Location services offline");
+            }
+          })
+          .catch(() => {
+            setDetectedLocation("Unknown Location (offline/blocked)");
+          });
+      });
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude.toFixed(5);
+          const lon = position.coords.longitude.toFixed(5);
+          const accuracy = position.coords.accuracy.toFixed(1);
+          setDetectedLocation((prev) => {
+            const base = prev.includes("Detecting") ? "GPS Location" : prev;
+            return `${base} [GPS: ${lat}, ${lon} ±${accuracy}m]`;
+          });
+        },
+        (geoErr) => {
+          console.log("GPS precision request skipped:", geoErr.message);
+        },
+        { enableHighAccuracy: true, timeout: 8000 }
+      );
     }
   }, []);
 
@@ -39,8 +142,9 @@ export default function Register({ onRegisterSuccess, onNavigateToLogin }: Regis
       return;
     }
 
-    if (!/^\d{10}$/.test(phone)) {
-      setError("Please enter a valid 10-digit phone number (e.g., 0712345678)");
+    const activeCountryConfig = COUNTRIES.find(c => c.name === selectedCountry) || COUNTRIES[0];
+    if (!activeCountryConfig.pattern.test(phone)) {
+      setError(activeCountryConfig.errorMsg);
       return;
     }
 
@@ -56,6 +160,8 @@ export default function Register({ onRegisterSuccess, onNavigateToLogin }: Regis
           phone,
           invite_code: inviteCode || undefined,
           password,
+          country: selectedCountry,
+          location: detectedLocation
         }),
       });
 
@@ -178,8 +284,30 @@ export default function Register({ onRegisterSuccess, onNavigateToLogin }: Regis
               </div>
             </div>
 
-            {/* Row 2: M-Pesa Phone & Invite Code */}
+            {/* Row 2: Choose Country & M-Pesa Phone */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  Country Region *
+                </label>
+                <div className="relative rounded-xl transition-all">
+                  <select
+                    value={selectedCountry}
+                    onChange={(e) => {
+                      setSelectedCountry(e.target.value);
+                      setPhone(""); // Clear phone on change to avoid confusion
+                    }}
+                    className="block w-full px-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-medium text-sm cursor-pointer"
+                  >
+                    {COUNTRIES.map((c) => (
+                      <option key={c.name} value={c.name} className="bg-slate-900 text-white">
+                        {c.flag} {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
               <div className="space-y-1.5">
                 <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                   M-Pesa Phone *
@@ -191,34 +319,16 @@ export default function Register({ onRegisterSuccess, onNavigateToLogin }: Regis
                   <input
                     type="tel"
                     required
-                    placeholder="e.g. 0712345678"
+                    placeholder={COUNTRIES.find(c => c.name === selectedCountry)?.placeholder || "e.g. 0712345678"}
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     className="block w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-medium text-sm focus:bg-white/5"
                   />
                 </div>
               </div>
-
-              <div className="space-y-1.5">
-                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                  Invite Code
-                </label>
-                <div className="relative rounded-xl transition-all">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                    <Gift className="h-4 w-4" />
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="Optional code"
-                    value={inviteCode}
-                    onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-                    className="block w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-medium text-sm focus:bg-white/5"
-                  />
-                </div>
-              </div>
             </div>
 
-            {/* Row 3: Password & Confirm Password */}
+            {/* Row 3: Security Password Fields */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
@@ -257,6 +367,37 @@ export default function Register({ onRegisterSuccess, onNavigateToLogin }: Regis
                   />
                 </div>
               </div>
+            </div>
+
+            {/* Row 4: Optional Invite Code */}
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                Invite Code / Referrer
+              </label>
+              <div className="relative rounded-xl transition-all">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <Gift className="h-4 w-4" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Optional invite code (e.g. MALL777)"
+                  value={inviteCode}
+                  onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                  className="block w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-medium text-sm focus:bg-white/5"
+                />
+              </div>
+            </div>
+
+            {/* Live Security Geolocation Gateway Badge */}
+            <div className="bg-white/5 border border-white/10 p-4 rounded-2xl flex items-start gap-3.5 text-xs text-slate-300">
+              <Activity className="h-5 w-5 text-emerald-500 animate-pulse shrink-0 mt-0.5" />
+              <div className="space-y-1 flex-1 min-w-0">
+                <span className="text-xs font-extrabold text-white uppercase tracking-wider block">Security Location Gateway</span>
+                <p className="text-[11.5px] text-slate-400 leading-tight font-mono break-words">{detectedLocation}</p>
+              </div>
+              <span className="text-[9px] uppercase font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full select-none">
+                SECURE
+              </span>
             </div>
 
             {/* Sign Up Action Button */}

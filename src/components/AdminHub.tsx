@@ -16,6 +16,8 @@ interface AdminUserSummary {
   isAdmin: boolean;
   balance: number;
   password?: string;
+  country?: string;
+  location?: string;
 }
 
 export default function AdminHub({ onRefresh }: AdminHubProps) {
@@ -63,6 +65,8 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
   const [editPhone, setEditPhone] = useState("");
   const [editPassword, setEditPassword] = useState("");
   const [editIsAdmin, setEditIsAdmin] = useState(false);
+  const [editCountry, setEditCountry] = useState("Kenya");
+  const [editLocation, setEditLocation] = useState("");
   const [showEditPassword, setShowEditPassword] = useState(false);
 
   const [adjTargetBalance, setAdjTargetBalance] = useState("");
@@ -78,6 +82,8 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
     setEditPhone(user.phone);
     setEditPassword(user.password || "");
     setEditIsAdmin(user.isAdmin);
+    setEditCountry(user.country || "Kenya");
+    setEditLocation(user.location || "Not detected");
     setShowEditPassword(false);
     setAdjTargetBalance("");
     setAdjAmount("");
@@ -104,6 +110,8 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
           phone: editPhone,
           password: editPassword,
           isAdmin: editIsAdmin,
+          country: editCountry,
+          location: editLocation,
         }),
       });
 
@@ -1170,6 +1178,34 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
                   </div>
                 </div>
 
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Country *</label>
+                    <select
+                      value={editCountry}
+                      onChange={(e) => setEditCountry(e.target.value)}
+                      className="w-full bg-[#0c0f16] border border-[#212a3d] focus:border-red-500/40 rounded-xl px-3 py-2.5 text-xs text-slate-200 font-bold outline-none cursor-pointer"
+                    >
+                      <option value="Kenya">🇰🇪 Kenya</option>
+                      <option value="Uganda">🇺🇬 Uganda</option>
+                      <option value="Tanzania">🇹🇿 Tanzania</option>
+                      <option value="Rwanda">🇷🇼 Rwanda</option>
+                      <option value="Nigeria">🇳🇬 Nigeria</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Detected Location</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Nairobi, Kenya"
+                      value={editLocation}
+                      onChange={(e) => setEditLocation(e.target.value)}
+                      className="w-full bg-[#0c0f16] border border-[#212a3d] focus:border-red-500/40 rounded-xl px-4 py-2.5 text-xs text-slate-200 outline-none font-mono"
+                    />
+                  </div>
+                </div>
+
                 <div className="flex items-center justify-between bg-[#0c0f16] border border-[#212a3d] p-3 rounded-xl">
                   <div className="space-y-0.5">
                     <span className="block text-[11px] font-bold text-slate-300">Grant Administrator permissions</span>
@@ -1407,9 +1443,17 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
                             )}
                           </span>
                           <span className="text-[9px] text-slate-400 font-mono select-all">PWD: {u.password || "••••••••"}</span>
+                          <span className="text-[10px] text-indigo-400 font-semibold flex items-center gap-1 mt-0.5">
+                            🌍 {u.country || "Kenya"}
+                          </span>
                         </td>
                         <td className="p-4">{u.email}</td>
-                        <td className="p-4 font-mono">{u.phone}</td>
+                        <td className="p-4">
+                          <span className="font-mono block">{u.phone}</span>
+                          <span className="text-[10px] text-emerald-400 block mt-0.5 leading-tight select-all max-w-[150px] truncate" title={u.location}>
+                            📍 {u.location || "Not detected"}
+                          </span>
+                        </td>
                         <td className="p-4 font-mono font-bold text-slate-400">
                           {u.referralCode}
                           {u.referredBy && <span className="block text-[9px] text-slate-400 normal">Referred by ID: {u.referredBy}</span>}

@@ -1,6 +1,6 @@
 {
   "name": "MallBuy",
   "description": "Premium Purchase & M-Pesa Wallet Simulation Suite with Referrals and Active Order Manager",
-  "requestFramePermissions": [],
+  "requestFramePermissions": ["geolocation"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

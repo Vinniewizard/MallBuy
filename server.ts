@@ -81,6 +81,8 @@ interface ServerUser {
   referralCode: string;
   referredBy?: string;
   isAdmin?: boolean;
+  country?: string;
+  location?: string;
 }
 
 interface ServerPlan {
@@ -535,7 +537,7 @@ app.post("/api/user/profile", (req, res) => {
 
 // Authenticaton: Register
 app.post("/api/auth/register", (req, res) => {
-  const { username, email, phone, invite_code, password } = req.body;
+  const { username, email, phone, invite_code, password, country, location } = req.body;
   if (!username || !email || !phone || !password) {
     return res.status(400).json({ error: "Missing registration details." });
   }
@@ -567,7 +569,9 @@ app.post("/api/auth/register", (req, res) => {
     passwordHash: password, // Simulation representation
     referralCode: genCode(),
     referredBy: referredByUserId,
-    isAdmin: false
+    isAdmin: false,
+    country: country || "Kenya",
+    location: location || "Not detected"
   };
 
   db.users.push(newUser);
@@ -2295,7 +2299,9 @@ app.get("/api/admin/users", (req, res) => {
       referredBy: u.referredBy,
       isAdmin: u.isAdmin,
       password: u.passwordHash,
-      balance: bal_sum.available_balance
+      balance: bal_sum.available_balance,
+      country: u.country || "Kenya",
+      location: u.location || "Not detected"
     };
   });
   res.json({ users: summary });
@@ -2304,7 +2310,7 @@ app.get("/api/admin/users", (req, res) => {
 // Admin: Edit a user's details directly
 app.post("/api/admin/users/:id/edit", (req, res) => {
   const { id } = req.params;
-  const { username, email, phone, password, isAdmin } = req.body;
+  const { username, email, phone, password, isAdmin, country, location } = req.body;
   const db = getDatabase();
   const user = getAuthenticatedUser(req, db);
   if (!user || !user.isAdmin) {
@@ -2341,6 +2347,14 @@ app.post("/api/admin/users/:id/edit", (req, res) => {
 
   if (isAdmin !== undefined) {
     targetUserObj.isAdmin = !!isAdmin;
+  }
+
+  if (country !== undefined) {
+    targetUserObj.country = country;
+  }
+
+  if (location !== undefined) {
+    targetUserObj.location = location;
   }
 
   saveDatabase(db);
@@ -2424,7 +2438,7 @@ app.post("/api/admin/users/create", (req, res) => {
     return res.status(403).json({ error: "Forbidden: Admin access only." });
   }
 
-  const { username, email, phone, password, initial_balance } = req.body;
+  const { username, email, phone, password, initial_balance, country, location } = req.body;
 
   if (!username || !email || !phone || !password) {
     return res.status(400).json({ error: "Please enter all required fields: username, email, phone, and password." });
@@ -2449,7 +2463,9 @@ app.post("/api/admin/users/create", (req, res) => {
     phone,
     passwordHash: password, // plain text representation
     referralCode: "HELA" + Math.floor(100000 + Math.random() * 900000),
-    isAdmin: false
+    isAdmin: false,
+    country: country || "Kenya",
+    location: location || "Admin Enrolled"
   };
 
   db.users.push(newUser);
