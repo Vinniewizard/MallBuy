@@ -4,6 +4,8 @@ import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import crypto from "crypto";
 import pg from "pg";
+import http from "http";
+import https from "https";
 
 const { Pool } = pg;
 
@@ -12,6 +14,62 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 const DB_FILE = path.join(process.cwd(), "server_db.json");
 
 app.use(express.json());
+
+// Track active hosts to perform self-pings to prevent Render/Cloud Run containers from sleeping
+const activeHosts = new Set<string>();
+
+// Pre-fill with the Render public URL if available
+if (process.env.RENDER_EXTERNAL_URL) {
+  activeHosts.add(process.env.RENDER_EXTERNAL_URL);
+} else {
+  // Fallback to the production domain name
+  activeHosts.add("https://mallbuy.onrender.com");
+}
+
+app.use((req, res, next) => {
+  const protocol = req.headers["x-forwarded-proto"] || req.protocol;
+  const host = req.get("host");
+  if (host && !host.includes("localhost") && !host.includes("127.0.0.1") && !host.includes("0.0.0.0") && !host.includes("192.168.")) {
+    activeHosts.add(`${protocol}://${host}`);
+  }
+  next();
+});
+
+// Dedicated health endpoint
+app.get("/api/health", (req, res) => {
+  res.json({ status: "healthy", timestamp: new Date().toISOString() });
+});
+
+// Background self-ping system to keep Render container active 24/7
+const pingHost = (urlStr: string) => {
+  try {
+    // Clean up any double slashes in the path (excluding the protocol)
+    const cleanedUrlStr = urlStr.replace(/([^:]\/)\/+/g, "$1");
+    const url = new URL(cleanedUrlStr);
+    const client = url.protocol === "https:" ? https : http;
+    client.get(cleanedUrlStr, (res) => {
+      // Consume response data to free up memory
+      res.on("data", () => {});
+      console.log(`[Keep-Alive] Self-pinged ${cleanedUrlStr} - Status: ${res.statusCode}`);
+    }).on("error", (err) => {
+      console.warn(`[Keep-Alive] Error self-pinging ${cleanedUrlStr}:`, err.message);
+    });
+  } catch (e: any) {
+    console.error(`[Keep-Alive] Invalid URL: ${urlStr}`, e.message);
+  }
+};
+
+// Initial ping on startup (after a 5-second delay to let server fully bind)
+setTimeout(() => {
+  activeHosts.forEach((host) => pingHost(`${host}/api/health`));
+}, 5000);
+
+// Set interval to ping every 10 minutes (Render timeout is 15 minutes)
+setInterval(() => {
+  if (activeHosts.size > 0) {
+    activeHosts.forEach((host) => pingHost(`${host}/api/health`));
+  }
+}, 10 * 60 * 1000);
 
 // TYPES (Server-side mirror)
 interface ServerUser {
@@ -91,6 +149,7 @@ interface DatabaseSchema {
   referrals: ServerReferral[];
   systemOffsetDays: number; // For fast forwarding simulations
   paymentSettings?: ServerPaymentSettings;
+  supportTickets?: any[]; // For customer desk communication
 }
 
 // -------------------------------------------------------------
@@ -250,6 +309,11 @@ function ensureGadminAdmin(db: DatabaseSchema): boolean {
 function migrateDB(db: any): boolean {
   let changed = false;
   
+  if (!db.supportTickets) {
+    db.supportTickets = [];
+    changed = true;
+  }
+
   if (db.investments && !db.purchases) {
     db.purchases = db.investments;
     delete db.investments;
@@ -576,6 +640,204 @@ app.get("/api/plans", (req, res) => {
   const db = getDatabase();
   res.json({ plans: db.plans.filter((p) => p.active) });
 });
+
+// -------------------------------------------------------------
+// LIVE CHAT & SUPPORT TICKET ENDPOINTS
+// -------------------------------------------------------------
+
+// Support: Create a new support ticket
+app.post("/api/support/tickets", (req, res) => {
+  const db = getDatabase();
+  const userIdHeader = req.headers["x-user-id"] as string;
+  const { subject, name, phone, email, initialMessage } = req.body;
+
+  if (!subject || !name || !phone || !initialMessage) {
+    return res.status(400).json({ error: "Please fill in all required fields." });
+  }
+
+  // Ensure supportTickets array exists
+  if (!db.supportTickets) {
+    db.supportTickets = [];
+  }
+
+  const user = userIdHeader ? db.users.find((u) => u.id === userIdHeader) : null;
+  const finalUserId = user ? user.id : "guest";
+
+  const newTicket = {
+    id: "ticket-" + Math.random().toString(36).substr(2, 9),
+    user_id: finalUserId,
+    user_name: name,
+    user_phone: phone,
+    user_email: email || "",
+    subject,
+    status: "open",
+    messages: [
+      {
+        id: "msg-" + Math.random().toString(36).substr(2, 9),
+        sender_id: finalUserId,
+        sender_name: name,
+        content: initialMessage,
+        created_at: new Date().toISOString()
+      }
+    ],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    unread_by_admin: true,
+    unread_by_user: false
+  };
+
+  db.supportTickets.push(newTicket);
+  saveDatabase(db);
+
+  return res.json({ success: true, ticket: newTicket });
+});
+
+// Support: Get tickets for the user
+app.get("/api/support/tickets", (req, res) => {
+  const db = getDatabase();
+  const userIdHeader = req.headers["x-user-id"] as string;
+  const { phone, ticket_id } = req.query;
+
+  if (!db.supportTickets) {
+    db.supportTickets = [];
+  }
+
+  let tickets = [];
+  if (userIdHeader && userIdHeader !== "null" && userIdHeader !== "undefined") {
+    tickets = db.supportTickets.filter((t: any) => t.user_id === userIdHeader);
+  } else if (ticket_id) {
+    tickets = db.supportTickets.filter((t: any) => t.id === ticket_id);
+  } else if (phone) {
+    tickets = db.supportTickets.filter((t: any) => t.user_phone === phone);
+  }
+
+  return res.json({ tickets });
+});
+
+// Support: Get details of a single ticket
+app.get("/api/support/tickets/:id", (req, res) => {
+  const db = getDatabase();
+  if (!db.supportTickets) db.supportTickets = [];
+
+  const ticket = db.supportTickets.find((t: any) => t.id === req.params.id);
+  if (!ticket) {
+    return res.status(404).json({ error: "Ticket not found" });
+  }
+
+  // Mark as read by user when they fetch the messages (if it was updated by admin)
+  const userIdHeader = req.headers["x-user-id"] as string;
+  if (userIdHeader && userIdHeader !== "null" && userIdHeader !== "undefined") {
+    if (ticket.user_id === userIdHeader) {
+      ticket.unread_by_user = false;
+      saveDatabase(db);
+    }
+  } else {
+    // Guest accessing their ticket
+    ticket.unread_by_user = false;
+    saveDatabase(db);
+  }
+
+  return res.json({ ticket });
+});
+
+// Support: Send a message inside a ticket
+app.post("/api/support/tickets/:id/messages", (req, res) => {
+  const db = getDatabase();
+  if (!db.supportTickets) db.supportTickets = [];
+
+  const ticket = db.supportTickets.find((t: any) => t.id === req.params.id);
+  if (!ticket) {
+    return res.status(404).json({ error: "Ticket not found" });
+  }
+
+  const { content, sender_name, sender_id } = req.body;
+  if (!content) {
+    return res.status(400).json({ error: "Message content cannot be empty." });
+  }
+
+  const newMessage = {
+    id: "msg-" + Math.random().toString(36).substr(2, 9),
+    sender_id: sender_id || "guest",
+    sender_name: sender_name || "Guest User",
+    content,
+    created_at: new Date().toISOString()
+  };
+
+  ticket.messages.push(newMessage);
+  ticket.updated_at = new Date().toISOString();
+  
+  if (sender_id === "admin") {
+    ticket.unread_by_user = true;
+    ticket.unread_by_admin = false;
+  } else {
+    ticket.unread_by_admin = true;
+    ticket.unread_by_user = false;
+  }
+
+  saveDatabase(db);
+  return res.json({ success: true, message: newMessage, ticket });
+});
+
+// Support Admin: Get all tickets
+app.get("/api/admin/support-tickets", (req, res) => {
+  const db = getDatabase();
+  const user = getAuthenticatedUser(req, db);
+  if (!user || !user.isAdmin) {
+    return res.status(403).json({ error: "Forbidden. Admin only." });
+  }
+
+  if (!db.supportTickets) db.supportTickets = [];
+  
+  // Return tickets sorted by update time (recent first)
+  const sorted = [...db.supportTickets].sort((a: any, b: any) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+  return res.json({ tickets: sorted });
+});
+
+// Support Admin: Resolve/Close ticket
+app.post("/api/admin/support-tickets/:id/resolve", (req, res) => {
+  const db = getDatabase();
+  const user = getAuthenticatedUser(req, db);
+  if (!user || !user.isAdmin) {
+    return res.status(403).json({ error: "Forbidden. Admin only." });
+  }
+
+  if (!db.supportTickets) db.supportTickets = [];
+  const ticket = db.supportTickets.find((t: any) => t.id === req.params.id);
+  if (!ticket) {
+    return res.status(404).json({ error: "Ticket not found" });
+  }
+
+  ticket.status = "resolved";
+  ticket.updated_at = new Date().toISOString();
+  ticket.unread_by_user = true; // notify client it's resolved
+
+  saveDatabase(db);
+  return res.json({ success: true, ticket });
+});
+
+// Support Admin: Notifications Live Polling (unread ticket counts and list)
+app.get("/api/admin/support-notifications", (req, res) => {
+  const db = getDatabase();
+  const user = getAuthenticatedUser(req, db);
+  if (!user || !user.isAdmin) {
+    return res.status(403).json({ error: "Forbidden. Admin only." });
+  }
+
+  if (!db.supportTickets) db.supportTickets = [];
+  const unreadTickets = db.supportTickets.filter((t: any) => t.status === "open" && t.unread_by_admin);
+  
+  return res.json({
+    unreadCount: unreadTickets.length,
+    unreadTickets: unreadTickets.map((t: any) => ({
+      id: t.id,
+      user_name: t.user_name,
+      user_phone: t.user_phone,
+      subject: t.subject,
+      updated_at: t.updated_at
+    }))
+  });
+});
+
 
 // Balance breakdown
 app.get("/api/user/balance", (req, res) => {

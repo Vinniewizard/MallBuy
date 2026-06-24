@@ -75,3 +75,26 @@ export interface DashboardStats {
   completed_orders_count: number;
   total_profit_earned: number;
 }
+
+export interface SupportMessage {
+  id: string;
+  sender_id: string; // 'admin' or user_id or 'guest'
+  sender_name: string;
+  content: string;
+  created_at: string;
+}
+
+export interface SupportTicket {
+  id: string;
+  user_id: string; // user id or 'guest'
+  user_name: string;
+  user_phone: string;
+  user_email: string;
+  subject: string;
+  status: 'open' | 'resolved';
+  messages: SupportMessage[];
+  created_at: string;
+  updated_at: string;
+  unread_by_admin: boolean;
+  unread_by_user: boolean;
+}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { ShieldCheck, Users, Wallet, ListTodo, Plus, Check, X, ToggleLeft, ToggleRight, Sparkles, Server, Edit, Eye, EyeOff, UserCog, ArrowUpDown, ChevronRight } from "lucide-react";
-import { Transaction, Purchase, Plan } from "../types";
+import { ShieldCheck, Users, Wallet, ListTodo, Plus, Check, X, ToggleLeft, ToggleRight, Sparkles, Server, Edit, Eye, EyeOff, UserCog, ArrowUpDown, ChevronRight, Headphones, MessageSquare, Send, Volume2, VolumeX, Mail } from "lucide-react";
+import { Transaction, Purchase, Plan, SupportTicket } from "../types";
 
 interface AdminHubProps {
   onRefresh: () => void;
@@ -19,13 +19,22 @@ interface AdminUserSummary {
 }
 
 export default function AdminHub({ onRefresh }: AdminHubProps) {
-  const [activeAdminTab, setActiveAdminTab] = useState<"users" | "transactions" | "purchases" | "plans" | "payment_settings">("transactions");
+  const [activeAdminTab, setActiveAdminTab] = useState<"users" | "transactions" | "purchases" | "plans" | "payment_settings" | "support">("transactions");
 
   // State data loaded directly
   const [users, setUsers] = useState<AdminUserSummary[]>([]);
   const [txs, setTxs] = useState<any[]>([]);
   const [purchases, setPurchases] = useState<any[]>([]);
   const [plans, setPlans] = useState<Plan[]>([]);
+  
+  // Support and live desk state
+  const [supportTickets, setSupportTickets] = useState<SupportTicket[]>([]);
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
+  const [adminReplyText, setAdminReplyText] = useState("");
+  const [sendingAdminReply, setSendingAdminReply] = useState(false);
+  const [unreadSupportCount, setUnreadSupportCount] = useState(0);
+  const [supportFilter, setSupportFilter] = useState<"all" | "open" | "resolved">("all");
+  const [soundEnabled, setSoundEnabled] = useState(true);
 
   // Messages and loading
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -280,12 +289,13 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
       const h_id = localStorage.getItem("mallbuy_user_id") || "";
       const opt = { headers: { "x-user-id": h_id } };
 
-      const [usersRes, txsRes, invRes, plansRes, payRes] = await Promise.all([
+      const [usersRes, txsRes, invRes, plansRes, payRes, supportRes] = await Promise.all([
         fetch("/api/admin/users", opt),
         fetch("/api/admin/transactions", opt),
         fetch("/api/admin/purchases", opt),
         fetch("/api/plans"),
         fetch("/api/admin/payment-settings", opt),
+        fetch("/api/admin/support-tickets", opt),
       ]);
 
       const uData = await usersRes.json();
@@ -293,6 +303,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
       const iData = await invRes.json();
       const pData = await plansRes.json();
       const payData = await payRes.json();
+      const supportData = await supportRes.json();
 
       if (uData.users) {
         setUsers(uData.users);
@@ -308,6 +319,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
       if (tData.transactions) setTxs(tData.transactions);
       if (iData.purchases) setPurchases(iData.purchases);
       if (pData.plans) setPlans(pData.plans);
+      if (supportData.tickets) setSupportTickets(supportData.tickets);
       if (payData.paymentSettings) {
         setPaySettings({
           ...payData.paymentSettings,
@@ -343,6 +355,93 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
     loadAdminState();
   }, []);
 
+  // Double ring administrative desktop-like beep
+  const playAdminDoubleRing = () => {
+    if (!soundEnabled) return;
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      osc1.type = "sine";
+      osc1.frequency.setValueAtTime(660.00, ctx.currentTime); // E5
+      gain1.gain.setValueAtTime(0.08, ctx.currentTime);
+      osc1.start();
+      osc1.stop(ctx.currentTime + 0.12);
+
+      setTimeout(() => {
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.type = "sine";
+        osc2.frequency.setValueAtTime(880.00, ctx.currentTime); // A5
+        gain2.gain.setValueAtTime(0.12, ctx.currentTime);
+        osc2.start();
+        osc2.stop(ctx.currentTime + 0.24);
+      }, 120);
+    } catch (err) {
+      console.log("Audio notification error:", err);
+    }
+  };
+
+  // Support notifications and real-time alerts polling system (runs every 5s)
+  useEffect(() => {
+    const pollNotifications = () => {
+      const h_id = localStorage.getItem("mallbuy_user_id") || "";
+      if (!h_id) return;
+      
+      fetch("/api/admin/support-notifications", {
+        headers: { "x-user-id": h_id }
+      })
+        .then((res) => {
+          if (res.ok) return res.json();
+          throw new Error("Unauthorized notification check");
+        })
+        .then((data) => {
+          // Play distinct sound if unreadCount increased or is positive
+          if (data.unreadCount > unreadSupportCount) {
+            playAdminDoubleRing();
+          }
+          setUnreadSupportCount(data.unreadCount);
+        })
+        .catch((e) => console.log("Real-time notification polling skipped:", e.message));
+    };
+
+    // Initial load
+    pollNotifications();
+    const interval = setInterval(pollNotifications, 5000);
+    return () => clearInterval(interval);
+  }, [unreadSupportCount, soundEnabled]);
+
+  // Live polling for the selected active ticket messaging when the admin is active on the support tab (runs every 3s)
+  useEffect(() => {
+    if (activeAdminTab !== "support" || !selectedTicketId) return;
+
+    const interval = setInterval(() => {
+      const h_id = localStorage.getItem("mallbuy_user_id") || "";
+      fetch(`/api/support/tickets/${selectedTicketId}`, {
+        headers: { "x-user-id": h_id }
+      })
+        .then((res) => {
+          if (res.ok) return res.json();
+          throw new Error("Stale ticket fetch");
+        })
+        .then((data) => {
+          if (data.ticket) {
+            // Update the selected ticket content dynamically
+            setSupportTickets((prevTickets) =>
+              prevTickets.map((t) => (t.id === selectedTicketId ? data.ticket : t))
+            );
+          }
+        })
+        .catch((err) => console.log("Active support ticket tracking issue:", err));
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [selectedTicketId, activeAdminTab]);
+
   const handleTxApprove = async (id: string) => {
     setActionLoading(id);
     setMsg(null);
@@ -361,6 +460,61 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
       setMsg({ type: "error", text: err.message || "Failed to approve transaction." });
     } finally {
       setActionLoading(null);
+    }
+  };
+
+  const handleAdminSendReply = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adminReplyText.trim() || !selectedTicketId) return;
+
+    setSendingAdminReply(true);
+    try {
+      const h_id = localStorage.getItem("mallbuy_user_id") || "";
+      const res = await fetch(`/api/support/tickets/${selectedTicketId}/messages`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-id": h_id
+        },
+        body: JSON.stringify({
+          content: adminReplyText,
+          sender_name: "Desk Support (Admin)",
+          sender_id: "admin"
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setAdminReplyText("");
+        // Reload ticket details instantly
+        const updatedTickets = supportTickets.map((t) => 
+          t.id === selectedTicketId ? data.ticket : t
+        );
+        setSupportTickets(updatedTickets);
+      }
+    } catch (err) {
+      console.error("Failed to send admin reply:", err);
+    } finally {
+      setSendingAdminReply(false);
+    }
+  };
+
+  const handleResolveTicket = async (ticketId: string) => {
+    try {
+      const h_id = localStorage.getItem("mallbuy_user_id") || "";
+      const res = await fetch(`/api/admin/support-tickets/${ticketId}/resolve`, {
+        method: "POST",
+        headers: { "x-user-id": h_id }
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        const updatedTickets = supportTickets.map((t) => 
+          t.id === ticketId ? data.ticket : t
+        );
+        setSupportTickets(updatedTickets);
+        setMsg({ type: "success", text: "Ticket successfully marked as RESOLVED/CLOSED." });
+      }
+    } catch (err) {
+      console.error("Failed to resolve ticket:", err);
     }
   };
 
@@ -619,6 +773,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
           { id: "users", label: "Registrations & Balances", icon: Users },
           { id: "plans", label: "Return Packages & Seeding", icon: Server },
           { id: "payment_settings", label: "Gateways Control Center", icon: ToggleRight },
+          { id: "support", label: "Support Desk Center", icon: Headphones },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeAdminTab === tab.id;
@@ -634,7 +789,12 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
               }`}
             >
               <Icon className="h-4 w-4" />
-              {tab.label}
+              <span>{tab.label}</span>
+              {tab.id === "support" && unreadSupportCount > 0 && (
+                <span className="bg-red-500 text-white rounded-full text-[9.5px] px-1.5 py-0.5 ml-0.5 font-extrabold animate-pulse">
+                  {unreadSupportCount}
+                </span>
+              )}
               {isActive && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-450 rounded-full"></div>}
             </button>
           );
@@ -1780,6 +1940,260 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
             </button>
           </div>
         </form>
+        </div>
+      )}
+
+      {activeAdminTab === "support" && (
+        <div className="bg-[#0b0e14] border border-[#212a3d] rounded-2xl p-6 space-y-6">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-[#212a3d] pb-4.5 gap-4">
+            <div>
+              <h3 className="text-sm font-extrabold text-slate-150 uppercase tracking-widest flex items-center gap-2">
+                <Headphones className="h-4.5 w-4.5 text-red-400" />
+                Live Desk Support & Tickets Hub
+              </h3>
+              <p className="text-[11px] text-slate-400 leading-tight mt-1">
+                Manage and reply to instant client support channels. New tickets trigger dual-ring administrative alerts.
+              </p>
+            </div>
+
+            {/* Support filters */}
+            <div className="flex items-center gap-2">
+              {(["all", "open", "resolved"] as const).map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => setSupportFilter(filter)}
+                  className={`px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-widest transition-all cursor-pointer border ${
+                    supportFilter === filter
+                      ? "bg-red-500/10 border-red-500/30 text-red-400"
+                      : "bg-white/5 border-white/5 text-slate-400 hover:text-slate-200"
+                  }`}
+                >
+                  {filter}
+                </button>
+              ))}
+
+              <button
+                onClick={() => setSoundEnabled(!soundEnabled)}
+                className={`p-2 rounded-lg border text-xs transition-all cursor-pointer ${
+                  soundEnabled 
+                    ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" 
+                    : "bg-white/5 border-white/5 text-slate-400"
+                }`}
+                title={soundEnabled ? "Mute alert sounds" : "Unmute alert sounds"}
+              >
+                {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+              </button>
+            </div>
+          </div>
+
+          {/* Master Detail Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* Master Queue List */}
+            <div className="lg:col-span-5 space-y-3 max-h-[550px] overflow-y-auto pr-1">
+              <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                Active Client Support Queue
+              </h4>
+              {supportTickets.filter(t => supportFilter === "all" || t.status === supportFilter).length === 0 ? (
+                <div className="text-center py-10 bg-white/5 border border-dashed border-white/5 rounded-xl">
+                  <MessageSquare className="h-8 w-8 text-slate-600 mx-auto mb-2" />
+                  <p className="text-xs text-slate-400 font-bold">No tickets in this queue</p>
+                </div>
+              ) : (
+                supportTickets
+                  .filter(t => supportFilter === "all" || t.status === supportFilter)
+                  .map((ticket) => {
+                    const isSelected = selectedTicketId === ticket.id;
+                    const hasUnread = ticket.unread_by_admin;
+                    const lastMsg = ticket.messages?.[ticket.messages.length - 1];
+                    
+                    return (
+                      <div
+                        key={ticket.id}
+                        onClick={async () => {
+                          setSelectedTicketId(ticket.id);
+                          // Clear unread on backend as well
+                          ticket.unread_by_admin = false;
+                          try {
+                            const h_id = localStorage.getItem("mallbuy_user_id") || "";
+                            await fetch(`/api/support/tickets/${ticket.id}`, {
+                              headers: { "x-user-id": h_id }
+                            });
+                          } catch (err) {}
+                        }}
+                        className={`p-4 rounded-xl border transition-all text-left cursor-pointer relative ${
+                          isSelected
+                            ? "bg-red-500/5 border-red-500/30"
+                            : "bg-[#0c0f16] border-[#212a3d] hover:border-[#2a364d]"
+                        }`}
+                      >
+                        {/* Unread dot */}
+                        {hasUnread && (
+                          <span className="absolute top-3.5 right-3.5 flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                          </span>
+                        )}
+
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-black text-slate-200 uppercase tracking-wide truncate">
+                            {ticket.user_name}
+                          </span>
+                          <span className="text-[9px] font-bold text-slate-500 font-mono">
+                            #{ticket.id.substring(7).toUpperCase()}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <span className="text-[10px] text-slate-400 font-bold font-mono">
+                            {ticket.user_phone}
+                          </span>
+                          <span className="text-slate-500">•</span>
+                          <span className="text-[10px] text-slate-400 font-medium truncate">
+                            {ticket.subject}
+                          </span>
+                        </div>
+
+                        {lastMsg && (
+                          <p className="text-[10.5px] text-slate-500 italic mt-2 truncate bg-white/5 px-2 py-1 rounded">
+                            {lastMsg.content}
+                          </p>
+                        )}
+
+                        <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-[#212a3d]/40">
+                          <span className={`text-[8.5px] uppercase font-black px-1.5 py-0.5 rounded ${
+                            ticket.status === "open"
+                              ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                              : "bg-white/5 text-slate-500 border border-white/5"
+                          }`}>
+                            {ticket.status}
+                          </span>
+                          <span className="text-[9px] text-slate-500 font-semibold font-mono">
+                            {new Date(ticket.updated_at).toLocaleDateString([], {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'})}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })
+              )}
+            </div>
+
+            {/* Detail Panel View */}
+            <div className="lg:col-span-7 bg-[#0c0f16]/95 border border-[#212a3d] rounded-xl p-5 min-h-[450px] flex flex-col justify-between">
+              {(() => {
+                const ticket = supportTickets.find(t => t.id === selectedTicketId);
+                if (!ticket) {
+                  return (
+                    <div className="flex-1 flex flex-col items-center justify-center text-center p-10">
+                      <Headphones className="h-12 w-12 text-[#212a3d] mb-3 animate-pulse" />
+                      <h5 className="text-xs font-black text-slate-300 uppercase tracking-widest">
+                        Live Conversation Console
+                      </h5>
+                      <p className="text-[10px] text-slate-500 max-w-xs mt-1.5 leading-relaxed">
+                        Select an active customer conversation query from the queue list to start instant desk support.
+                      </p>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="flex flex-col h-full flex-1 justify-between">
+                    {/* Ticket details top panel */}
+                    <div className="bg-white/5 border border-white/5 p-4 rounded-xl text-xs space-y-2 mb-4 text-left">
+                      <div className="flex items-center justify-between">
+                        <span className="font-extrabold text-slate-200 uppercase tracking-wide">
+                          Client: {ticket.user_name}
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          {ticket.status === "open" && (
+                            <button
+                              onClick={() => handleResolveTicket(ticket.id)}
+                              className="bg-emerald-500 hover:bg-emerald-400 text-[#07090e] font-extrabold text-[9px] uppercase tracking-wider px-2 py-1 rounded transition-all cursor-pointer"
+                            >
+                              Resolve Ticket
+                            </button>
+                          )}
+                          <a
+                            href={`https://wa.me/${ticket.user_phone.replace(/\D/g, "").startsWith("0") ? "254" + ticket.user_phone.replace(/\D/g, "").slice(1) : ticket.user_phone.replace(/\D/g, "")}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="bg-[#25D366] hover:bg-[#128C7E] text-white font-extrabold text-[9px] uppercase tracking-wider px-2 py-1 rounded transition-all flex items-center gap-1 cursor-pointer"
+                          >
+                            <MessageSquare className="h-3 w-3" /> WhatsApp
+                          </a>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3 text-[10.5px] text-slate-400 pt-2 border-t border-[#212a3d]/40">
+                        <div>
+                          <span className="text-slate-500">M-Pesa Line:</span> <strong className="text-slate-300">{ticket.user_phone}</strong>
+                        </div>
+                        {ticket.user_email && (
+                          <div>
+                            <span className="text-slate-500">Email:</span> <strong className="text-slate-300 truncate block">{ticket.user_email}</strong>
+                          </div>
+                        )}
+                        <div>
+                          <span className="text-slate-500">Topic:</span> <strong className="text-slate-300">{ticket.subject}</strong>
+                        </div>
+                        <div>
+                          <span className="text-slate-500">Created:</span> <span className="font-mono">{new Date(ticket.created_at).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Messages Flow Area */}
+                    <div className="flex-1 overflow-y-auto space-y-3 max-h-[300px] mb-4 pr-1 min-h-[150px] flex flex-col bg-[#07090e]/40 p-4 rounded-xl border border-white/5">
+                      {ticket.messages?.map((msg, idx) => {
+                        const isDeskAdmin = msg.sender_id === "admin";
+                        return (
+                          <div
+                            key={msg.id || idx}
+                            className={`flex flex-col max-w-[85%] ${isDeskAdmin ? "self-end" : "self-start"}`}
+                          >
+                            <span className={`text-[8px] font-black uppercase tracking-wider mb-1 px-1 ${isDeskAdmin ? "text-red-400 self-end" : "text-blue-400 self-start"}`}>
+                              {isDeskAdmin ? "Desk Admin" : msg.sender_name}
+                            </span>
+                            <div className={`p-2.5 rounded-2xl text-[11px] leading-relaxed font-medium text-left ${
+                              isDeskAdmin
+                                ? "bg-gradient-to-br from-red-600 to-red-800 text-white rounded-tr-none shadow shadow-red-950/20"
+                                : "bg-slate-800 border border-[#212a3d] text-slate-200 rounded-tl-none"
+                            }`}>
+                              {msg.content}
+                            </div>
+                            <span className={`text-[8px] text-slate-500 font-bold mt-0.5 px-1 ${isDeskAdmin ? "self-end" : "self-start"}`}>
+                              {new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Chat reply submission */}
+                    <form onSubmit={handleAdminSendReply} className="flex gap-2 pt-3 border-t border-[#212a3d] mt-auto">
+                      <input
+                        type="text"
+                        value={adminReplyText}
+                        onChange={(e) => setAdminReplyText(e.target.value)}
+                        placeholder={ticket.status === "resolved" ? "Ticket resolved. Re-type here to reopen..." : "Type admin message reply..."}
+                        className="flex-1 bg-[#07090e] border border-[#212a3d] px-4 py-2.5 rounded-xl text-xs text-slate-100 placeholder-slate-550 focus:outline-none focus:border-red-500 transition-all font-mono"
+                        disabled={sendingAdminReply}
+                      />
+                      <button
+                        type="submit"
+                        disabled={sendingAdminReply || !adminReplyText.trim()}
+                        className="bg-red-500 hover:bg-red-400 text-white px-4 py-2.5 rounded-xl text-xs font-bold uppercase flex items-center justify-center transition-all disabled:opacity-40 cursor-pointer"
+                      >
+                        <Send className="h-3.5 w-3.5" />
+                      </button>
+                    </form>
+                  </div>
+                );
+              })()}
+            </div>
+
+          </div>
         </div>
       )}
     </div>
