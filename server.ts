@@ -335,6 +335,16 @@ function migrateDB(db: any): boolean {
         t.transaction_type = "purchase";
         changed = true;
       }
+      if (t.type) {
+        t.transaction_type = t.type;
+        delete t.type;
+        changed = true;
+      }
+      if (t.timestamp) {
+        t.created_at = t.timestamp;
+        delete t.timestamp;
+        changed = true;
+      }
     }
   }
 
@@ -1542,18 +1552,16 @@ app.post("/api/transactions/deposit", async (req, res) => {
             userNotificationMsg = `PesaPal Invoice created! Opening secure gateway...`;
             
             // Add transaction and return immediately with redirect_url
-            const newTx: ServerTransaction = {
+            const newTx: any = {
               id: txId,
               user_id: user.id,
               amount: Number(amount),
-              type: "deposit",
+              transaction_type: "deposit",
               status: "pending",
-              timestamp: new Date().toISOString(),
-              gateway: gatewayUsed,
+              created_at: new Date().toISOString(),
               phone: phone,
-              crypto_currency: undefined,
-              crypto_address: undefined,
-              note: note || "Automated PesaPal Funding Request"
+              note: note || "Automated PesaPal Funding Request",
+              gateway: gatewayUsed
             };
             db.transactions.push(newTx);
             saveDatabase(db);
