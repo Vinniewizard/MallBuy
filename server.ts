@@ -1386,7 +1386,43 @@ app.post("/api/transactions/deposit", async (req, res) => {
       
       if (tokenData.token) {
           const pesapalToken = tokenData.token;
-          const ipnId = process.env.PESAPAL_IPN_ID || "db023537-eb4a-4d24-8f4d-17559e45112e";
+          let ipnId = process.env.PESAPAL_IPN_ID;
+          
+          if (!ipnId) {
+            // Attempt to get existing IPNs
+            const ipnListRes = await fetch("https://pay.pesapal.com/v3/api/URLSetup/GetIpnList", {
+              headers: {
+                "Accept": "application/json",
+                "Authorization": `Bearer ${pesapalToken}`
+              }
+            });
+            const ipnListData = await ipnListRes.json();
+            
+            if (Array.isArray(ipnListData) && ipnListData.length > 0) {
+              ipnId = ipnListData[0].ipn_id;
+            } else {
+              // Register new IPN
+              const regIpnRes = await fetch("https://pay.pesapal.com/v3/api/URLSetup/RegisterIPN", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Accept": "application/json",
+                  "Authorization": `Bearer ${pesapalToken}`
+                },
+                body: JSON.stringify({
+                  url: "https://mallbuy.vercel.app/api/pesapal/ipn",
+                  ipn_notification_type: "GET"
+                })
+              });
+              const regIpnData = await regIpnRes.json();
+              if (regIpnData.ipn_id) {
+                ipnId = regIpnData.ipn_id;
+              } else {
+                console.error("PesaPal IPN Registration Error:", regIpnData);
+                ipnId = "dummy-ipn-id"; // Fallback to avoid crash, though it will likely fail
+              }
+            }
+          }
           
           const orderRes = await fetch("https://pay.pesapal.com/v3/api/Transactions/SubmitOrderRequest", {
             method: "POST",
