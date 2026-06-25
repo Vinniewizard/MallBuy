@@ -1385,47 +1385,77 @@ app.post("/api/transactions/deposit", async (req, res) => {
       const tokenData = await tokenRes.json();
       
       if (tokenData.token) {
+          const pesapalToken = tokenData.token;
+          const ipnId = process.env.PESAPAL_IPN_ID || "db023537-eb4a-4d24-8f4d-17559e45112e";
+          
+          const orderRes = await fetch("https://pay.pesapal.com/v3/api/Transactions/SubmitOrderRequest", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+              "Authorization": `Bearer ${pesapalToken}`
+            },
+            body: JSON.stringify({
+              id: txId,
+              currency: "KES",
+              amount: Number(amount),
+              description: `MallBuy Deposit for ${user.username}`,
+              callback_url: "https://mallbuy.vercel.app/wallet", 
+              notification_id: ipnId,
+              billing_address: {
+                phone_number: phone,
+                email_address: user.email || "client@mallbuy.com",
+                first_name: user.username,
+                last_name: "Client",
+                country_code: "KE"
+              }
+            })
+          });
+          const orderData = await orderRes.json();
+
+          if (orderData.error) {
+              console.error("PesaPal Order Error:", orderData.error);
+              gatewayUsed = "PesaPal (Error State)";
+              return res.status(400).json({ error: orderData.error.message || "Failed to submit PesaPal order." });
+          }
+
           gatewayUsed = "PesaPal V3 Gateway";
-          userNotificationMsg = `PesaPal payment prompt sent to your phone (${phone}). Please enter your PIN to complete the transaction.`;
+          
+          if (orderData.redirect_url) {
+            userNotificationMsg = `PesaPal Invoice created! Opening secure gateway...`;
+            
+            // Add transaction and return immediately with redirect_url
+            const newTx: ServerTransaction = {
+              id: txId,
+              user_id: user.id,
+              amount: Number(amount),
+              type: "deposit",
+              status: "pending",
+              timestamp: new Date().toISOString(),
+              gateway: gatewayUsed,
+              phone: phone,
+              crypto_currency: undefined,
+              crypto_address: undefined,
+              note: note || "Automated PesaPal Funding Request"
+            };
+            db.transactions.push(newTx);
+            saveDatabase(db);
+            
+            return res.json({ 
+              success: true, 
+              message: userNotificationMsg,
+              redirectUrl: orderData.redirect_url 
+            });
+          } else {
+            userNotificationMsg = `PesaPal payment prompt sent to your phone (${phone}). Please enter your PIN to complete the transaction.`;
+          }
       } else {
           console.error("PesaPal API Token Failure:", tokenData);
           gatewayUsed = "PesaPal (Error State)";
-          return res.status(400).json({ error: tokenData.message || "Failed to initiate PesaPal payment prompt." });
+          return res.status(400).json({ error: tokenData.message || "Failed to initiate PesaPal token." });
       }
     } catch (err: any) {
       console.error("Error connecting to PesaPal:", err);
-      return res.status(500).json({ error: "Failed to connect to PesaPal payment gateway." });
-    }
-  } else if (lipiaKey) {
-    // PesaPal push fallback trace via Lipia
-    try {
-      const lipiaResponse = await fetch('https://lipia-api.kreativelabske.com/api/v2/payments/stk-push', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${lipiaKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          phone_number: phone,
-          amount: Number(amount),
-          external_reference: txId,
-          metadata: {
-            user_id: user.id,
-            username: user.username
-          }
-        })
-      });
-      const lipiaResult = await lipiaResponse.json();
-      if (lipiaResult.success) {
-        gatewayUsed = "Lipia Online STK Push";
-        userNotificationMsg = lipiaResult.customerMessage || "PesaPal payment prompt sent to your phone. Enter PIN to complete deposit.";
-      } else {
-        console.error("Lipia API Failure:", lipiaResult);
-        gatewayUsed = "Lipia (Error State)";
-        return res.status(400).json({ error: lipiaResult.customerMessage || "Failed to initiate PesaPal payment prompt." });
-      }
-    } catch (err: any) {
-      console.error("Error connecting to Lipia:", err);
       return res.status(500).json({ error: "Failed to connect to PesaPal payment gateway." });
     }
   } else {

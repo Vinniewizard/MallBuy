@@ -159,6 +159,10 @@ export default function WalletComponent({
         setDepAmount("");
         setDepNote("");
         onRefresh();
+        
+        if (res?.redirectUrl) {
+          window.open(res.redirectUrl, "_blank");
+        }
       }
     } catch (err: any) {
       setFormMsg({ type: "error", text: err.message || "Failed to trigger PesaPal push." });
