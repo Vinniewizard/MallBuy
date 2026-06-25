@@ -329,8 +329,8 @@ export default function App() {
     const checkInterval = setInterval(() => {
       if (!showInactivityModal) {
         const elapsed = Date.now() - lastActiveTimeRef.current;
-        const fourteenMinutesMs = 14 * 60 * 1000; // 14 minutes
-        if (elapsed >= fourteenMinutesMs) {
+        const timeoutMs = 4 * 60 * 1000; // 4 minutes (modal shows at 4m, counts down 60s to reach 5m)
+        if (elapsed >= timeoutMs) {
           setShowInactivityModal(true);
           setInactivityCountdown(60);
         }

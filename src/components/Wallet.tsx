@@ -513,7 +513,7 @@ export default function WalletComponent({
                         Deposit Funds Amount ({symbol}) *
                       </label>
                       <div className="relative">
-                        <span className="absolute left-3.5 top-3 text-sm text-slate-400 font-bold">{symbol}</span>
+                        <span className="absolute left-3.5 top-3.5 text-sm text-slate-400 font-bold">{symbol}</span>
                         <input
                           type="number"
                           placeholder="e.g. 100"
@@ -521,7 +521,7 @@ export default function WalletComponent({
                           min="1"
                           value={depAmount}
                           onChange={(e) => setDepAmount(e.target.value)}
-                          className="w-full bg-white/5 border border-white/10 focus:border-[#006B4A] focus:bg-white/5 rounded-xl pl-9 pr-4 py-2.5 text-xs text-white font-bold outline-none transition-all"
+                          className="w-full bg-white/5 border border-white/10 focus:border-[#006B4A] focus:bg-white/5 rounded-xl pl-9 pr-4 p-3 text-sm text-white font-bold outline-none transition-all"
                         />
                       </div>
                       {depAmount && (
@@ -544,7 +544,7 @@ export default function WalletComponent({
                         title="Phone number must be exactly 10 digits starting with 07/01"
                         value={depPhone}
                         onChange={(e) => setDepPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                        className="w-full bg-white/5 border border-white/10 focus:border-[#006B4A] focus:bg-white/5 rounded-xl px-4 py-2.5 text-xs text-white font-mono font-bold outline-none transition-all"
+                        className="w-full bg-white/5 border border-white/10 focus:border-[#006B4A] focus:bg-white/5 rounded-xl p-3 text-sm text-white font-mono font-bold outline-none transition-all"
                       />
                       <span className="text-[9.5px] text-slate-400 block mt-1">Provide the phone linked to your Mobile Money client app</span>
                     </div>
@@ -558,7 +558,7 @@ export default function WalletComponent({
                         placeholder="e.g. Trading topup / Deposit"
                         value={depNote}
                         onChange={(e) => setDepNote(e.target.value)}
-                        className="w-full bg-white/5 border border-white/10 focus:border-[#006B4A] focus:bg-white/5 rounded-xl px-4 py-2.5 text-xs font-medium text-white outline-none transition-all"
+                        className="w-full bg-white/5 border border-white/10 focus:border-[#006B4A] focus:bg-white/5 rounded-xl p-3 text-sm font-medium text-white outline-none transition-all"
                       />
                     </div>
                   </div>
@@ -691,7 +691,7 @@ export default function WalletComponent({
                         Withdrawn Amount ({symbol}) *
                       </label>
                       <div className="relative">
-                        <span className="absolute left-3.5 top-3 text-xs text-slate-400 font-bold">{symbol}</span>
+                        <span className="absolute left-3.5 top-3.5 text-sm text-slate-400 font-bold">{symbol}</span>
                         <input
                           type="number"
                           placeholder="e.g. 20"
@@ -699,7 +699,7 @@ export default function WalletComponent({
                           min="1"
                           value={withAmount}
                           onChange={(e) => setWithAmount(e.target.value)}
-                          className="w-full bg-white/5 border border-white/10 focus:border-rose-500 rounded-xl pl-9 pr-4 py-2.5 text-xs font-bold text-white outline-none transition-all"
+                          className="w-full bg-white/5 border border-white/10 focus:border-rose-500 rounded-xl pl-9 pr-4 p-3 text-sm font-bold text-white outline-none transition-all"
                         />
                       </div>
                       {withAmount && (
@@ -720,7 +720,7 @@ export default function WalletComponent({
                           required={withdrawMethod === "mpesa"}
                           value={withPhone}
                           onChange={(e) => setWithPhone(e.target.value)}
-                          className="w-full bg-white/5 border border-white/10 focus:border-[#006B4A] rounded-xl px-4 py-2.5 text-xs text-white font-mono font-bold outline-none transition-all"
+                          className="w-full bg-white/5 border border-white/10 focus:border-[#006B4A] rounded-xl p-3 text-sm text-white font-mono font-bold outline-none transition-all"
                         />
                       </div>
                     ) : (
@@ -731,7 +731,7 @@ export default function WalletComponent({
                         <select
                           value={withCryptoCurrency}
                           onChange={(e) => setWithCryptoCurrency(e.target.value)}
-                          className="w-full bg-white/5 border border-white/10 focus:border-indigo-500 rounded-xl px-4 py-2.5 text-xs text-white font-bold outline-none cursor-pointer transition-all"
+                          className="w-full bg-white/5 border border-white/10 focus:border-indigo-500 rounded-xl p-3 text-sm text-white font-bold outline-none cursor-pointer transition-all"
                         >
                           <option value="USDTTRC20">USDT (TRC-20)</option>
                           <option value="BTC">BTC (Bitcoin Mainnet)</option>
@@ -753,7 +753,7 @@ export default function WalletComponent({
                         required={withdrawMethod === "crypto"}
                         value={withCryptoAddress}
                         onChange={(e) => setWithCryptoAddress(e.target.value)}
-                        className="w-full bg-white/5 border border-white/10 focus:border-[#006B4A] rounded-xl px-4 py-2.5 text-xs text-white font-mono outline-none transition-all"
+                        className="w-full bg-white/5 border border-white/10 focus:border-[#006B4A] rounded-xl p-3 text-sm text-white font-mono outline-none transition-all"
                       />
                     </div>
                   )}
@@ -767,7 +767,7 @@ export default function WalletComponent({
                       placeholder="e.g. Live withdrawal payload / profits"
                       value={withNote}
                       onChange={(e) => setWithNote(e.target.value)}
-                      className="w-full bg-white/5 border border-white/10 focus:border-[#006B4A] rounded-xl px-4 py-2.5 text-xs text-white font-medium outline-none transition-all"
+                      className="w-full bg-white/5 border border-white/10 focus:border-[#006B4A] rounded-xl p-3 text-sm text-white font-medium outline-none transition-all"
                     />
                   </div>
 
@@ -816,7 +816,7 @@ export default function WalletComponent({
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="bg-white/5/50 text-slate-400 text-[9px] font-bold uppercase tracking-wider border-b border-slate-150">
+                  <tr className="bg-white/5/50 text-slate-400 text-[11px] font-bold uppercase tracking-wider border-b border-slate-150">
                     <th className="p-4 font-bold">Chronology timestamp</th>
                     <th className="p-4 font-bold">Ledger Type</th>
                     <th className="p-4 font-bold">Transfer reference</th>
@@ -865,36 +865,36 @@ export default function WalletComponent({
 
                     return (
                       <tr key={tx.id} className="hover:bg-white/5/70 transition-colors">
-                        <td className="p-4 font-mono text-slate-400 whitespace-nowrap text-[11px]">
+                        <td className="p-4 font-mono text-slate-400 whitespace-nowrap text-xs">
                           {new Date(tx.created_at).toLocaleDateString()}{" "}
-                          <span className="text-[10px] text-slate-400">
+                          <span className="text-[11px] text-slate-400">
                             {new Date(tx.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                           </span>
                         </td>
                         <td className="p-4 whitespace-nowrap">
-                          <span className="text-xs font-bold text-slate-300 fundsize flex items-center gap-1.5">
+                          <span className="text-sm font-bold text-slate-300 fundsize flex items-center gap-1.5">
                             <TypeIcon className="h-4 w-4 text-slate-400 shrink-0" />
                             {tx.transaction_type === "commission" ? "Referral Bonus" : tx.transaction_type}
                           </span>
                         </td>
                         <td className="p-4 text-slate-300 max-w-[200px] truncate font-medium">
-                          <span className="text-slate-300 font-bold block text-xs">{tx.note || "MallBuy Transfer"}</span>
+                          <span className="text-slate-300 font-bold block text-sm">{tx.note || "MallBuy Transfer"}</span>
                           {tx.phone && (
-                            <span className="text-[9.5px] text-slate-400 font-mono block mt-0.5">
+                            <span className="text-[11px] text-slate-400 font-mono block mt-0.5">
                               {tx.phone.includes("Crypto") ? "Gateway" : "Phone"}: {tx.phone}
                             </span>
                           )}
                         </td>
                         <td className="p-4 whitespace-nowrap">
                           <span
-                            className={`px-2 py-0.5 rounded-full border text-[9px] uppercase font-bold tracking-wider inline-flex items-center gap-1 ${badgeClass}`}
+                            className={`px-2 py-0.5 rounded-full border text-[10px] uppercase font-bold tracking-wider inline-flex items-center gap-1 ${badgeClass}`}
                           >
                             <StatusIcon className="h-3 w-3 shrink-0" />
                             {tx.status}
                           </span>
                         </td>
                         <td className="p-4 text-right whitespace-nowrap">
-                          <span className={`font-mono text-xs font-extrabold ${amountClass}`}>
+                          <span className={`font-mono text-sm font-extrabold ${amountClass}`}>
                             {sign}{format(tx.amount)}
                           </span>
                         </td>
