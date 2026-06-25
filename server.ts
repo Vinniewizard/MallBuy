@@ -1302,6 +1302,85 @@ async function triggerImBankDeposit(
   }
 }
 
+// PesaPal IPN Callback Endpoint (Handles both GET and POST depending on IPN config)
+app.all("/api/pesapal/ipn", async (req, res) => {
+  const OrderTrackingId = req.query.OrderTrackingId || req.body.OrderTrackingId;
+  const OrderMerchantReference = req.query.OrderMerchantReference || req.body.OrderMerchantReference;
+  const OrderNotificationType = req.query.OrderNotificationType || req.body.OrderNotificationType;
+  
+  if (!OrderTrackingId || !OrderMerchantReference) {
+    return res.status(400).json({ error: "Invalid IPN request" });
+  }
+
+  try {
+    const pesapalConsumerKey = process.env.PESAPAL_CONSUMER_KEY;
+    const pesapalConsumerSecret = process.env.PESAPAL_CONSUMER_SECRET;
+    
+    if (!pesapalConsumerKey || !pesapalConsumerSecret) {
+      return res.status(500).json({ error: "PesaPal credentials missing" });
+    }
+
+    // Get Auth Token
+    const tokenRes = await fetch("https://pay.pesapal.com/v3/api/Auth/RequestToken", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({
+        consumer_key: pesapalConsumerKey,
+        consumer_secret: pesapalConsumerSecret
+      })
+    });
+    const tokenData = await tokenRes.json();
+    if (!tokenData.token) {
+      return res.status(500).json({ error: "Failed to get token" });
+    }
+    const pesapalToken = tokenData.token;
+
+    // Get Transaction Status
+    const statusRes = await fetch(`https://pay.pesapal.com/v3/api/Transactions/GetTransactionStatus?orderTrackingId=${OrderTrackingId}`, {
+      method: "GET",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": `Bearer ${pesapalToken}`
+      }
+    });
+    
+    const statusData = await statusRes.json();
+    console.log(`[PesaPal IPN] Received status for ${OrderMerchantReference}: ${statusData.payment_status_description}`);
+    
+    if (statusData.status_code === 1 || statusData.payment_status_description === "Completed") {
+      const db = getDatabase();
+      const txId = OrderMerchantReference as string;
+      const tx = db.transactions.find(t => t.id === txId && t.type === "deposit");
+      
+      if (tx && tx.status === "pending") {
+        tx.status = "approved";
+        
+        const user = db.users.find(u => u.id === tx.user_id);
+        if (user) {
+          user.balance += tx.amount;
+          console.log(`[PesaPal IPN] Deposit ${txId} approved automatically. Credited ${tx.amount} to user ${user.username}.`);
+        }
+        
+        saveDatabase(db);
+      }
+    }
+    
+    // Always acknowledge PesaPal IPN with standard response format
+    res.status(200).json({
+      orderNotificationType: OrderNotificationType,
+      orderTrackingId: OrderTrackingId,
+      orderMerchantReference: OrderMerchantReference,
+      status: 200
+    });
+  } catch (error) {
+    console.error("IPN Error:", error);
+    res.status(500).json({ error: "IPN processing failed" });
+  }
+});
+
 // Submit a Deposit
 app.post("/api/transactions/deposit", async (req, res) => {
   const { amount, phone, note } = req.body;
@@ -1401,6 +1480,7 @@ app.post("/api/transactions/deposit", async (req, res) => {
             if (Array.isArray(ipnListData) && ipnListData.length > 0) {
               ipnId = ipnListData[0].ipn_id;
             } else {
+              const hostUrl = process.env.APP_URL || "https://mallbuy.onrender.com";
               // Register new IPN
               const regIpnRes = await fetch("https://pay.pesapal.com/v3/api/URLSetup/RegisterIPN", {
                 method: "POST",
@@ -1410,7 +1490,7 @@ app.post("/api/transactions/deposit", async (req, res) => {
                   "Authorization": `Bearer ${pesapalToken}`
                 },
                 body: JSON.stringify({
-                  url: "https://mallbuy.vercel.app/api/pesapal/ipn",
+                  url: `${hostUrl}/api/pesapal/ipn`,
                   ipn_notification_type: "GET"
                 })
               });
@@ -1424,6 +1504,7 @@ app.post("/api/transactions/deposit", async (req, res) => {
             }
           }
           
+          const hostUrl = process.env.APP_URL || "https://mallbuy.onrender.com";
           const orderRes = await fetch("https://pay.pesapal.com/v3/api/Transactions/SubmitOrderRequest", {
             method: "POST",
             headers: {
@@ -1436,7 +1517,7 @@ app.post("/api/transactions/deposit", async (req, res) => {
               currency: "KES",
               amount: Number(amount),
               description: `MallBuy Deposit for ${user.username}`,
-              callback_url: "https://mallbuy.vercel.app/wallet", 
+              callback_url: `${hostUrl}/wallet`, 
               notification_id: ipnId,
               billing_address: {
                 phone_number: phone,
@@ -1953,6 +2034,92 @@ app.post("/api/transactions/cancel-pending-deposit", (req, res) => {
   saveDatabase(db);
 
   res.json({ success: true, message: "Pending deposit session cancelled. You can now initialize a new one." });
+});
+
+// PesaPal IPN Webhook Receiver
+app.all("/api/pesapal/ipn", async (req, res) => {
+  const OrderTrackingId = req.query.OrderTrackingId || req.body?.OrderTrackingId;
+  const OrderNotificationType = req.query.OrderNotificationType || req.body?.OrderNotificationType;
+  const OrderMerchantReference = req.query.OrderMerchantReference || req.body?.OrderMerchantReference;
+
+  console.log(`[PesaPal IPN] Received notification: TrackingId=${OrderTrackingId}, Reference=${OrderMerchantReference}, Type=${OrderNotificationType}`);
+
+  if (!OrderTrackingId || !OrderMerchantReference) {
+    return res.status(400).json({ error: "Missing required parameters" });
+  }
+
+  try {
+    const pesapalConsumerKey = process.env.PESAPAL_CONSUMER_KEY;
+    const pesapalConsumerSecret = process.env.PESAPAL_CONSUMER_SECRET;
+
+    if (!pesapalConsumerKey || !pesapalConsumerSecret) {
+      console.error("[PesaPal IPN] Credentials missing.");
+      return res.status(500).json({ error: "PesaPal credentials missing" });
+    }
+
+    // Get Auth Token
+    const tokenRes = await fetch("https://pay.pesapal.com/v3/api/Auth/RequestToken", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Accept": "application/json" },
+      body: JSON.stringify({ consumer_key: pesapalConsumerKey, consumer_secret: pesapalConsumerSecret })
+    });
+    const tokenData = await tokenRes.json();
+    const pesapalToken = tokenData.token;
+
+    if (!pesapalToken) {
+      console.error("[PesaPal IPN] Failed to get Auth Token");
+      return res.status(500).json({ error: "Failed to authenticate with PesaPal" });
+    }
+
+    // Get Transaction Status
+    const statusRes = await fetch(`https://pay.pesapal.com/v3/api/Transactions/GetTransactionStatus?orderTrackingId=${OrderTrackingId}`, {
+      headers: {
+        "Accept": "application/json",
+        "Authorization": `Bearer ${pesapalToken}`
+      }
+    });
+    const statusData = await statusRes.json();
+    
+    console.log(`[PesaPal IPN] Status Data for ${OrderMerchantReference}:`, JSON.stringify(statusData));
+
+    const paymentStatus = statusData.payment_status_description;
+    const statusCode = statusData.status_code;
+
+    const db = getDatabase();
+    const txIndex = db.transactions.findIndex((t) => t.id === OrderMerchantReference);
+
+    if (txIndex !== -1) {
+      const tx = db.transactions[txIndex];
+      
+      if (tx.status === "pending") {
+        if (paymentStatus === "Completed" || statusCode === 1) {
+          tx.status = "approved";
+          saveDatabase(db);
+          console.log(`[PesaPal IPN] Transaction ${tx.id} marked as APPROVED.`);
+        } else if (paymentStatus === "Failed" || paymentStatus === "Cancelled" || statusCode === 2 || statusCode === 3) {
+          tx.status = "declined";
+          saveDatabase(db);
+          console.log(`[PesaPal IPN] Transaction ${tx.id} marked as DECLINED.`);
+        }
+      } else {
+         console.log(`[PesaPal IPN] Transaction ${tx.id} already processed (Status: ${tx.status}).`);
+      }
+    } else {
+       console.log(`[PesaPal IPN] Transaction ${OrderMerchantReference} not found in database.`);
+    }
+
+    // PesaPal expects a JSON response
+    return res.status(200).json({
+      orderNotificationType: OrderNotificationType,
+      orderTrackingId: OrderTrackingId,
+      orderMerchantReference: OrderMerchantReference,
+      status: 200
+    });
+
+  } catch (err: any) {
+    console.error("[PesaPal IPN] Error processing IPN:", err);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
 });
 
 // NOWPayments IPN Webhook Receiver
