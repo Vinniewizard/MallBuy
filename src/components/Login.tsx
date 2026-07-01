@@ -193,27 +193,31 @@ export default function Login({ onLoginSuccess, onNavigateToRegister }: LoginPro
               )}
             </button>
             
-            <div className="relative flex items-center py-2">
-              <div className="flex-grow border-t border-white/10"></div>
-              <span className="flex-shrink-0 mx-4 text-[10px] text-slate-500 font-bold uppercase tracking-widest">or sign in with</span>
-              <div className="flex-grow border-t border-white/10"></div>
-            </div>
+            {username && localStorage.getItem(`biometric_key_${username.toLowerCase()}`) && (
+              <>
+                <div className="relative flex items-center py-2">
+                  <div className="flex-grow border-t border-white/10"></div>
+                  <span className="flex-shrink-0 mx-4 text-[10px] text-slate-500 font-bold uppercase tracking-widest">or sign in with</span>
+                  <div className="flex-grow border-t border-white/10"></div>
+                </div>
 
-            <button
-              type="button"
-              onClick={handleBiometricLogin}
-              disabled={loading || biometricLoading || !username}
-              className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm py-4 rounded-lg cursor-pointer flex items-center justify-center gap-2 transition-all transform active:scale-[0.98] border border-slate-700 disabled:opacity-50 disabled:cursor-not-allowed group"
-            >
-              {biometricLoading ? (
-                <span className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-              ) : (
-                <>
-                  <Fingerprint className="h-5 w-5 text-emerald-400 group-hover:scale-110 transition-transform" />
-                  Biometric / Device Passkey
-                </>
-              )}
-            </button>
+                <button
+                  type="button"
+                  onClick={handleBiometricLogin}
+                  disabled={loading || biometricLoading}
+                  className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm py-4 rounded-lg cursor-pointer flex items-center justify-center gap-2 transition-all transform active:scale-[0.98] border border-slate-700 disabled:opacity-50 disabled:cursor-not-allowed group"
+                >
+                  {biometricLoading ? (
+                    <span className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                  ) : (
+                    <>
+                      <Fingerprint className="h-5 w-5 text-emerald-400 group-hover:scale-110 transition-transform" />
+                      Use Biometrics
+                    </>
+                  )}
+                </button>
+              </>
+            )}
           </form>
 
           <div className="mt-8 text-center">
