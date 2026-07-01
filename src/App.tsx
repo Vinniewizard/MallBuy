@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { ShieldAlert, AlertCircle, RefreshCw, Info } from "lucide-react";
 import { Toaster, toast } from "sonner";
 
-import { User, WalletBalance, DashboardStats, Transaction, Purchase, ReferralRecord, Plan } from "./types";
+import { User, WalletBalance, DashboardStats, Transaction, Purchase, ReferralRecord, Plan, AppNotification } from "./types";
 import Header from "./components/Header";
 import Login from "./components/Login";
 import Register from "./components/Register";
@@ -34,6 +34,8 @@ export default function App() {
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [referrals, setReferrals] = useState<ReferralRecord[]>([]);
   const [plans, setPlans] = useState<Plan[]>([]);
+  
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
 
   const prevTxRef = useRef<Transaction[]>([]);
   const prevInvRef = useRef<Purchase[]>([]);
@@ -90,14 +92,20 @@ export default function App() {
       if (statsData.stats) setStats(statsData.stats);
       if (txData.transactions) {
         if (silent && prevTxRef.current.length > 0) {
+          const newNotifs: AppNotification[] = [];
           txData.transactions.forEach((tx: Transaction) => {
             const oldTx = prevTxRef.current.find(t => t.id === tx.id);
             if (oldTx && oldTx.status === "pending" && tx.status === "approved") {
               toast.success(`Your ${tx.transaction_type} of KSh ${tx.amount.toLocaleString()} was approved!`);
+              newNotifs.push({ id: Math.random().toString(), title: "Transaction Approved", message: `Your ${tx.transaction_type} of KSh ${tx.amount.toLocaleString()} was approved.`, type: "success", read: false, created_at: new Date().toISOString() });
             } else if (oldTx && oldTx.status === "pending" && tx.status === "declined") {
               toast.error(`Your ${tx.transaction_type} of KSh ${tx.amount.toLocaleString()} was declined.`);
+              newNotifs.push({ id: Math.random().toString(), title: "Transaction Declined", message: `Your ${tx.transaction_type} of KSh ${tx.amount.toLocaleString()} was declined.`, type: "error", read: false, created_at: new Date().toISOString() });
             }
           });
+          if (newNotifs.length > 0) {
+            setNotifications(prev => [...newNotifs, ...prev]);
+          }
         }
         setTransactions(txData.transactions);
         prevTxRef.current = txData.transactions;
@@ -105,12 +113,17 @@ export default function App() {
       
       if (invData.purchases) {
         if (silent && prevInvRef.current.length > 0) {
+          const newNotifs: AppNotification[] = [];
           invData.purchases.forEach((inv: Purchase) => {
             const oldInv = prevInvRef.current.find(i => i.id === inv.id);
             if (oldInv && oldInv.status === "active" && inv.status === "completed") {
               toast.success(`Your purchase of KSh ${inv.amount.toLocaleString()} just completed!`);
+              newNotifs.push({ id: Math.random().toString(), title: "Purchase Completed", message: `Your purchase of KSh ${inv.amount.toLocaleString()} just completed!`, type: "success", read: false, created_at: new Date().toISOString() });
             }
           });
+          if (newNotifs.length > 0) {
+             setNotifications(prev => [...newNotifs, ...prev]);
+          }
         }
         setPurchases(invData.purchases);
         prevInvRef.current = invData.purchases;
@@ -637,6 +650,8 @@ export default function App() {
           isAdminMode={isAdminMode}
           setIsAdminMode={setIsAdminMode}
           onLogout={handleLogout}
+          notifications={notifications}
+          setNotifications={setNotifications}
         />
 
         {/* App body page */}

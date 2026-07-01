@@ -1,6 +1,6 @@
-import React from "react";
-import { Coins, LogOut, ShieldCheck, User, TrendingUp, Wallet, ListTodo, Users, Globe, Sun } from "lucide-react";
-import { User as UserType, WalletBalance } from "../types";
+import React, { useState, useEffect, useRef } from "react";
+import { Coins, LogOut, ShieldCheck, User, TrendingUp, Wallet, ListTodo, Users, Globe, Sun, Bell, CheckCircle2, XCircle } from "lucide-react";
+import { User as UserType, WalletBalance, AppNotification } from "../types";
 import { useCurrency, CurrencyType } from "../context/CurrencyContext";
 
 interface HeaderProps {
@@ -11,6 +11,8 @@ interface HeaderProps {
   isAdminMode: boolean;
   setIsAdminMode: (mode: boolean) => void;
   onLogout: () => void;
+  notifications?: AppNotification[];
+  setNotifications?: React.Dispatch<React.SetStateAction<AppNotification[]>>;
 }
 
 export default function Header({
@@ -21,8 +23,30 @@ export default function Header({
   isAdminMode,
   setIsAdminMode,
   onLogout,
+  notifications = [],
+  setNotifications
 }: HeaderProps) {
   const { activeCurrency, setCurrency, format } = useCurrency();
+  const [showNotifications, setShowNotifications] = useState(false);
+  const notifRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const markAllRead = () => {
+    if (setNotifications) {
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full bg-slate-950/90 border-b border-white/10 shadow-lg backdrop-blur-md">
@@ -91,6 +115,53 @@ export default function Header({
            >
              Dashboard
            </button>
+           
+           {/* Notification Bell Desktop */}
+           <div className="relative" ref={notifRef}>
+             <button
+               onClick={() => setShowNotifications(!showNotifications)}
+               className="relative p-1.5 text-slate-400 hover:text-emerald-400 transition-colors cursor-pointer group"
+             >
+               <Bell className="h-5 w-5 group-hover:rotate-12 transition-transform" />
+               {unreadCount > 0 && (
+                 <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500 border border-slate-900 animate-pulse" />
+               )}
+             </button>
+             
+             {showNotifications && (
+               <div className="absolute right-0 mt-2 w-72 bg-slate-900 border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50">
+                 <div className="p-3 border-b border-white/10 flex items-center justify-between bg-slate-950/50">
+                   <span className="text-xs font-bold text-white uppercase tracking-wider">Notifications</span>
+                   {unreadCount > 0 && (
+                     <button onClick={markAllRead} className="text-[10px] text-emerald-400 hover:text-emerald-300 cursor-pointer font-bold">
+                       Mark all read
+                     </button>
+                   )}
+                 </div>
+                 <div className="max-h-80 overflow-y-auto">
+                   {notifications.length === 0 ? (
+                     <div className="p-6 text-center text-slate-500 text-xs">No new notifications</div>
+                   ) : (
+                     <div className="divide-y divide-white/5">
+                       {notifications.map(notif => (
+                         <div key={notif.id} className={`p-3 hover:bg-white/5 transition-colors ${!notif.read ? 'bg-emerald-500/5' : ''}`}>
+                           <div className="flex items-start gap-2">
+                             {notif.type === 'success' ? <CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" /> : <XCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />}
+                             <div>
+                               <div className="text-xs font-bold text-slate-200">{notif.title}</div>
+                               <div className="text-[10px] text-slate-400 mt-0.5 leading-tight">{notif.message}</div>
+                               <div className="text-[9px] text-slate-500 mt-1 font-mono">{new Date(notif.created_at).toLocaleTimeString()}</div>
+                             </div>
+                           </div>
+                         </div>
+                       ))}
+                     </div>
+                   )}
+                 </div>
+               </div>
+             )}
+           </div>
+
            <button onClick={onLogout} className="text-sm font-bold text-slate-400 hover:text-red-400 transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95">Logout</button>
         </div>
         
@@ -102,6 +173,17 @@ export default function Header({
                <span>{format(balance.available_balance)}</span>
              </span>
            )}
+           
+           <button
+             onClick={() => setShowNotifications(!showNotifications)}
+             className="relative p-1.5 text-slate-400 hover:text-emerald-400 transition-colors cursor-pointer"
+           >
+             <Bell className="h-4.5 w-4.5" />
+             {unreadCount > 0 && (
+               <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500 border border-slate-900 animate-pulse" />
+             )}
+           </button>
+           
            <button
              onClick={onLogout}
              title="Log Out"

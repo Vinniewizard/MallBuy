@@ -81,6 +81,15 @@ export interface DashboardStats {
   total_profit_earned: number;
 }
 
+export interface AppNotification {
+  id: string;
+  title: string;
+  message: string;
+  type: 'success' | 'error' | 'info';
+  read: boolean;
+  created_at: string;
+}
+
 export interface SupportMessage {
   id: string;
   sender_id: string; // 'admin' or user_id or 'guest'
