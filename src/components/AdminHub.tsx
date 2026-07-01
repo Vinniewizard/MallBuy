@@ -23,6 +23,11 @@ interface AdminUserSummary {
 export default function AdminHub({ onRefresh }: AdminHubProps) {
   const [activeAdminTab, setActiveAdminTab] = useState<"users" | "transactions" | "purchases" | "plans" | "payment_settings" | "support" | "marketing">("transactions");
 
+  // Tx Filters
+  const [txSearchNote, setTxSearchNote] = useState("");
+  const [txTypeFilter, setTxTypeFilter] = useState("all");
+  const [txStatusFilter, setTxStatusFilter] = useState("all");
+
   // State data loaded directly
   const [users, setUsers] = useState<AdminUserSummary[]>([]);
   const [txs, setTxs] = useState<any[]>([]);
@@ -928,21 +933,60 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
           </form>
 
           {/* Table list */}
-          <div className="lg:col-span-7 bg-[#0f131d] border border-[#212a3d] rounded-2xl overflow-hidden">
-            <div className="p-4 bg-[#0c0f16] border-b border-[#212a3d]/70">
-              <h3 className="text-xs font-extrabold text-slate-300 uppercase tracking-wider">
-                Pending and Complete Ledger Requests
+          <div className="lg:col-span-7 bg-[#0f131d] border border-[#212a3d] rounded-2xl overflow-hidden flex flex-col h-full">
+            <div className="p-4 bg-[#0c0f16] border-b border-[#212a3d]/70 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <h3 className="text-xs font-extrabold text-slate-300 uppercase tracking-wider shrink-0">
+                Ledger Requests
               </h3>
+              <div className="flex flex-col sm:flex-row items-center gap-2">
+                <input
+                  type="text"
+                  placeholder="Search notes..."
+                  value={txSearchNote}
+                  onChange={(e) => setTxSearchNote(e.target.value)}
+                  className="bg-[#121824] border border-[#212a3d] focus:border-red-500/40 rounded-xl px-3 py-1.5 text-xs text-slate-200 outline-none w-full sm:w-40"
+                />
+                <select
+                  value={txTypeFilter}
+                  onChange={(e) => setTxTypeFilter(e.target.value)}
+                  className="bg-[#121824] border border-[#212a3d] focus:border-red-500/40 rounded-xl px-3 py-1.5 text-xs text-slate-200 outline-none w-full sm:w-auto"
+                >
+                  <option value="all">All Types</option>
+                  <option value="deposit">Deposit</option>
+                  <option value="withdrawal">Withdrawal</option>
+                  <option value="commission">Commission</option>
+                  <option value="purchase">Purchase</option>
+                  <option value="payout">Payout</option>
+                </select>
+                <select
+                  value={txStatusFilter}
+                  onChange={(e) => setTxStatusFilter(e.target.value)}
+                  className="bg-[#121824] border border-[#212a3d] focus:border-red-500/40 rounded-xl px-3 py-1.5 text-xs text-slate-200 outline-none w-full sm:w-auto"
+                >
+                  <option value="all">All Status</option>
+                  <option value="approved">Approved</option>
+                  <option value="pending">Pending</option>
+                  <option value="declined">Declined</option>
+                </select>
+              </div>
             </div>
 
-            {txs.length === 0 ? (
-              <div className="p-12 text-center text-slate-400 text-xs">No transaction requests in ledger history.</div>
-            ) : (
-              <div className="overflow-x-auto text-xs">
-                <table className="w-full text-left">
-                  <thead>
-                    <tr className="bg-[#0c0f16] text-slate-400 uppercase text-[9px] font-bold tracking-wider border-b border-[#212a3d]">
-                      <th className="p-4 font-semibold">User</th>
+            {(() => {
+              const filteredTxs = txs.filter(tx => {
+                const matchesNote = tx.note?.toLowerCase().includes(txSearchNote.toLowerCase()) || tx.user_id.toLowerCase().includes(txSearchNote.toLowerCase()) || tx.username.toLowerCase().includes(txSearchNote.toLowerCase());
+                const matchesType = txTypeFilter === "all" || tx.transaction_type === txTypeFilter;
+                const matchesStatus = txStatusFilter === "all" || tx.status === txStatusFilter;
+                return matchesNote && matchesType && matchesStatus;
+              });
+
+              return filteredTxs.length === 0 ? (
+                <div className="p-12 text-center text-slate-400 text-xs flex-1 flex items-center justify-center">No transaction requests match the selected filters.</div>
+              ) : (
+                <div className="overflow-x-auto text-xs flex-1">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="bg-[#0c0f16] text-slate-400 uppercase text-[9px] font-bold tracking-wider border-b border-[#212a3d]">
+                        <th className="p-4 font-semibold">User</th>
                       <th className="p-4 font-semibold">Transfer Type</th>
                       <th className="p-4 font-semibold">Phone (PesaPal)</th>
                       <th className="p-4 font-semibold">Amount</th>
@@ -951,7 +995,7 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#212a3d]/50">
-                    {txs.map((tx) => {
+                    {filteredTxs.map((tx) => {
                       const isPending = tx.status === "pending";
                       return (
                         <tr key={tx.id} className="hover:bg-[#121824]/30 font-medium">
@@ -1006,7 +1050,8 @@ export default function AdminHub({ onRefresh }: AdminHubProps) {
                   </tbody>
                 </table>
               </div>
-            )}
+              );
+            })()}
           </div>
         </div>
       )}

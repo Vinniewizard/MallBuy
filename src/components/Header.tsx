@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Coins, LogOut, ShieldCheck, User, TrendingUp, Wallet, ListTodo, Users, Globe, Sun, Bell, CheckCircle2, XCircle } from "lucide-react";
+import { Coins, LogOut, ShieldCheck, User, TrendingUp, Wallet, ListTodo, Users, Globe, Sun, Bell, CheckCircle2, XCircle, X } from "lucide-react";
 import { User as UserType, WalletBalance, AppNotification } from "../types";
 import { useCurrency, CurrencyType } from "../context/CurrencyContext";
+import { motion, AnimatePresence } from "motion/react";
 
 interface HeaderProps {
   user: UserType;
@@ -49,7 +50,8 @@ export default function Header({
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-slate-950/90 border-b border-white/10 shadow-lg backdrop-blur-md">
+    <>
+      <header className="sticky top-0 z-50 w-full bg-slate-950/90 border-b border-white/10 shadow-lg backdrop-blur-md">
       <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-1 sm:gap-4">
         
         {/* Brand */}
@@ -117,9 +119,9 @@ export default function Header({
            </button>
            
            {/* Notification Bell Desktop */}
-           <div className="relative" ref={notifRef}>
+           <div className="relative">
              <button
-               onClick={() => setShowNotifications(!showNotifications)}
+               onClick={() => setShowNotifications(true)}
                className="relative p-1.5 text-slate-400 hover:text-emerald-400 transition-colors cursor-pointer group"
              >
                <Bell className="h-5 w-5 group-hover:rotate-12 transition-transform" />
@@ -127,39 +129,6 @@ export default function Header({
                  <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500 border border-slate-900 animate-pulse" />
                )}
              </button>
-             
-             {showNotifications && (
-               <div className="absolute right-0 mt-2 w-72 bg-slate-900 border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50">
-                 <div className="p-3 border-b border-white/10 flex items-center justify-between bg-slate-950/50">
-                   <span className="text-xs font-bold text-white uppercase tracking-wider">Notifications</span>
-                   {unreadCount > 0 && (
-                     <button onClick={markAllRead} className="text-[10px] text-emerald-400 hover:text-emerald-300 cursor-pointer font-bold">
-                       Mark all read
-                     </button>
-                   )}
-                 </div>
-                 <div className="max-h-80 overflow-y-auto">
-                   {notifications.length === 0 ? (
-                     <div className="p-6 text-center text-slate-500 text-xs">No new notifications</div>
-                   ) : (
-                     <div className="divide-y divide-white/5">
-                       {notifications.map(notif => (
-                         <div key={notif.id} className={`p-3 hover:bg-white/5 transition-colors ${!notif.read ? 'bg-emerald-500/5' : ''}`}>
-                           <div className="flex items-start gap-2">
-                             {notif.type === 'success' ? <CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" /> : <XCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />}
-                             <div>
-                               <div className="text-xs font-bold text-slate-200">{notif.title}</div>
-                               <div className="text-[10px] text-slate-400 mt-0.5 leading-tight">{notif.message}</div>
-                               <div className="text-[9px] text-slate-500 mt-1 font-mono">{new Date(notif.created_at).toLocaleTimeString()}</div>
-                             </div>
-                           </div>
-                         </div>
-                       ))}
-                     </div>
-                   )}
-                 </div>
-               </div>
-             )}
            </div>
 
            <button onClick={onLogout} className="text-sm font-bold text-slate-400 hover:text-red-400 transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95">Logout</button>
@@ -175,7 +144,7 @@ export default function Header({
            )}
            
            <button
-             onClick={() => setShowNotifications(!showNotifications)}
+             onClick={() => setShowNotifications(true)}
              className="relative p-1.5 text-slate-400 hover:text-emerald-400 transition-colors cursor-pointer"
            >
              <Bell className="h-4.5 w-4.5" />
@@ -242,5 +211,102 @@ export default function Header({
         </div>
       )}
     </header>
+
+      {/* Notification Slide-Over Panel */}
+      <AnimatePresence>
+        {showNotifications && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowNotifications(false)}
+              className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[100]"
+            />
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed top-0 right-0 h-full w-full sm:w-96 bg-slate-900 border-l border-white/10 shadow-2xl z-[101] flex flex-col"
+            >
+              <div className="p-4 border-b border-white/10 flex items-center justify-between bg-slate-950">
+                <div className="flex items-center gap-2">
+                  <Bell className="h-5 w-5 text-emerald-400" />
+                  <span className="text-sm font-bold text-white tracking-wider">Notifications</span>
+                  {unreadCount > 0 && (
+                    <span className="bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      {unreadCount} new
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={() => setShowNotifications(false)}
+                  className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              
+              <div className="flex-1 overflow-y-auto p-2 space-y-2">
+                {notifications.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full text-slate-500">
+                    <Bell className="h-12 w-12 opacity-20 mb-4" />
+                    <p className="text-sm">No new notifications</p>
+                  </div>
+                ) : (
+                  notifications.map(notif => (
+                    <div
+                      key={notif.id}
+                      className={`p-4 rounded-xl border transition-all ${
+                        !notif.read
+                          ? 'bg-emerald-500/10 border-emerald-500/30'
+                          : 'bg-white/5 border-white/10'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        {notif.type === 'success' ? (
+                          <div className="bg-emerald-500/20 p-1.5 rounded-lg shrink-0">
+                            <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                          </div>
+                        ) : (
+                          <div className="bg-red-500/20 p-1.5 rounded-lg shrink-0">
+                            <XCircle className="h-4 w-4 text-red-500" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <h4 className={`text-xs font-bold truncate ${!notif.read ? 'text-emerald-400' : 'text-slate-200'}`}>
+                              {notif.title}
+                            </h4>
+                            <span className="text-[10px] text-slate-500 shrink-0 font-mono">
+                              {new Date(notif.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
+                            {notif.message}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+              
+              {unreadCount > 0 && (
+                <div className="p-4 border-t border-white/10 bg-slate-950">
+                  <button
+                    onClick={markAllRead}
+                    className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-bold text-slate-300 transition-colors cursor-pointer"
+                  >
+                    Mark all as read
+                  </button>
+                </div>
+              )}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

@@ -869,7 +869,7 @@ export default function WalletComponent({
               <div className="flex flex-col sm:flex-row items-center gap-2">
                 <input 
                   type="text" 
-                  placeholder="Search reference..."
+                  placeholder="Search notes or reference..."
                   value={historySearch}
                   onChange={(e) => setHistorySearch(e.target.value)}
                   className="bg-white/5 border border-white/10 focus:border-[#006B4A] rounded-xl px-3 py-1.5 text-xs text-white font-medium outline-none transition-all w-full sm:w-40"
