@@ -116,6 +116,29 @@ export default function Dashboard({ user, stats, referrals, plans, balance, onSh
 
         {isStatsExpanded && (
           <div className="p-5 border-t border-white/10 bg-black/20">
+            {/* User Location & Profile Insights */}
+            <div className="mb-6 pb-6 border-b border-white/5">
+              <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Client Profile Insights</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                 <div>
+                   <span className="text-[10px] text-slate-500 block uppercase font-bold tracking-wider mb-0.5">Primary Alias</span>
+                   <span className="text-xs text-slate-200 font-medium">{user.username} {user.fullName ? `(${user.fullName})` : ""}</span>
+                 </div>
+                 <div>
+                   <span className="text-[10px] text-slate-500 block uppercase font-bold tracking-wider mb-0.5">Operating Region</span>
+                   <span className="text-xs text-slate-200 font-medium">{user.country || "Unspecified"}</span>
+                 </div>
+                 <div>
+                   <span className="text-[10px] text-slate-500 block uppercase font-bold tracking-wider mb-0.5">City Zone</span>
+                   <span className="text-xs text-slate-200 font-medium">{user.city || "Unspecified"}</span>
+                 </div>
+                 <div>
+                   <span className="text-[10px] text-slate-500 block uppercase font-bold tracking-wider mb-0.5">Connection Node</span>
+                   <span className="text-[11px] text-slate-200 font-mono truncate block" title={user.location}>{user.location || "Unknown Node"}</span>
+                 </div>
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div className="bg-white/5 border border-white/10 p-4 rounded-xl shadow-sm relative overflow-hidden flex flex-col justify-between backdrop-blur-md">
                 <div className="text-xs font-semibold text-slate-400 mb-1">Available balance</div>

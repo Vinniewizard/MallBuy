@@ -54,6 +54,8 @@ const COUNTRIES: CountryConfig[] = [
 
 export default function Register({ onRegisterSuccess, onNavigateToLogin }: RegisterProps) {
   const [username, setUsername] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [city, setCity] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [selectedCountry, setSelectedCountry] = useState("Kenya");
@@ -174,6 +176,8 @@ export default function Register({ onRegisterSuccess, onNavigateToLogin }: Regis
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           username,
+          fullName,
+          city,
           email,
           phone,
           invite_code: inviteCode || undefined,
@@ -284,6 +288,26 @@ export default function Register({ onRegisterSuccess, onNavigateToLogin }: Regis
 
               <div className="space-y-1.5">
                 <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  Full Name
+                </label>
+                <div className="relative rounded-xl transition-all">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <User className="h-4 w-4" />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="e.g. John Doe"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="block w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-medium text-sm focus:bg-white/5"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                   Email Address *
                 </label>
                 <div className="relative rounded-xl transition-all">
@@ -296,6 +320,24 @@ export default function Register({ onRegisterSuccess, onNavigateToLogin }: Regis
                     placeholder="e.g. wizard@domain.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    className="block w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-medium text-sm focus:bg-white/5"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  City
+                </label>
+                <div className="relative rounded-xl transition-all">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <Activity className="h-4 w-4" />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="e.g. Nairobi"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
                     className="block w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-medium text-sm focus:bg-white/5"
                   />
                 </div>

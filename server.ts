@@ -76,6 +76,8 @@ setInterval(() => {
 interface ServerUser {
   id: string;
   username: string;
+  fullName?: string;
+  city?: string;
   email: string;
   phone: string;
   passwordHash: string;
@@ -528,9 +530,9 @@ const getAuthenticatedUser = (req: express.Request, db: DatabaseSchema): ServerU
 
 // Profile Updates
 app.post("/api/user/profile", (req, res) => {
-  const { username, email, phone } = req.body;
+  const { username, fullName, city, country, location, email, phone } = req.body;
   if (!username || !email || !phone) {
-    return res.status(400).json({ error: "All fields are required" });
+    return res.status(400).json({ error: "Username, email, and phone are required" });
   }
 
   const db = getDatabase();
@@ -541,6 +543,10 @@ app.post("/api/user/profile", (req, res) => {
   if (uIndex === -1) return res.status(404).json({ error: "User not found" });
 
   db.users[uIndex].username = username;
+  db.users[uIndex].fullName = fullName;
+  db.users[uIndex].city = city;
+  if (country !== undefined) db.users[uIndex].country = country;
+  if (location !== undefined) db.users[uIndex].location = location;
   db.users[uIndex].email = email;
   db.users[uIndex].phone = phone;
   saveDatabase(db);
@@ -550,7 +556,7 @@ app.post("/api/user/profile", (req, res) => {
 
 // Authenticaton: Register
 app.post("/api/auth/register", (req, res) => {
-  const { username, email, phone, invite_code, password, country, location } = req.body;
+  const { username, fullName, city, email, phone, invite_code, password, country, location } = req.body;
   if (!username || !email || !phone || !password) {
     return res.status(400).json({ error: "Missing registration details." });
   }
@@ -577,6 +583,8 @@ app.post("/api/auth/register", (req, res) => {
   const newUser: ServerUser = {
     id: "user-" + Math.random().toString(36).substr(2, 9),
     username,
+    fullName,
+    city,
     email,
     phone,
     passwordHash: password, // Simulation representation
@@ -590,7 +598,7 @@ app.post("/api/auth/register", (req, res) => {
   db.users.push(newUser);
   saveDatabase(db);
 
-  return res.json({ success: true, user: { id: newUser.id, username: newUser.username, phone: newUser.phone, email: newUser.email, referralCode: newUser.referralCode, referredBy: newUser.referredBy, isAdmin: newUser.isAdmin } });
+  return res.json({ success: true, user: { id: newUser.id, username: newUser.username, fullName: newUser.fullName, city: newUser.city, phone: newUser.phone, email: newUser.email, referralCode: newUser.referralCode, referredBy: newUser.referredBy, isAdmin: newUser.isAdmin, country: newUser.country, location: newUser.location } });
 });
 
 // Authentication: Login
@@ -618,6 +626,10 @@ app.post("/api/auth/login", (req, res) => {
     user: {
       id: user.id,
       username: user.username,
+      fullName: user.fullName,
+      city: user.city,
+      country: user.country,
+      location: user.location,
       email: user.email,
       phone: user.phone,
       referralCode: user.referralCode,
@@ -643,6 +655,10 @@ app.get("/api/auth/me", (req, res) => {
     user: {
       id: user.id,
       username: user.username,
+      fullName: user.fullName,
+      city: user.city,
+      country: user.country,
+      location: user.location,
       email: user.email,
       phone: user.phone,
       referralCode: user.referralCode,
@@ -1363,14 +1379,13 @@ app.all("/api/pesapal/ipn", async (req, res) => {
     if (statusData.status_code === 1 || statusData.payment_status_description === "Completed") {
       const db = getDatabase();
       const txId = OrderMerchantReference as string;
-      const tx = db.transactions.find(t => t.id === txId && t.type === "deposit");
+      const tx = db.transactions.find(t => t.id === txId && t.transaction_type === "deposit");
       
       if (tx && tx.status === "pending") {
         tx.status = "approved";
         
         const user = db.users.find(u => u.id === tx.user_id);
         if (user) {
-          user.balance += tx.amount;
           console.log(`[PesaPal IPN] Deposit ${txId} approved automatically. Credited ${tx.amount} to user ${user.username}.`);
         }
         

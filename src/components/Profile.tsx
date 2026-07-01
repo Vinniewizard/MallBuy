@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { User as UserIcon, ShieldCheck, Mail, Phone, Lock, Save, AlertCircle } from "lucide-react";
+import { User as UserIcon, ShieldCheck, Mail, Phone, Lock, Save, AlertCircle, MapPin } from "lucide-react";
 import { User } from "../types";
 
 interface ProfileProps {
@@ -9,10 +9,71 @@ interface ProfileProps {
 
 export default function Profile({ user, onRefresh }: ProfileProps) {
   const [username, setUsername] = useState(user.username);
+  const [fullName, setFullName] = useState(user.fullName || "");
+  const [city, setCity] = useState(user.city || "");
+  const [country, setCountry] = useState(user.country || "");
+  const [location, setLocation] = useState(user.location || "");
   const [email, setEmail] = useState(user.email);
   const [phone, setPhone] = useState(user.phone);
   const [loading, setLoading] = useState(false);
+  const [detecting, setDetecting] = useState(false);
   const [msg, setMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  const detectLocation = async () => {
+    setDetecting(true);
+    setMsg(null);
+    
+    const fetchIpFallback = async () => {
+      try {
+        const res = await fetch('https://ipapi.co/json/');
+        const data = await res.json();
+        if (data && data.city && data.country_name) {
+          setCity(data.city);
+          setCountry(data.country_name);
+          setLocation(`${data.ip} - ${data.city}, ${data.country_name}`);
+          setMsg({ type: "success", text: "Location detected automatically via IP." });
+        } else {
+          throw new Error("Invalid location data");
+        }
+      } catch (err) {
+        setMsg({ type: "error", text: "Failed to detect location automatically." });
+      } finally {
+        setDetecting(false);
+      }
+    };
+
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          try {
+            const { latitude, longitude } = position.coords;
+            // Attempt reverse geocoding via free geocoding API or fallback to IP
+            const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
+            const geoData = await geoRes.json();
+            
+            if (geoData && geoData.city && geoData.countryName) {
+              setCity(geoData.city);
+              setCountry(geoData.countryName);
+              setLocation(`[GPS] ${latitude.toFixed(4)}, ${longitude.toFixed(4)} - ${geoData.city}, ${geoData.countryName}`);
+              setMsg({ type: "success", text: "Location precisely detected via GPS." });
+              setDetecting(false);
+            } else {
+              fetchIpFallback();
+            }
+          } catch (err) {
+            fetchIpFallback();
+          }
+        },
+        (error) => {
+          console.log("Geolocation error/denied. Falling back to IP.", error);
+          fetchIpFallback();
+        },
+        { timeout: 10000 }
+      );
+    } else {
+      fetchIpFallback();
+    }
+  };
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,7 +87,7 @@ export default function Profile({ user, onRefresh }: ProfileProps) {
           "Content-Type": "application/json",
           "x-user-id": user.id,
         },
-        body: JSON.stringify({ username, email, phone }),
+        body: JSON.stringify({ username, fullName, city, country, location, email, phone }),
       });
 
       const data = await response.json();
@@ -70,7 +131,7 @@ export default function Profile({ user, onRefresh }: ProfileProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1">
             <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 mb-2">
-              <UserIcon className="h-3 w-3" /> Full Name
+              <UserIcon className="h-3 w-3" /> Username
             </label>
             <input
               type="text"
@@ -83,6 +144,21 @@ export default function Profile({ user, onRefresh }: ProfileProps) {
 
           <div className="space-y-1">
             <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 mb-2">
+              <UserIcon className="h-3 w-3" /> Full Name
+            </label>
+            <input
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="e.g. John Doe"
+              className="w-full bg-[#0c0f16] border border-[#212a3d] focus:border-indigo-500/50 rounded-xl px-4 py-2.5 text-xs text-slate-200 font-bold outline-none"
+            />
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1">
+            <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 mb-2">
               <Mail className="h-3 w-3" /> Email Address
             </label>
             <input
@@ -93,19 +169,74 @@ export default function Profile({ user, onRefresh }: ProfileProps) {
               className="w-full bg-[#0c0f16] border border-[#212a3d] focus:border-indigo-500/50 rounded-xl px-4 py-2.5 text-xs text-slate-200 font-bold outline-none"
             />
           </div>
+
+          <div className="space-y-1">
+            <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 mb-2">
+              <MapPin className="h-3 w-3" /> Country
+            </label>
+            <input
+              type="text"
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+              placeholder="e.g. Kenya"
+              className="w-full bg-[#0c0f16] border border-[#212a3d] focus:border-indigo-500/50 rounded-xl px-4 py-2.5 text-xs text-slate-200 font-bold outline-none"
+            />
+          </div>
+          
+          <div className="space-y-1">
+            <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 mb-2">
+              <UserIcon className="h-3 w-3" /> City
+            </label>
+            <input
+              type="text"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              placeholder="e.g. Nairobi"
+              className="w-full bg-[#0c0f16] border border-[#212a3d] focus:border-indigo-500/50 rounded-xl px-4 py-2.5 text-xs text-slate-200 font-bold outline-none"
+            />
+          </div>
         </div>
 
-        <div className="space-y-1">
-          <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 mb-2">
-            <Phone className="h-3 w-3" /> PesaPal Phone
-          </label>
-          <input
-            type="text"
-            required
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            className="w-full bg-[#0c0f16] border border-[#212a3d] focus:border-indigo-500/50 rounded-xl px-4 py-2.5 text-xs text-slate-200 font-bold outline-none"
-          />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1">
+            <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 mb-2">
+              <Phone className="h-3 w-3" /> PesaPal Phone
+            </label>
+            <input
+              type="text"
+              required
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="w-full bg-[#0c0f16] border border-[#212a3d] focus:border-indigo-500/50 rounded-xl px-4 py-2.5 text-xs text-slate-200 font-bold outline-none"
+            />
+          </div>
+          
+          <div className="space-y-1">
+             <div className="flex items-center justify-between mb-2">
+               <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                <ShieldCheck className="h-3 w-3" /> Detected Location
+               </label>
+               <button
+                 type="button"
+                 onClick={detectLocation}
+                 disabled={detecting}
+                 className="text-[9px] font-bold text-indigo-400 hover:text-indigo-300 uppercase flex items-center gap-1 disabled:opacity-50"
+               >
+                 {detecting ? (
+                   <span className="h-3 w-3 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin"></span>
+                 ) : (
+                   <MapPin className="h-3 w-3" />
+                 )}
+                 Auto Detect
+               </button>
+             </div>
+            <input
+              type="text"
+              disabled
+              value={location || 'Unknown'}
+              className="w-full bg-[#0c0f16] border border-[#212a3d] rounded-xl px-4 py-2.5 text-[11px] text-slate-400 font-mono outline-none opacity-80 cursor-not-allowed"
+            />
+          </div>
         </div>
 
         <div className="pt-2">

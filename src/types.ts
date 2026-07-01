@@ -1,6 +1,8 @@
 export interface User {
   id: string;
   username: string;
+  fullName?: string;
+  city?: string;
   email: string;
   phone: string;
   referralCode: string;
@@ -8,6 +10,8 @@ export interface User {
   isAdmin?: boolean;
   password?: string;
   balance?: number;
+  country?: string;
+  location?: string;
 }
 
 export interface Plan {
