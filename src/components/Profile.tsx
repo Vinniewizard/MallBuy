@@ -43,7 +43,7 @@ export default function Profile({ user, onRefresh }: ProfileProps) {
 
       if (response.ok && data.success) {
         localStorage.setItem(`biometric_key_${user.username.toLowerCase()}`, newBiometricKey);
-        setMsg({ type: "success", text: "Biometric / Device Passkey enabled successfully for this device." });
+        setMsg({ type: "success", text: user.hasBiometric ? "Biometric / Device Passkey updated successfully for this device." : "Biometric / Device Passkey enabled successfully for this device." });
         onRefresh();
       } else {
         setMsg({ type: "error", text: data.error || "Failed to enable biometrics." });
@@ -312,10 +312,10 @@ export default function Profile({ user, onRefresh }: ProfileProps) {
           <button
             type="button"
             onClick={handleEnableBiometric}
-            disabled={biometricLoading || user.hasBiometric}
+            disabled={biometricLoading}
             className={`px-5 py-2.5 rounded-lg font-bold text-xs flex items-center gap-2 transition-all transform active:scale-[0.98] ${
               user.hasBiometric
-                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 cursor-not-allowed"
+                ? "bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 cursor-pointer shadow-md"
                 : "bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 cursor-pointer shadow-md"
             }`}
           >
@@ -323,8 +323,8 @@ export default function Profile({ user, onRefresh }: ProfileProps) {
               <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
             ) : user.hasBiometric ? (
               <>
-                <ShieldCheck className="h-4 w-4" />
-                Enabled
+                <Fingerprint className="h-4 w-4" />
+                Update Biometric
               </>
             ) : (
               <>
