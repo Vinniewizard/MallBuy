@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Coins, LogIn, Lock, AlertCircle, ArrowRight, Activity, Wallet } from "lucide-react";
+import { Coins, LogIn, Lock, AlertCircle, ArrowRight, Activity, Wallet, Fingerprint } from "lucide-react";
 
 interface LoginProps {
   onLoginSuccess: (user: any) => void;
@@ -10,6 +10,7 @@ export default function Login({ onLoginSuccess, onNavigateToRegister }: LoginPro
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [biometricLoading, setBiometricLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [whatsappEnabled, setWhatsappEnabled] = useState(true);
@@ -29,6 +30,47 @@ export default function Login({ onLoginSuccess, onNavigateToRegister }: LoginPro
       })
       .catch((err) => console.error("Failed to load public settings", err));
   }, []);
+
+  const handleBiometricLogin = async () => {
+    if (!username) {
+      setError("Please enter your Phone Number, Email, or Username first to use Biometric Login.");
+      return;
+    }
+    
+    setError(null);
+    setBiometricLoading(true);
+    
+    // Simulate fingerprint scanning delay
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    const storedKey = localStorage.getItem(`biometric_key_${username.toLowerCase()}`);
+    if (!storedKey) {
+      setError("No biometric profile found for this user on this device. Please login with password first, then enable biometrics in your Profile.");
+      setBiometricLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, biometricKey: storedKey }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        onLoginSuccess(data.user);
+      } else {
+        setError(data.error || "Biometric authentication failed.");
+        localStorage.removeItem(`biometric_key_${username.toLowerCase()}`); // clear invalid key
+      }
+    } catch (err) {
+      setError("An unexpected error occurred during biometric auth.");
+    } finally {
+      setBiometricLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -141,13 +183,35 @@ export default function Login({ onLoginSuccess, onNavigateToRegister }: LoginPro
 
             <button
               type="submit"
-              disabled={loading}
-              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm py-4 rounded-lg cursor-pointer flex items-center justify-center transition-all transform active:scale-[0.98] mt-6 shadow-md shadow-emerald-500/20"
+              disabled={loading || biometricLoading}
+              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm py-4 rounded-lg cursor-pointer flex items-center justify-center transition-all transform active:scale-[0.98] mt-6 shadow-md shadow-emerald-500/20 disabled:opacity-50"
             >
               {loading ? (
                 <span className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
               ) : (
                 "Login"
+              )}
+            </button>
+            
+            <div className="relative flex items-center py-2">
+              <div className="flex-grow border-t border-white/10"></div>
+              <span className="flex-shrink-0 mx-4 text-[10px] text-slate-500 font-bold uppercase tracking-widest">or sign in with</span>
+              <div className="flex-grow border-t border-white/10"></div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleBiometricLogin}
+              disabled={loading || biometricLoading || !username}
+              className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm py-4 rounded-lg cursor-pointer flex items-center justify-center gap-2 transition-all transform active:scale-[0.98] border border-slate-700 disabled:opacity-50 disabled:cursor-not-allowed group"
+            >
+              {biometricLoading ? (
+                <span className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+              ) : (
+                <>
+                  <Fingerprint className="h-5 w-5 text-emerald-400 group-hover:scale-110 transition-transform" />
+                  Biometric / Device Passkey
+                </>
               )}
             </button>
           </form>

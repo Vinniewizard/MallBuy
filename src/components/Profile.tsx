@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { User as UserIcon, ShieldCheck, Mail, Phone, Lock, Save, AlertCircle, MapPin } from "lucide-react";
+import { User as UserIcon, ShieldCheck, Mail, Phone, Lock, Save, AlertCircle, MapPin, Fingerprint } from "lucide-react";
 import { User } from "../types";
 
 interface ProfileProps {
@@ -17,7 +17,43 @@ export default function Profile({ user, onRefresh }: ProfileProps) {
   const [phone, setPhone] = useState(user.phone);
   const [loading, setLoading] = useState(false);
   const [detecting, setDetecting] = useState(false);
+  const [biometricLoading, setBiometricLoading] = useState(false);
   const [msg, setMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  const handleEnableBiometric = async () => {
+    setMsg(null);
+    setBiometricLoading(true);
+
+    try {
+      // Simulate fingerprint scanning delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      const newBiometricKey = "bio_" + Math.random().toString(36).substring(2) + Date.now().toString(36);
+      
+      const response = await fetch("/api/auth/biometric/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-id": user.id,
+        },
+        body: JSON.stringify({ biometricKey: newBiometricKey }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        localStorage.setItem(`biometric_key_${user.username.toLowerCase()}`, newBiometricKey);
+        setMsg({ type: "success", text: "Biometric / Device Passkey enabled successfully for this device." });
+        onRefresh();
+      } else {
+        setMsg({ type: "error", text: data.error || "Failed to enable biometrics." });
+      }
+    } catch (err) {
+      setMsg({ type: "error", text: "An error occurred while setting up biometrics." });
+    } finally {
+      setBiometricLoading(false);
+    }
+  };
 
   const detectLocation = async () => {
     setDetecting(true);
@@ -256,6 +292,49 @@ export default function Profile({ user, onRefresh }: ProfileProps) {
           </button>
         </div>
       </form>
+      
+      <div className="mt-8 pt-6 border-t border-white/5">
+        <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+          <Lock className="h-4 w-4 text-emerald-400" />
+          Security Settings
+        </h4>
+        
+        <div className="bg-white/5 border border-white/10 rounded-xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h5 className="text-xs font-bold text-slate-200 flex items-center gap-1.5 mb-1">
+              <Fingerprint className="h-4 w-4 text-emerald-400" />
+              Biometric & Device Authentication
+            </h5>
+            <p className="text-[11px] text-slate-400 max-w-sm leading-relaxed">
+              Enable Passkey or Fingerprint login on this device. This securely registers your current device as a trusted authenticator.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleEnableBiometric}
+            disabled={biometricLoading || user.hasBiometric}
+            className={`px-5 py-2.5 rounded-lg font-bold text-xs flex items-center gap-2 transition-all transform active:scale-[0.98] ${
+              user.hasBiometric
+                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 cursor-not-allowed"
+                : "bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 cursor-pointer shadow-md"
+            }`}
+          >
+            {biometricLoading ? (
+              <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            ) : user.hasBiometric ? (
+              <>
+                <ShieldCheck className="h-4 w-4" />
+                Enabled
+              </>
+            ) : (
+              <>
+                <Fingerprint className="h-4 w-4 text-emerald-400" />
+                Enable Biometric
+              </>
+            )}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

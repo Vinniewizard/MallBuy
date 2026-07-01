@@ -86,6 +86,7 @@ interface ServerUser {
   isAdmin?: boolean;
   country?: string;
   location?: string;
+  biometricKey?: string;
 }
 
 interface ServerPlan {
@@ -598,23 +599,31 @@ app.post("/api/auth/register", (req, res) => {
   db.users.push(newUser);
   saveDatabase(db);
 
-  return res.json({ success: true, user: { id: newUser.id, username: newUser.username, fullName: newUser.fullName, city: newUser.city, phone: newUser.phone, email: newUser.email, referralCode: newUser.referralCode, referredBy: newUser.referredBy, isAdmin: newUser.isAdmin, country: newUser.country, location: newUser.location } });
+  return res.json({ success: true, user: { id: newUser.id, username: newUser.username, fullName: newUser.fullName, city: newUser.city, phone: newUser.phone, email: newUser.email, referralCode: newUser.referralCode, referredBy: newUser.referredBy, isAdmin: newUser.isAdmin, country: newUser.country, location: newUser.location, hasBiometric: !!newUser.biometricKey } });
 });
 
 // Authentication: Login
 app.post("/api/auth/login", (req, res) => {
-  const { username, password } = req.body;
-  if (!username || !password) {
-    return res.status(400).json({ error: "Please enter username and password." });
-  }
-
+  const { username, password, biometricKey } = req.body;
+  
   const db = getDatabase();
-  const user = db.users.find(
-    (u) => (u.username.toLowerCase() === username.toLowerCase() || u.email.toLowerCase() === username.toLowerCase() || u.phone === username) && u.passwordHash === password
-  );
+  let user = null;
 
-  if (!user) {
-    return res.status(401).json({ error: "Incorrect log in credentials." });
+  if (biometricKey) {
+    user = db.users.find((u) => u.username.toLowerCase() === username.toLowerCase() && u.biometricKey === biometricKey);
+    if (!user) {
+      return res.status(401).json({ error: "Biometric authentication failed or not registered." });
+    }
+  } else {
+    if (!username || !password) {
+      return res.status(400).json({ error: "Please enter username and password." });
+    }
+    user = db.users.find(
+      (u) => (u.username.toLowerCase() === username.toLowerCase() || u.email.toLowerCase() === username.toLowerCase() || u.phone === username) && u.passwordHash === password
+    );
+    if (!user) {
+      return res.status(401).json({ error: "Incorrect log in credentials." });
+    }
   }
 
   // Trigger order completion check instantly on login
@@ -634,9 +643,29 @@ app.post("/api/auth/login", (req, res) => {
       phone: user.phone,
       referralCode: user.referralCode,
       referredBy: user.referredBy,
-      isAdmin: user.isAdmin
+      isAdmin: user.isAdmin,
+      hasBiometric: !!user.biometricKey
     }
   });
+});
+
+// Biometric Registration (Logged in user generates a device key)
+app.post("/api/auth/biometric/register", (req, res) => {
+  const { biometricKey } = req.body;
+  const db = getDatabase();
+  const user = getAuthenticatedUser(req, db);
+  if (!user) {
+    return res.status(401).json({ error: "Unauthorized access" });
+  }
+  
+  if (!biometricKey) {
+     return res.status(400).json({ error: "No biometric key provided." });
+  }
+
+  user.biometricKey = biometricKey;
+  saveDatabase(db);
+
+  return res.json({ success: true, message: "Biometric login enabled successfully!" });
 });
 
 // Load Current Profile
@@ -663,7 +692,8 @@ app.get("/api/auth/me", (req, res) => {
       phone: user.phone,
       referralCode: user.referralCode,
       referredBy: user.referredBy,
-      isAdmin: user.isAdmin
+      isAdmin: user.isAdmin,
+      hasBiometric: !!user.biometricKey
     }
   });
 });

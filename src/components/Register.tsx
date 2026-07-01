@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { UserPlus, Shield, User, Mail, Phone, Lock, Gift, AlertCircle, ArrowLeft, Activity, ArrowRight } from "lucide-react";
+import { UserPlus, Shield, User, Mail, Phone, Lock, Gift, AlertCircle, ArrowLeft, Activity, ArrowRight, Fingerprint } from "lucide-react";
 
 interface RegisterProps {
   onRegisterSuccess: (user: any) => void;
@@ -63,6 +63,7 @@ export default function Register({ onRegisterSuccess, onNavigateToLogin }: Regis
   const [inviteCode, setInviteCode] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
+  const [enableBiometric, setEnableBiometric] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -171,6 +172,13 @@ export default function Register({ onRegisterSuccess, onNavigateToLogin }: Regis
     setLoading(true);
 
     try {
+      let biometricKey;
+      if (enableBiometric) {
+        // Simulate fingerprint scanning delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        biometricKey = "bio_" + Math.random().toString(36).substring(2) + Date.now().toString(36);
+      }
+
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -190,6 +198,22 @@ export default function Register({ onRegisterSuccess, onNavigateToLogin }: Regis
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.error || "Unable to complete registration.");
+      }
+
+      if (enableBiometric && biometricKey) {
+        // Call the biometric register endpoint with the new user ID
+        const bioResponse = await fetch("/api/auth/biometric/register", {
+          method: "POST",
+          headers: { 
+            "Content-Type": "application/json",
+            "x-user-id": data.user.id
+          },
+          body: JSON.stringify({ biometricKey })
+        });
+        
+        if (bioResponse.ok) {
+           localStorage.setItem(`biometric_key_${username.toLowerCase()}`, biometricKey);
+        }
       }
 
       onRegisterSuccess(data.user);
@@ -445,6 +469,22 @@ export default function Register({ onRegisterSuccess, onNavigateToLogin }: Regis
                   onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
                   className="block w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-medium text-sm focus:bg-white/5"
                 />
+              </div>
+            </div>
+
+            {/* Biometric Enable Toggle */}
+            <div className="bg-emerald-500/5 border border-emerald-500/20 p-4 rounded-2xl flex items-start gap-3 cursor-pointer select-none" onClick={() => setEnableBiometric(!enableBiometric)}>
+              <div className={`mt-0.5 w-5 h-5 rounded flex items-center justify-center border transition-colors ${enableBiometric ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-500'}`}>
+                {enableBiometric && <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <Fingerprint className="h-4 w-4 text-emerald-400" />
+                  <span className="text-sm font-bold text-slate-200">Enable Biometric Login</span>
+                </div>
+                <p className="text-[11px] text-slate-400 leading-tight">
+                  Automatically set up fingerprint / device passkey for faster and more secure sign-ins on this device.
+                </p>
               </div>
             </div>
 

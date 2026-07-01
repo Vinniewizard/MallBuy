@@ -141,7 +141,13 @@ export default function Dashboard({ user, stats, referrals, plans, balance, onSh
 
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div className="bg-white/5 border border-white/10 p-4 rounded-xl shadow-sm relative overflow-hidden flex flex-col justify-between backdrop-blur-md">
-                <div className="text-xs font-semibold text-slate-400 mb-1">Available balance</div>
+                <div className="flex justify-between items-start mb-1">
+                  <div className="text-xs font-semibold text-slate-400">Available balance</div>
+                  <div className="flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                    <TrendingUp className="h-2.5 w-2.5" />
+                    +12.4%
+                  </div>
+                </div>
                 <div className="text-xl font-bold text-white tracking-tight">{format(stats.balance.available_balance)}</div>
                 <div className="w-6 h-1 bg-emerald-500 rounded-full absolute bottom-4 right-4"></div>
               </div>

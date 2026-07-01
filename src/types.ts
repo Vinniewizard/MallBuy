@@ -12,6 +12,7 @@ export interface User {
   balance?: number;
   country?: string;
   location?: string;
+  hasBiometric?: boolean;
 }
 
 export interface Plan {

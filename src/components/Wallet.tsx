@@ -4,6 +4,7 @@ import { Transaction, WalletBalance } from "../types";
 import { useCurrency } from "../context/CurrencyContext";
 import { toast } from "sonner";
 import CryptoDeposit from "./CryptoDeposit";
+import { AreaChart, Area, ResponsiveContainer, YAxis, Tooltip } from "recharts";
 
 interface WalletProps {
   balance: WalletBalance | null;
@@ -50,6 +51,45 @@ export default function WalletComponent({
   const [depLoading, setDepLoading] = useState(false);
 
   const [formMsg, setFormMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  // Generate 7-day trend data
+  const trendData = React.useMemo(() => {
+    if (!balance || transactions.length === 0) {
+      return Array.from({ length: 7 }).map((_, i) => ({ day: `D${i + 1}`, value: balance?.available_balance || 0 }));
+    }
+
+    let current = balance.available_balance;
+    const result = [];
+    const now = new Date();
+    
+    // Sort transactions by date descending
+    const sortedTx = [...transactions].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    
+    for (let i = 0; i < 7; i++) {
+      result.push({
+        day: new Date(now.getTime() - i * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { weekday: 'short' }),
+        value: current
+      });
+      
+      const startOfDay = new Date(now.getTime() - i * 24 * 60 * 60 * 1000).setHours(0,0,0,0);
+      const endOfDay = new Date(now.getTime() - i * 24 * 60 * 60 * 1000).setHours(23,59,59,999);
+      
+      const dayTx = sortedTx.filter(tx => {
+        const txTime = new Date(tx.created_at).getTime();
+        return txTime >= startOfDay && txTime <= endOfDay && tx.status === 'approved';
+      });
+      
+      dayTx.forEach(tx => {
+        if (tx.transaction_type === 'deposit' || tx.transaction_type === 'commission') {
+          current -= tx.amount;
+        } else if (tx.transaction_type === 'withdrawal' || tx.transaction_type === 'purchase') {
+          current += tx.amount;
+        }
+      });
+    }
+    
+    return result.reverse();
+  }, [balance, transactions]);
 
   const [cancellingTxId, setCancellingTxId] = useState<string | null>(null);
 
@@ -179,6 +219,11 @@ export default function WalletComponent({
   const [withdrawMethod, setWithdrawMethod] = useState<"mpesa" | "crypto">("mpesa");
   const [withCryptoCurrency, setWithCryptoCurrency] = useState<string>("USDTTRC20");
   const [withCryptoAddress, setWithCryptoAddress] = useState("");
+  
+  // History Search & Filters
+  const [historySearch, setHistorySearch] = useState("");
+  const [historyTypeFilter, setHistoryTypeFilter] = useState("all");
+  const [historyStatusFilter, setHistoryStatusFilter] = useState("all");
 
   const handleWithdrawalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -268,13 +313,32 @@ export default function WalletComponent({
         </div>
 
         {/* Available balance summary in account header */}
-        <div className="bg-white/5 border border-white/10/80 rounded-xl p-4 flex flex-col items-start min-w-[200px] w-full md:w-auto relative overflow-hidden shrink-0">
+        <div className="bg-white/5 border border-white/10/80 rounded-xl p-4 flex flex-col items-start min-w-[220px] w-full md:w-auto relative overflow-hidden shrink-0">
           <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">AVAILABLE BALANCE</span>
-          <span className="text-2xl font-black text-emerald-400 tracking-tight mt-1">
+          <span className="text-2xl font-black text-emerald-400 tracking-tight mt-1 mb-2">
             {balance ? format(balance.available_balance) : "..."}
           </span>
-          <div className="absolute right-0 bottom-0 translate-x-3 translate-y-3 opacity-5 pointer-events-none">
-            <Coins className="h-20 w-20 text-emerald-400" />
+          <div className="w-full h-[40px] -ml-2 -mb-2 mt-1">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={trendData}>
+                <defs>
+                  <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', fontSize: '10px', borderRadius: '8px' }}
+                  itemStyle={{ color: '#10b981', fontWeight: 'bold' }}
+                  formatter={(value: number) => [`KSh ${value.toLocaleString()}`, 'Balance']}
+                  labelStyle={{ color: '#94a3b8', marginBottom: '2px' }}
+                />
+                <Area type="monotone" dataKey="value" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorValue)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="absolute right-0 top-0 translate-x-3 -translate-y-3 opacity-[0.03] pointer-events-none">
+            <Coins className="h-24 w-24 text-emerald-400" />
           </div>
         </div>
       </div>
@@ -795,37 +859,81 @@ export default function WalletComponent({
       {/* History Layout (Security Ledger) */}
       {activeSubTab === "history" && (
         <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden shadow-sm">
-          <div className="bg-white/5 border-b border-white/10 p-4 shrink-0">
+          <div className="bg-white/5 border-b border-white/10 p-4 shrink-0 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <h3 className="text-xs font-extrabold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
               <History className="h-4 w-4" />
               Real-Time Security Audit Log
             </h3>
+            
+            {transactions.length > 0 && (
+              <div className="flex flex-col sm:flex-row items-center gap-2">
+                <input 
+                  type="text" 
+                  placeholder="Search reference..."
+                  value={historySearch}
+                  onChange={(e) => setHistorySearch(e.target.value)}
+                  className="bg-white/5 border border-white/10 focus:border-[#006B4A] rounded-xl px-3 py-1.5 text-xs text-white font-medium outline-none transition-all w-full sm:w-40"
+                />
+                <select 
+                  value={historyTypeFilter}
+                  onChange={(e) => setHistoryTypeFilter(e.target.value)}
+                  className="bg-white/5 border border-white/10 focus:border-[#006B4A] rounded-xl px-3 py-1.5 text-xs text-white font-medium outline-none transition-all w-full sm:w-auto"
+                >
+                  <option value="all">All Types</option>
+                  <option value="deposit">Deposit</option>
+                  <option value="withdrawal">Withdrawal</option>
+                  <option value="commission">Commission</option>
+                  <option value="purchase">Purchase</option>
+                  <option value="payout">Payout</option>
+                </select>
+                <select 
+                  value={historyStatusFilter}
+                  onChange={(e) => setHistoryStatusFilter(e.target.value)}
+                  className="bg-white/5 border border-white/10 focus:border-[#006B4A] rounded-xl px-3 py-1.5 text-xs text-white font-medium outline-none transition-all w-full sm:w-auto"
+                >
+                  <option value="all">All Status</option>
+                  <option value="approved">Approved</option>
+                  <option value="pending">Pending</option>
+                  <option value="declined">Declined</option>
+                </select>
+              </div>
+            )}
           </div>
 
-          {transactions.length === 0 ? (
-            <div className="p-16 text-center text-slate-400 flex flex-col items-center justify-center">
-              <div className="bg-white/5 border border-white/10 p-3 rounded-full mb-3">
-                <History className="h-8 w-8 text-slate-400" />
+          {(() => {
+            const filteredTransactions = transactions.filter(tx => {
+              const matchesSearch = tx.note?.toLowerCase().includes(historySearch.toLowerCase()) || tx.id.toLowerCase().includes(historySearch.toLowerCase());
+              const matchesType = historyTypeFilter === "all" || tx.transaction_type === historyTypeFilter;
+              const matchesStatus = historyStatusFilter === "all" || tx.status === historyStatusFilter;
+              return matchesSearch && matchesType && matchesStatus;
+            });
+
+            return filteredTransactions.length === 0 ? (
+              <div className="p-16 text-center text-slate-400 flex flex-col items-center justify-center">
+                <div className="bg-white/5 border border-white/10 p-3 rounded-full mb-3">
+                  <History className="h-8 w-8 text-slate-400" />
+                </div>
+                <h4 className="text-sm font-bold text-slate-300">Chronology index empty</h4>
+                <p className="text-xs text-slate-400 mt-1 max-w-sm">
+                  {transactions.length === 0 
+                    ? "No ledger balance movements reported on your account workspace yet." 
+                    : "No transactions match your filter criteria."}
+                </p>
               </div>
-              <h4 className="text-sm font-bold text-slate-300">Chronology index empty</h4>
-              <p className="text-xs text-slate-400 mt-1 max-w-sm">
-                No ledger balance movements reported on your account workspace yet.
-              </p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="bg-white/5/50 text-slate-400 text-[11px] font-bold uppercase tracking-wider border-b border-slate-150">
-                    <th className="p-4 font-bold">Chronology timestamp</th>
-                    <th className="p-4 font-bold">Ledger Type</th>
-                    <th className="p-4 font-bold">Transfer reference</th>
-                    <th className="p-4 font-bold">Audit Status</th>
-                    <th className="p-4 font-bold text-right">Raw Funds Value ({activeCurrency})</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {transactions.map((tx) => {
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-white/5/50 text-slate-400 text-[11px] font-bold uppercase tracking-wider border-b border-slate-150">
+                      <th className="p-4 font-bold">Chronology timestamp</th>
+                      <th className="p-4 font-bold">Ledger Type</th>
+                      <th className="p-4 font-bold">Transfer reference</th>
+                      <th className="p-4 font-bold">Audit Status</th>
+                      <th className="p-4 font-bold text-right">Raw Funds Value ({activeCurrency})</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {filteredTransactions.map((tx) => {
                     // Badge styles
                     let badgeClass = "bg-amber-50 text-amber-800 border-amber-200";
                     let StatusIcon = Clock;
@@ -904,7 +1012,8 @@ export default function WalletComponent({
                 </tbody>
               </table>
             </div>
-          )}
+          );
+          })()}
         </div>
       )}
     </div>
