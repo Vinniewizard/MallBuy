@@ -43,6 +43,12 @@ export default function Profile({ user, onRefresh }: ProfileProps) {
 
       if (response.ok && data.success) {
         localStorage.setItem(`biometric_key_${user.username.toLowerCase()}`, newBiometricKey);
+        if (user.email) {
+          localStorage.setItem(`biometric_alias_${user.email.toLowerCase()}`, user.username.toLowerCase());
+        }
+        if (user.phone) {
+          localStorage.setItem(`biometric_alias_${user.phone.toLowerCase()}`, user.username.toLowerCase());
+        }
         setMsg({ type: "success", text: user.hasBiometric ? "Biometric / Device Passkey updated successfully for this device." : "Biometric / Device Passkey enabled successfully for this device." });
         onRefresh();
       } else {

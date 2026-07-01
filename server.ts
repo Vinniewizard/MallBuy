@@ -610,7 +610,9 @@ app.post("/api/auth/login", (req, res) => {
   let user = null;
 
   if (biometricKey) {
-    user = db.users.find((u) => u.username.toLowerCase() === username.toLowerCase() && u.biometricKey === biometricKey);
+    user = db.users.find(
+      (u) => (u.username.toLowerCase() === username.toLowerCase() || u.email.toLowerCase() === username.toLowerCase() || u.phone === username) && u.biometricKey === biometricKey
+    );
     if (!user) {
       return res.status(401).json({ error: "Biometric authentication failed or not registered." });
     }

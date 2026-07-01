@@ -31,6 +31,13 @@ export default function Login({ onLoginSuccess, onNavigateToRegister }: LoginPro
       .catch((err) => console.error("Failed to load public settings", err));
   }, []);
 
+  const getStoredBiometricKey = () => {
+    if (!username) return null;
+    const normalized = username.toLowerCase();
+    const resolvedUsername = localStorage.getItem(`biometric_alias_${normalized}`) || normalized;
+    return localStorage.getItem(`biometric_key_${resolvedUsername}`);
+  };
+
   const handleBiometricLogin = async () => {
     if (!username) {
       setError("Please enter your Phone Number, Email, or Username first to use Biometric Login.");
@@ -43,7 +50,7 @@ export default function Login({ onLoginSuccess, onNavigateToRegister }: LoginPro
     // Simulate fingerprint scanning delay
     await new Promise(resolve => setTimeout(resolve, 1500));
     
-    const storedKey = localStorage.getItem(`biometric_key_${username.toLowerCase()}`);
+    const storedKey = getStoredBiometricKey();
     if (!storedKey) {
       setError("No biometric profile found for this user on this device. Please login with password first, then enable biometrics in your Profile.");
       setBiometricLoading(false);
@@ -63,7 +70,9 @@ export default function Login({ onLoginSuccess, onNavigateToRegister }: LoginPro
         onLoginSuccess(data.user);
       } else {
         setError(data.error || "Biometric authentication failed.");
-        localStorage.removeItem(`biometric_key_${username.toLowerCase()}`); // clear invalid key
+        const normalized = username.toLowerCase();
+        const resolvedUsername = localStorage.getItem(`biometric_alias_${normalized}`) || normalized;
+        localStorage.removeItem(`biometric_key_${resolvedUsername}`); // clear invalid key
       }
     } catch (err) {
       setError("An unexpected error occurred during biometric auth.");
@@ -92,6 +101,15 @@ export default function Login({ onLoginSuccess, onNavigateToRegister }: LoginPro
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.error || "Incorrect login details.");
+      }
+
+      if (data.user) {
+        if (data.user.email) {
+          localStorage.setItem(`biometric_alias_${data.user.email.toLowerCase()}`, data.user.username.toLowerCase());
+        }
+        if (data.user.phone) {
+          localStorage.setItem(`biometric_alias_${data.user.phone.toLowerCase()}`, data.user.username.toLowerCase());
+        }
       }
 
       onLoginSuccess(data.user);
@@ -193,7 +211,7 @@ export default function Login({ onLoginSuccess, onNavigateToRegister }: LoginPro
               )}
             </button>
             
-            {username && localStorage.getItem(`biometric_key_${username.toLowerCase()}`) && (
+            {username && getStoredBiometricKey() && (
               <>
                 <div className="relative flex items-center py-2">
                   <div className="flex-grow border-t border-white/10"></div>

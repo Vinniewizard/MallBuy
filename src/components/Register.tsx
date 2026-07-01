@@ -213,6 +213,12 @@ export default function Register({ onRegisterSuccess, onNavigateToLogin }: Regis
         
         if (bioResponse.ok) {
            localStorage.setItem(`biometric_key_${username.toLowerCase()}`, biometricKey);
+           if (email) {
+             localStorage.setItem(`biometric_alias_${email.toLowerCase()}`, username.toLowerCase());
+           }
+           if (phone) {
+             localStorage.setItem(`biometric_alias_${phone.toLowerCase()}`, username.toLowerCase());
+           }
         }
       }
 
